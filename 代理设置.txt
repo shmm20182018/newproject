@@ -20,4 +20,4 @@ module.exports = {
     }
   }
 }
-The above example will proxy the request /api/posts/1 to http://jsonplaceholder.typicode.com/posts/1.
+The above example will proxy the request /api/posts/2 to http://jsonplaceholder.typicode.com/posts/1.
