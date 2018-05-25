@@ -13,7 +13,7 @@ module.exports = {
     proxyTable: {
 	   // proxy all requests starting with /api to jsonplaceholder
        '/api': {
-        target: 'http://10.71.13.239/api1',
+        target: 'http://10.24.18.86/WebReport/api',
         changeOrigin: true,
         pathRewrite: {
           '^/api': ''
@@ -52,7 +52,7 @@ module.exports = {
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: '/',
+    assetsPublicPath: '/drp/WebReport',
 
     /**
      * Source Maps

@@ -1,7 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import ServerTable from '@/components/ServerTable'
-
+import ChartShow from '@/components/ChartShow/ChartShow.vue'
+import ServerTable from '@/components/ServerTable/ServerTable.vue'
+import formval from '@/components/test/formval.vue'
 
 
 
@@ -11,14 +12,24 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'ServerTable',
-      component: ServerTable,
+      name: 'ChartShow',
+      component: ChartShow,
       props: (route) => ({ id: route.params.id,engine:'TJCX'}) 
     },
     {
+      path: '/t',
+      name: '',
+      component: ServerTable
+    },
+    {
+      path: '/f',
+      name: '',
+      component: formval
+    },
+    {
       path: '/TJCX/:id',
-      name: 'ServerTable',
-      component: ServerTable,
+      name: 'ChartShow',
+      component: ChartShow,
       props: (route) => ({ id: route.params.id,engine:'TJCX'}) 
     }
   ]

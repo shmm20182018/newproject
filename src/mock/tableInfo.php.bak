@@ -34,8 +34,8 @@ $array = array(
                   array("fields"=> array('rowSum'),"title" =>'行数据汇总',"titleAlign"=> 'center', "rowspan"=> 2)),
 
                   array(array("fields"=> array('name'), "title" => '姓名', "titleAlign"=> 'center'),
-                  array("fields"=> array('gender'), "title" => '性别', "titleAlign"=> 'center', "orderBy"=> ''),
-                  array("fields"=> array('height'), "title" => '身高', "titleAlign"=> 'center',"orderBy"=> ''),
+                  array("fields"=> array('gender'), "title" => '身高', "titleAlign"=> 'center', "orderBy"=> ''),
+                  array("fields"=> array('height'), "title" => '性别', "titleAlign"=> 'center'),
                   array("fields"=> array('address'), "title" => '住址', "titleAlign"=> 'center'),
                   array("fields"=> array('hobby'), "title" => '爱好', "titleAlign"=> 'center')
                   ),
