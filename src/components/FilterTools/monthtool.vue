@@ -1,8 +1,8 @@
 <template>
-  <el-form-item label="年月" :prop="item.rulename">
-    <span></span>
+  <el-form-item :label="item.title" :prop="item.id">
+    <span>{{computedValue}}</span>
     <el-date-picker
-      v-model="myrulename" :disabled="item.isDisabled"
+      v-model="myrulename" :disabled="item.readonly" 
       type="month"
       placeholder="选择年月"
       value-format="yyyy-MM">
@@ -29,10 +29,15 @@ export default {
       myitem: this.item
     };
   },
+  computed:{
+    computedValue(){
+      return  this.myrulename.substring(0,4)+this.myrulename.substring(5)
+    }
+  },
   watch:{
     myrulename:function(val,oldval){  
       //console.log(val)  
-      this.$emit("on-result-change",[val,this.myitem.rulename])
+      this.$emit("on-result-change",[val,this.myitem.id])
     }
   }
 }

@@ -9,7 +9,7 @@
               :vertical-resize-offset='60'
               is-horizontal-resize
               style="width:100%"
-              :multiple-sort="true"
+              :multiple-sort="multipleSort"
               :min-height="390"
               even-bg-color="#f2f2f2"
               :title-rows="tableConfig.titleRows"
@@ -36,6 +36,7 @@ import XLSX from 'xlsx'
 export default{
     data(){
         return {
+            multipleSort:true,
             total:50,
             startIndex:0,
             sortMapArray:[],//合并单元格rowspan-count
@@ -151,14 +152,15 @@ export default{
         },
         sortChange(params){
             this.isCellMerge = false
-            for (let i in params){
-                if (i.length > 0){
+            console.log(params)
+            if(!this.multipleSort){//单列排序
+                for(let i in params){
                     if(isNaN(this.tableConfig.tableData[0][i])){
                         this.tableConfig.tableData.sort(function (a, b) {
                             if (params[i] === 'asc'){
                                 return a[i].localeCompare(b[i])
                             }else if(params[i] === 'desc'){
-                                    return b[i].localeCompare(a[i])
+                                return b[i].localeCompare(a[i])
                             }else{
                                 return 0;
                             }
@@ -175,10 +177,85 @@ export default{
                         });
                     }
                 }
+            }else{//多列排序
+                var orderArray = []
+                for (let i in params){
+                    if (params[i].length > 0){
+                        var order={}
+                        order.field = i
+                        order.val = params[i]
+                        orderArray.push(order)
+                    }  
+                }    
+                this.tableConfig.tableData.sort((a, b) => {
+                    for(let n=0;n<orderArray.length;n++){ 
+                        let i=orderArray[n]['field']
+                        console.log(n,i,orderArray)
+                        if(isNaN(this.tableConfig.tableData[0][i])){    
+                            if (params[i] === 'asc'){
+                                if(a[i].localeCompare(b[i]) == 0){
+                                    if(n+1 < orderArray.length){
+                                        let c =orderArray[n+1]['field'];
+                                        if(isNaN(this.tableConfig.tableData[0][c])){
+                                            return  a[c].localeCompare(b[c])
+                                        }else{
+                                            return   a[c] - b[c]; 
+                                        }
+                                    }                                
+                                }
+                                    return a[i].localeCompare(b[i])
+                                
+                            }else if(params[i] === 'desc'){
+                                if(a[i].localeCompare(b[i]) == 0){
+                                    if(n+1 < orderArray.length){
+                                        let c =orderArray[n+1]['field'];
+                                        if(isNaN(this.tableConfig.tableData[0][c])){
+                                            return  b[c].localeCompare(a[c])
+                                        }else{
+                                            return   b[c] - a[c]; 
+                                        }
+                                    } 
+                                }
+                                    return b[i].localeCompare(a[i])
+                                
+                            }else{
+                                return 0;
+                            }
+                        }else{ 
+                                if (params[i] === 'asc'){
+                                if(a[i] == b[i]){
+                                    if(n+1 < orderArray.length){
+                                        let c =orderArray[n+1]['field'];
+                                        if(isNaN(this.tableConfig.tableData[0][c])){
+                                            return  a[c].localeCompare(b[c])
+                                        }else{
+                                            return   a[c] - b[c]; 
+                                        }
+                                    } 
+                                }
+                                return a[i] - b[i];  
+                            }else if(params[i] === 'desc'){
+                                if(a[i] == b[i]){
+                                    if(n+1 < orderArray.length){
+                                        let c =orderArray[n+1]['field'];
+                                        if(isNaN(this.tableConfig.tableData[0][c])){
+                                            return  b[c].localeCompare(a[c])
+                                        }else{
+                                            return   b[c] - a[c]; 
+                                        }
+                                    } 
+                                }
+                                return b[i] - a[i];
+                            }else{
+                                return 0;
+                            }
+                        }   
+                    }
+                });
             }
             this.mergeCells();
-            console.log(this.allArray)
-            console.log(this.sortMapArray)
+            //console.log(this.allArray)
+           // console.log(this.sortMapArray)
             setTimeout(()=>{
                 //this.isCellMerge = true
                 
@@ -318,7 +395,7 @@ export default{
             //声明一个map计算相同属性值在data对象出现的次数和
             var spanColumns =this.spanColumns;
             var data = this.tableConfig.tableData;
-            console.log(this.tableConfig.tableData)
+            //console.log(this.tableConfig.tableData)
             var startIndex = 0;
             var endIndex = data.length;
             var sortMapArray =[];

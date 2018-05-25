@@ -1,6 +1,6 @@
 <template>
-   <el-form-item label="文本" :prop="item.rulename" class="filtertool-text">
-    <el-input v-model="myrulename" :disabled="item.isDisabled"></el-input>
+   <el-form-item :label="item.title" :prop="item.id" class="filtertool-text">
+    <el-input v-model="myrulename" :disabled="item.readonly"></el-input>
   </el-form-item>
 </template>
 
@@ -26,7 +26,7 @@ export default {
   watch:{
     myrulename:function(val,oldval){  
       //console.log(val)  
-      this.$emit("on-result-change",[val,this.myitem.rulename])
+      this.$emit("on-result-change",[val,this.myitem.id])
     }
   }
 }

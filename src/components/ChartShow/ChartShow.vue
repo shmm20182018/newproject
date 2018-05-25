@@ -3,11 +3,11 @@
     <div class="filter-tools">
       <i :class="iconArrow" class="icon-toggle" @click="showChange(filterShow)"></i>
       <transition name="slide-fade">
-        <filter-form v-show="filterShow"></filter-form>
+        <filter-form v-show="filterShow" @on-result-response="resultResponse"></filter-form>
       </transition>
     </div>
     <div class="table-wrapper">
-      <s-table></s-table> 
+      <s-table :tableResponse="tableResponse"></s-table> 
     </div>
   </div>
 </template>
@@ -19,6 +19,9 @@ import ServerTable1 from '../ServerTable/ServerTable1.vue'
 export default {
   data () {
     return {
+      id:'',
+      engine:'',
+      tableResponse:{},
       filterShow: true,
       tableShow: true,
       chartShow: true,
@@ -34,10 +37,13 @@ export default {
         this.filterShow = true
         this.iconArrow = 'el-icon-arrow-up'
       }
+    },
+    resultResponse(val){
+      this.tableResponse = val;
     }
   },
   created(){
-   
+   console.log(this.id)
   },
   components: {
       'ServerTable':ServerTable,

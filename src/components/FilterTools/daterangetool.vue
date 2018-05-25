@@ -1,7 +1,7 @@
 <template>
-   <el-form-item label="日期范围" :prop="item.rulename" class="filtertool-daterange">
+   <el-form-item :label="item.title" :prop="item.id" class="filtertool-daterange">
     <el-date-picker
-      v-model="myrulename" :disabled="item.isDisabled"
+      v-model="myrulename" :disabled="item.readonly"
       type="daterange"
       unlink-panels
       range-separator="至"
@@ -34,7 +34,7 @@ export default {
   watch:{
     myrulename:function(val,oldval){  
       //console.log(val)  
-      this.$emit("on-result-change",[val,this.myitem.rulename])
+      this.$emit("on-result-change",[val,this.myitem.id])
     }
   }
 }

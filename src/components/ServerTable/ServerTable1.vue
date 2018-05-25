@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="title-wrapper">
+        <div class="title-wrapper" >     
             <h3>{{tableConfig.title}}</h3>
             <el-button v-show="showExport" @click="myexportExcel" class="exportbtn"  size="medium" type="success">导出</el-button>
         </div>
@@ -14,7 +14,7 @@
               even-bg-color="#f2f2f2"
               :title-rows="tableConfig.titleRows"
               :columns="tableConfig.columns"
-              :table-data="tableConfig.tableData"
+              :table-data="myresponse?myresponse.rowData:tableConfig.tableData"
               row-hover-color="#eee"
               row-click-color="#edf7ff"
               @sort-change="sortChange"
@@ -26,7 +26,7 @@
               >
       </v-table>
        <div  class="mt20 mb20 bold">
-        <v-pagination @page-change="pageChange" @page-size-change="pageSizeChange" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
+        <v-pagination @page-change="pageChange" @page-size-change="pageSizeChange" :total="myresponse?myresponse.total:total" :page-size="pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
        </div>
   </div>
 </template>
@@ -35,6 +35,11 @@ import FileSaver from 'file-saver'
 import XLSX from 'xlsx'
 import NProgress from 'nprogress'
 export default{
+    props:{
+        tableResponse:{
+            type:Object
+        }
+    },
     data(){
         return {
             total:50,
@@ -71,15 +76,16 @@ export default{
             var openid = location.href.slice(12);
             console.log(openid)
             var params = new URLSearchParams();
-            const url ='api/table/getconfig?id=41837&engine=TJCX&OpenResult=1';    
-            params.append('id', tid);       //你要传给后台的参数值 key/value
+            const url ='api/report/init?id=41837&engine=TJCX';    
+            params.append('id','70050'); 
+            params.append('engine', 'TJCX');       //你要传给后台的参数值 key/value
             //console.log(pageIndex,pageSize);
             this.$axios({
                 method: 'get',
                 url:url,
                // data: params
             }).then((res)=>{
-                //console.log(res);
+                console.log(res.data);
                 NProgress.done();
                 var data =res.data;
                 if(data){
@@ -109,7 +115,7 @@ export default{
         getTableData(pageIndex,pageSize){
             NProgress.start();
             var params = new URLSearchParams();
-            const url ='/api/table/search';    
+            const url ='api/report/search';    
             params.append('pageIndex', pageIndex);       //你要传给后台的参数值 key/value
             params.append('pageSize', pageSize);
             //console.log(pageIndex,pageSize);
@@ -117,7 +123,7 @@ export default{
                 method: 'post',
                 url:url,
                 data:{
-                    "id":41837,
+                    "id":70050,
                     "engine":"TJCX",
                     "pageIndex":2,
                     "pageSize":30,
@@ -395,8 +401,14 @@ export default{
     created(){
         this.getTableInfo(1);
     },
-    mounted(){
-       
+    watch:{
+        tableResponse: {  
+    　　　　handler(newValue, oldValue) {  
+    　　　　　　 this.total = newValue.total;
+                this.tableConfig.tableData = newValue.rowData;  
+    　　　　},  
+    　　　　deep: true  
+　　    } 
     }
   }
 </script>

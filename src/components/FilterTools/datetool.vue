@@ -1,7 +1,7 @@
 <template>
-  <el-form-item label="日期" :prop="item.rulename">
+  <el-form-item :label="item.title" :prop="item.id">
     <el-date-picker
-      v-model="myrulename" :disabled="item.isDisabled"
+      v-model="myrulename" :disabled="item.readonly"
       type="date"
       placeholder="选择日期"
       value-format="yyyy-MM-dd">
@@ -26,12 +26,13 @@ export default {
     return {
       myrulename:this.rulename,
       myitem: this.item
+      
     };
   },
   watch:{
     myrulename:function(val,oldval){  
       //console.log(val)  
-      this.$emit("on-result-change",[val,this.myitem.rulename])
+      this.$emit("on-result-change",[val,this.myitem.id])
     }
   }
 }
