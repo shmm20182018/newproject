@@ -20,6 +20,7 @@ import datetool from '@/components/filtertools/datetool.vue'
 export default {
   data() {
     return {
+      pageIndex:1,
       pageSize:10,
       queryParams:[],
       items:[],
@@ -48,7 +49,7 @@ export default {
           if(res.data){
             this.pageSize =res.data.pageSize
             this.items =res.data.queryParams;
-            console.log(this.items)
+            //console.log(this.items)
             this.createRules();
           }
       })
@@ -56,7 +57,7 @@ export default {
           console.log(response);
       }) 
     },
-    getData(pageIndex,pageSize){
+    getData(pageSize){
       NProgress.start();
       var params = {};
       const url ='api/report/search';
@@ -65,7 +66,7 @@ export default {
       params.pageIndex =  1       //你要传给后台的参数值 key/value
       params.pageSize = this.pageSize
       params.condition = this.submitForm
-      console.log(params)
+      //console.log(params)
       //console.log(pageIndex,pageSize);
       this.$axios({
           method: 'post',
@@ -84,7 +85,8 @@ export default {
     subForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.getData();
+          this.$emit('on-filter-submit',this.pageIndex)
+          //this.getData();
           alert('submit!');
         } else {
           console.log('error submit!!');
@@ -124,14 +126,16 @@ export default {
         }
       });
       this.submitForm = this.ruleForm
-    console.log(this.ruleForm);
-    console.log(this.rules);
+      this.$emit('on-filterdata-change',this.submitForm)
+      //console.log(this.ruleForm);
+      //console.log(this.rules);
     },
     onResultChange(val){
       this.$set(this.ruleForm,val[1],val[0]);//④外层调用组件方注册变更方法，将组件内的数据变更，同步到组件外的数据状态中
       this.$refs['ruleForm'].validateField(val[1]); //父组件更新后再次验证
       var computedVal = val[0].substring(0,4)+val[0].substring(5,7)+val[0].substring(8) 
       this.$set(this.submitForm,val[1],computedVal);
+      this.$emit('on-filterdata-change',this.submitForm)
     }
   },
   created(){

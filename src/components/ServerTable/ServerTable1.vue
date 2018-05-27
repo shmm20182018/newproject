@@ -14,7 +14,7 @@
               even-bg-color="#f2f2f2"
               :title-rows="tableConfig.titleRows"
               :columns="tableConfig.columns"
-              :table-data="myresponse?myresponse.rowData:tableConfig.tableData"
+              :table-data="tableConfig.tableData"
               row-hover-color="#eee"
               row-click-color="#edf7ff"
               @sort-change="sortChange"
@@ -26,7 +26,7 @@
               >
       </v-table>
        <div  class="mt20 mb20 bold">
-        <v-pagination @page-change="pageChange" @page-size-change="pageSizeChange" :total="myresponse?myresponse.total:total" :page-size="pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
+        <v-pagination @page-change="pageChange" @page-size-change="pageSizeChange" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
        </div>
   </div>
 </template>
@@ -36,13 +36,17 @@ import XLSX from 'xlsx'
 import NProgress from 'nprogress'
 export default{
     props:{
-        tableResponse:{
+        filterData:{
             type:Object
+        },
+        resetpageIndex:{
+            
         }
     },
     data(){
         return {
             total:50,
+            submitData:{},
             startIndex:0,
             sortMapArray:[],//合并单元格rowspan-count
             allArray:[],//存储所有和并列的数据用于复原表格
@@ -75,15 +79,15 @@ export default{
             NProgress.start();
             var openid = location.href.slice(12);
             console.log(openid)
-            var params = new URLSearchParams();
-            const url ='api/report/init?id=41837&engine=TJCX';    
-            params.append('id','70050'); 
-            params.append('engine', 'TJCX');       //你要传给后台的参数值 key/value
+            var params = {}
+            const url ='api/report/init?id=70050&engine=TJCX';    
+            params.id = 70050; 
+            params.engine = 'TJCX';       //你要传给后台的参数值 key/value
             //console.log(pageIndex,pageSize);
             this.$axios({
                 method: 'get',
                 url:url,
-               // data: params
+                //data: params
             }).then((res)=>{
                 console.log(res.data);
                 NProgress.done();
@@ -114,28 +118,25 @@ export default{
         },
         getTableData(pageIndex,pageSize){
             NProgress.start();
-            var params = new URLSearchParams();
+            var params = {};
             const url ='api/report/search';    
-            params.append('pageIndex', pageIndex);       //你要传给后台的参数值 key/value
-            params.append('pageSize', pageSize);
-            //console.log(pageIndex,pageSize);
+            params.id =  70050;
+            params.engine = 'TJCX' 
+            params.pageIndex =  pageIndex       //你要传给后台的参数值 key/value
+            params.pageSize = pageSize
+            params.condition = this.submitData
+            //console.log(pageIndex,pageSize,params);
             this.$axios({
                 method: 'post',
                 url:url,
-                data:{
-                    "id":70050,
-                    "engine":"TJCX",
-                    "pageIndex":2,
-                    "pageSize":30,
-                    "condition":{"00C":"20180101","00D":"20190101"}
-                }
+                data:params
             }).then((res)=>{
-                 NProgress.done();
+                NProgress.done();
                 //console.log(res);
                 var data =res.data;
                 if(data){
                     this.total = data.total
-                    this.tableConfig.tableData = data.rowData;
+                    this.$set(this.tableConfig,'tableData',data.rowData)
                     if(this.showFooter){ //列数据汇总
                         this.setFooterData(data);
                     }
@@ -146,7 +147,7 @@ export default{
                         this.mergeCells()   
                     }
                     //if(){
-                        this.cellFormatter(2)
+                        //this.cellFormatter(2)
                     //}
                 }
             })
@@ -408,9 +409,19 @@ export default{
                 this.tableConfig.tableData = newValue.rowData;  
     　　　　},  
     　　　　deep: true  
-　　    } 
-    }
+　　    },
+        filterData: {  
+    　　　　handler(newValue, oldValue) {  
+                this.submitData = newValue; 
+    　　　　},  
+    　　　　deep: true  
+　　    },
+        resetpageIndex:function(val){
+            this.pageIndex = 1
+            this.pageChange(1)
+        }
   }
+}  
 </script>
 <style>
     .title-wrapper {

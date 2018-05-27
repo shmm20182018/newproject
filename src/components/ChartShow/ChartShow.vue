@@ -3,11 +3,11 @@
     <div class="filter-tools">
       <i :class="iconArrow" class="icon-toggle" @click="showChange(filterShow)"></i>
       <transition name="slide-fade">
-        <filter-form v-show="filterShow" @on-result-response="resultResponse"></filter-form>
+        <filter-form v-show="filterShow" @on-filterdata-change="filterdataChange" @on-filter-submit="filterSubmit"></filter-form>
       </transition>
     </div>
     <div class="table-wrapper">
-      <s-table :tableResponse="tableResponse"></s-table> 
+      <s-table  :resetpageIndex="pageIndex" :filterData="filterData"></s-table> 
     </div>
   </div>
 </template>
@@ -21,7 +21,8 @@ export default {
     return {
       id:'',
       engine:'',
-      tableResponse:{},
+      filterData:{},
+      pageIndex:true,
       filterShow: true,
       tableShow: true,
       chartShow: true,
@@ -38,12 +39,15 @@ export default {
         this.iconArrow = 'el-icon-arrow-up'
       }
     },
-    resultResponse(val){
-      this.tableResponse = val;
+    filterdataChange(val){
+      this.filterData = val
+    },
+    filterSubmit(val){
+      this.pageIndex = !this.pageIndex
     }
   },
   created(){
-   console.log(this.id)
+   //console.log(this.id)
   },
   components: {
       'ServerTable':ServerTable,
