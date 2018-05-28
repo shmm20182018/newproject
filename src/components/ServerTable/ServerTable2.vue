@@ -1,15 +1,15 @@
 <template>
     <div>
-        <div class="title-wrapper" >     
+        <div class="title-wrapper">
             <h3>{{tableConfig.title}}</h3>
-            <el-button v-show="showExport" @click="myexportExcel" class="exportbtn"  size="medium" type="success">导出</el-button>
+            <el-button v-show="showExport" @click="exportExcel" class="exportbtn"  size="medium" type="success">导出</el-button>
         </div>
        <v-table id="serverTable"
               is-vertical-resize
               :vertical-resize-offset='60'
               is-horizontal-resize
               style="width:100%"
-              :multiple-sort="false"
+              :multiple-sort="multipleSort"
               :min-height="390"
               even-bg-color="#f2f2f2"
               :title-rows="tableConfig.titleRows"
@@ -22,11 +22,11 @@
               :footer-cell-class-name="setFooterCellClass"
               :footer="footer"
               :footer-row-height="40"
-              :cell-merge="isCellMerge?cellMerge:cellSeparate"
+             
               >
       </v-table>
        <div  class="mt20 mb20 bold">
-        <v-pagination @page-change="pageChange" @page-size-change="pageSizeChange" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
+        <v-pagination v-if="total>0" @page-change="pageChange" @page-size-change="pageSizeChange" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
        </div>
   </div>
 </template>
@@ -35,25 +35,17 @@ import FileSaver from 'file-saver'
 import XLSX from 'xlsx'
 import NProgress from 'nprogress'
 export default{
-    props:{
-        filterData:{
-            type:Object
-        },
-        resetpageIndex:{
-            
-        }
-    },
     data(){
         return {
+            sortParams:{},
+            multipleSort:true,
             total:50,
-            submitData:{},
             startIndex:0,
             sortMapArray:[],//合并单元格rowspan-count
             allArray:[],//存储所有和并列的数据用于复原表格
             footer: [],
             sumColumns:[],//所有需要footer合计的列
             spanColumns:[],//所有需要合并单元格的列
-            frozenColumns:[],//所有需要冻结的列
             queryParams:{},
             queryImmediately:false,
             showExport:false,
@@ -76,21 +68,18 @@ export default{
     },
     methods:{
         getTableInfo(tid){
-            NProgress.start();
             var openid = location.href.slice(12);
             console.log(openid)
-            var params = {}
-            const url ='api/report/init?id=70050&engine=TJCX';    
-            params.id = 70050; 
-            params.engine = 'TJCX';       //你要传给后台的参数值 key/value
+            var params = new URLSearchParams();
+            const url ='http://localhost/data/mock/tableInfo.php';    
+            params.append('id', tid);       //你要传给后台的参数值 key/value
             //console.log(pageIndex,pageSize);
             this.$axios({
                 method: 'get',
                 url:url,
-                //data: params
+               // data: params
             }).then((res)=>{
-                console.log(res.data);
-                NProgress.done();
+                //console.log(res);
                 var data =res.data;
                 if(data){
                     this.total = data.total,
@@ -117,26 +106,20 @@ export default{
             }) 
         },
         getTableData(pageIndex,pageSize){
-            NProgress.start();
-            var params = {};
-            const url ='api/report/search';    
-            params.id =  70050;
-            params.engine = 'TJCX' 
-            params.pageIndex =  pageIndex       //你要传给后台的参数值 key/value
-            params.pageSize = pageSize
-            params.condition = this.submitData
-            //console.log(pageIndex,pageSize,params);
+            var params = new URLSearchParams();
+            const url ='http://localhost/data/mock/tableData2.php';    
+            params.append('pageIndex', pageIndex);       //你要传给后台的参数值 key/value
+            params.append('pageSize', pageSize);
+            //console.log(pageIndex,pageSize);
             this.$axios({
                 method: 'post',
                 url:url,
                 data:params
             }).then((res)=>{
-                NProgress.done();
                 //console.log(res);
                 var data =res.data;
                 if(data){
-                    this.total = data.total
-                    this.$set(this.tableConfig,'tableData',data.rowData)
+                    this.tableConfig.tableData = data;
                     if(this.showFooter){ //列数据汇总
                         this.setFooterData(data);
                     }
@@ -147,7 +130,7 @@ export default{
                         this.mergeCells()   
                     }
                     //if(){
-                        //this.cellFormatter(2)
+                        this.cellFormatter(2)
                     //}
                 }
             })
@@ -164,30 +147,162 @@ export default{
             this.pageSize = pageSize;
             this.getTableData(1,pageSize);
         },
-        sortChange2(params){
-            this.sortChange(params).then(()=>{
-                this.isCellMerge = true
-            }) 
-        },
-        sortChange(params){
-            this.isCellMerge = false
-            if (params.height.length > 0){
-                  this.tableConfig.tableData.sort(function (a, b) {
-                    if (params.height === 'asc'){
-                        return a.height - b.height;
-                    }else if(params.height === 'desc'){
-                            return b.height - a.height;
+        bysort(name,minor){
+            var i=name;
+            return (a,b) => {
+                if(isNaN(this.tableConfig.tableData[0][i])){    
+                    if (this.sortParams[i] === 'asc'){
+                        if(a[i].localeCompare(b[i]) == 0){
+                            return typeof minor === 'function' ? minor(a,b):0;                             
+                        }else{
+                            return a[i].localeCompare(b[i])
+                        }      
+                    }else if(this.sortParams[i] === 'desc'){
+                        if(a[i].localeCompare(b[i]) == 0){
+                            return  typeof b === 'function' ? minor(a,b):0;
+                        }else{
+                            return b[i].localeCompare(a[i])
+                        }
                     }else{
                         return 0;
                     }
-                });
+                }else{ 
+                    if (this.sortParams[i] === 'asc'){
+                        console.log(i,111)
+                        if(a[i] == b[i]){
+                            return typeof b === 'function' ? minor(a,b):0;
+                        }else{
+                            return a[i] - b[i];  
+                        }
+                    }else if(this.sortParams[i] === 'desc'){
+                        if(a[i] == b[i]){
+                            return typeof b === 'function' ? minor(a,b):0;
+                        }else{
+                            return b[i] - a[i];
+                        }    
+                    }else{
+                        return 0;
+                    }
+                }   
+            } 
+        },
+        sortChange(params){
+            this.isCellMerge = false
+            console.log(params)
+            this.sortParams = params
+            var sortParams = []
+            var arg =''
+            for(i in params){
+                sortParams.push[i]
+                arg = this.bysort(i,arg)
             }
+            this.tableConfig.tableData.sort(this.bysort('gender',this.bysort('height')))
+            /*if(!this.multipleSort){//单列排序
+                for(let i in params){
+                    if(isNaN(this.tableConfig.tableData[0][i])){
+                        this.tableConfig.tableData.sort(function (a, b) {
+                            if (params[i] === 'asc'){
+                                return a[i].localeCompare(b[i])
+                            }else if(params[i] === 'desc'){
+                                return b[i].localeCompare(a[i])
+                            }else{
+                                return 0;
+                            }
+                        });
+                    }else{
+                        this.tableConfig.tableData.sort(function (a, b) {
+                            if (params[i] === 'asc'){
+                                return a[i] - b[i];  
+                            }else if(params[i] === 'desc'){
+                                    return b[i] - a[i];
+                            }else{
+                                return 0;
+                            }
+                        });
+                    }
+                }
+            }else{//多列排序
+                var orderArray = []
+                for (let i in params){
+                    if (params[i].length > 0){
+                        var order={}
+                        order.field = i
+                        order.val = params[i]
+                        orderArray.push(order)
+                    }  
+                }    
+                this.tableConfig.tableData.sort((a, b) => {
+                    for(let n=0;n<orderArray.length;n++){ 
+                        let i=orderArray[n]['field']
+                        console.log(n,i,orderArray)
+                        if(isNaN(this.tableConfig.tableData[0][i])){    
+                            if (params[i] === 'asc'){
+                                if(a[i].localeCompare(b[i]) == 0){
+                                    if(n+1 < orderArray.length){
+                                        let c =orderArray[n+1]['field'];
+                                        if(isNaN(this.tableConfig.tableData[0][c])){
+                                            return  a[c].localeCompare(b[c])
+                                        }else{
+                                            return   a[c] - b[c]; 
+                                        }
+                                    }                                
+                                }
+                                    return a[i].localeCompare(b[i])
+                                
+                            }else if(params[i] === 'desc'){
+                                if(a[i].localeCompare(b[i]) == 0){
+                                    if(n+1 < orderArray.length){
+                                        let c =orderArray[n+1]['field'];
+                                        if(isNaN(this.tableConfig.tableData[0][c])){
+                                            return  b[c].localeCompare(a[c])
+                                        }else{
+                                            return   b[c] - a[c]; 
+                                        }
+                                    } 
+                                }
+                                    return b[i].localeCompare(a[i])
+                                
+                            }else{
+                                return 0;
+                            }
+                        }else{ 
+                                if (params[i] === 'asc'){
+                                if(a[i] == b[i]){
+                                    if(n+1 < orderArray.length){
+                                        let c =orderArray[n+1]['field'];
+                                        if(isNaN(this.tableConfig.tableData[0][c])){
+                                            return  a[c].localeCompare(b[c])
+                                        }else{
+                                            return   a[c] - b[c]; 
+                                        }
+                                    } 
+                                }
+                                return a[i] - b[i];  
+                            }else if(params[i] === 'desc'){
+                                if(a[i] == b[i]){
+                                    if(n+1 < orderArray.length){
+                                        let c =orderArray[n+1]['field'];
+                                        if(isNaN(this.tableConfig.tableData[0][c])){
+                                            return  b[c].localeCompare(a[c])
+                                        }else{
+                                            return   b[c] - a[c]; 
+                                        }
+                                    } 
+                                }
+                                return b[i] - a[i];
+                            }else{
+                                return 0;
+                            }
+                        }   
+                    }
+                });
+            }*/
             this.mergeCells();
-            this.allCells();
-            console.log(this.allArray)
-            console.log(this.sortMapArray)
+            //console.log(this.allArray)
+           // console.log(this.sortMapArray)
             setTimeout(()=>{
-                this.isCellMerge = true
+                //this.isCellMerge = true
+                
             },500)
             return  Promise.resolve();
         },
@@ -240,7 +355,7 @@ export default{
             });
         },
         countSumCol(columns){     
-            for (let i=0; i<columns.length; i++) {
+            for (let i=1; i<columns.length; i++) {
                 let column = columns[i];
                 if(column.sumFlag){ //需要汇总列的field数组      
                     var field = column.field
@@ -249,14 +364,7 @@ export default{
                 if(column.isSpan){ //需要合并单元格列的field数组      
                     var field = column.field
                     this.spanColumns.push(field)
-                }
-                if(column.isFrozen){ //需要冻结列的field数组      
-                    var field = column.field
-                    var fieldObj ={}
-                    fieldObj.index=i;
-                    fieldObj.field =field
-                    this.frozenColumns.push(fieldObj)
-                }      
+                }   
             }        
         },
         countCols(columns){   //所有列field数组
@@ -292,21 +400,18 @@ export default{
         cellSeparate(rowIndex,rowData,field){
             var spanColumns =this.spanColumns;
             //console.log(spanColumns)
-            for (var j  in this.allArray) {
+            for (var j  in  spanColumns) {
                 var startIndex = 0;
-                var sortMap = this.allArray[j]
-                for (var prop in sortMap) {
-                    if(rowIndex == startIndex && field == spanColumns[j]){
-                        //this.startIndex +=count
-                        return {
-                            colSpan: 1,
-                            rowSpan: 1,
-                            content: rowData[field]
-                        }
+                if(rowIndex == startIndex && field == spanColumns[j]){
+                    //this.startIndex +=count
+                    return {
+                        colSpan: 1,
+                        rowSpan: 1,
+                        content: rowData[field]
                     }
-                    startIndex += 1;
-                    //console.log(startIndex)
-                }                   
+                }
+                startIndex += 1;
+                //console.log(startIndex)                  
             }
         },
         allCells(){
@@ -334,6 +439,7 @@ export default{
             //声明一个map计算相同属性值在data对象出现的次数和
             var spanColumns =this.spanColumns;
             var data = this.tableConfig.tableData;
+            //console.log(this.tableConfig.tableData)
             var startIndex = 0;
             var endIndex = data.length;
             var sortMapArray =[];
@@ -360,22 +466,11 @@ export default{
         },
         cellFormatter(n){ //小数位数
             var columns = this.tableConfig.columns
-            var colLast = columns[2]
+            var colLast = columns[3]
             this.$set(colLast,"formatter",(rowData,rowIndex,pagingIndex,field) => {          				
                 var number=rowData[field]*1;
                 return  number.toFixed(n);
             });   
-        },
-        nofrozencol(){
-            for(let o of this.frozenColumns){
-                console.log(o)
-               this.$set(this.tableConfig.columns[o.index],o.field,false)
-            }
-        },
-        frozencol(){
-            for(let o of this.frozenColumns){
-                this.$set(this.tableConfig.columns[o.index],o.field,true)
-            }
         },
         exportExcel () { 
             console.log(2)           
@@ -392,36 +487,12 @@ export default{
             }
              console.log(3) 
             return wbout
-        },
-        myexportExcel(){
-            this.nofrozencol();
-            this.exportExcel();  
-            //this.frozencol();  
         }
     },
     created(){
         this.getTableInfo(1);
-    },
-    watch:{
-        tableResponse: {  
-    　　　　handler(newValue, oldValue) {  
-    　　　　　　 this.total = newValue.total;
-                this.tableConfig.tableData = newValue.rowData;  
-    　　　　},  
-    　　　　deep: true  
-　　    },
-        filterData: {  
-    　　　　handler(newValue, oldValue) {  
-                this.submitData = newValue; 
-    　　　　},  
-    　　　　deep: true  
-　　    },
-        resetpageIndex:function(val){
-            this.pageIndex = 1
-            this.pageChange(1)
-        }
-  }
-}  
+    }
+}   
 </script>
 <style>
     .title-wrapper {

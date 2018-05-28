@@ -1,15 +1,15 @@
 <template>
     <div>
-        <div class="title-wrapper">
+        <div class="title-wrapper" >     
             <h3>{{tableConfig.title}}</h3>
-            <el-button v-show="showExport" @click="exportExcel" class="exportbtn"  size="medium" type="success">导出</el-button>
+            <el-button v-show="showExport" @click="myexportExcel" class="exportbtn"  size="medium" type="success">导出</el-button>
         </div>
        <v-table id="serverTable"
               is-vertical-resize
               :vertical-resize-offset='60'
               is-horizontal-resize
               style="width:100%"
-              :multiple-sort="multipleSort"
+              :multiple-sort="false"
               :min-height="390"
               even-bg-color="#f2f2f2"
               :title-rows="tableConfig.titleRows"
@@ -22,35 +22,53 @@
               :footer-cell-class-name="setFooterCellClass"
               :footer="footer"
               :footer-row-height="40"
-             
+              :cell-merge="cellMerge"
               >
       </v-table>
        <div  class="mt20 mb20 bold">
-        <v-pagination v-if="total>0" @page-change="pageChange" @page-size-change="pageSizeChange" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
+        <v-pagination @page-change="pageChange" @page-size-change="pageSizeChange" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
        </div>
   </div>
 </template>
 <script>
 import FileSaver from 'file-saver'
 import XLSX from 'xlsx'
+import NProgress from 'nprogress'
 export default{
+    props:{
+        filterData:{//查询参数
+            type:Object
+        },
+        resetpageIndex:{//查询是重置页面下标
+            
+        },
+        routeParams:{ //路由参数
+            type:Object
+        },
+        resTableInit:{ //表格初始化配置
+            type:Object
+        }
+    },
     data(){
         return {
-            multipleSort:true,
             total:50,
+            submitData:{},
             startIndex:0,
             sortMapArray:[],//合并单元格rowspan-count
             allArray:[],//存储所有和并列的数据用于复原表格
             footer: [],
             sumColumns:[],//所有需要footer合计的列
             spanColumns:[],//所有需要合并单元格的列
-            queryParams:{},
-            queryImmediately:false,
+            frozenColumns:[],//所有需要冻结的列
+            queryParams:{}, //查询参数
+            queryImmediately:false,//初始化后立即查询数据
             showExport:false,
             showFooter:false,
             isrowSum: false, //行数据汇总
             isMerge: false,//客户定义单元格是否合并
             isCellMerge: true,//单元格是否合并
+            tableType:0,//明细表还是复杂表
+            isSubmit:false,//是否由查询触发的请求
             pageIndex:1,
             pageSize:10,
             tableConfig: {
@@ -65,71 +83,88 @@ export default{
         }
     },
     methods:{
-        getTableInfo(tid){
-            var openid = location.href.slice(12);
-            console.log(openid)
-            var params = new URLSearchParams();
-            const url ='http://localhost/data/mock/tableInfo.php';    
-            params.append('id', tid);       //你要传给后台的参数值 key/value
-            //console.log(pageIndex,pageSize);
-            this.$axios({
-                method: 'get',
-                url:url,
-               // data: params
-            }).then((res)=>{
-                //console.log(res);
-                var data =res.data;
-                if(data){
-                    this.total = data.total,
-                    this.queryParams = data.queryParams,
-                    this.queryImmediately = data.queryImmediately,
-                    this.showExport = data.showExport,
-                    this.showFooter = data.showFooter,
-                    this.isrowSum = data.isrowSum,
-                    this.isMerge = data. isMerge,
-                    this.pageSize = data.pageSize * 1,
-                    this.$set(this.tableConfig,'sumFlag',data.sumFlag)
-                    this.$set(this.tableConfig,'columns',data.columns)
-                    this.$set(this.tableConfig,'titleRows',data.titleRows)
-                    this.$set(this.tableConfig,'title',data.title)
-                    this.$set(this.tableConfig,'tableData',data.tableData)
-                    if(this.queryImmediately){
-                        this.getTableData(this.pageIndex,this.pageSize);  
-                    }
-                    this.countSumCol(data.columns) 
-               }
-            })
-            .catch(function (response) {
-                console.log(response);
-            }) 
+        getTableInfo(val){
+            var data = val;
+            if(data){
+                this.tableType = parseInt(data.tableType)
+                this.total = data.total,
+                this.queryParams = data.queryParams,
+                this.queryImmediately = data.queryImmediately,
+                this.showExport = data.showExport,
+                this.showFooter = data.columnSumFlag,
+                this.isrowSum = data.rowSumFlag,
+                this.isMerge = data. isMerge,
+                this.pageSize = data.pageSize * 1,
+                this.$set(this.tableConfig,'sumFlag',data.sumFlag)
+                this.$set(this.tableConfig,'titleRows',data.titleRows)
+                this.$set(this.tableConfig,'title',data.title)
+                this.$set(this.tableConfig,'tableData',data.tableData)
+                this.$set(this.tableConfig,'columns',data.columns)
+                
+                if(this.queryImmediately){
+                    this.getTableData(this.pageIndex,this.pageSize);  
+                }
+                this.countSumCol(data) 
+            }
         },
         getTableData(pageIndex,pageSize){
-            var params = new URLSearchParams();
-            const url ='http://localhost/data/mock/tableData2.php';    
-            params.append('pageIndex', pageIndex);       //你要传给后台的参数值 key/value
-            params.append('pageSize', pageSize);
-            //console.log(pageIndex,pageSize);
+            NProgress.start();
+            var params = {};
+            console.log(this.tableType)
+            if(this.tableType == 0 || !this.isSubmit){
+                var url ='api/report/search';  
+            }else if(this.tableType == 2 && this.isSubmit){
+                var url ='api/report/searchAndInit'; 
+            }            
+            params.id =  this.routeParams.id;
+            params.engine = this.routeParams.engine 
+            params.pageIndex =  pageIndex       //你要传给后台的参数值 key/value
+            params.pageSize = pageSize
+            params.condition = this.submitData
+            //console.log(pageIndex,pageSize,params);
             this.$axios({
                 method: 'post',
                 url:url,
                 data:params
             }).then((res)=>{
+                NProgress.done();
                 //console.log(res);
                 var data =res.data;
-                if(data){
-                    this.tableConfig.tableData = data;
+                if(data && !this.isSubmit || this.tableType == 0){
+                    this.total = data.total
+                    this.$set(this.tableConfig,'tableData',data.rowData)
                     if(this.showFooter){ //列数据汇总
                         this.setFooterData(data);
                     }
                     if(this.isrowSum){ //行数据汇总
                         this.rowSum();
                     } 
+                    this.isMerge = true
                     if(this.isMerge){ //合并单元格计算
                         this.mergeCells()   
                     }
                     //if(){
-                        this.cellFormatter(2)
+                        //this.cellFormatter(2)
                     //}
+                }else if(data && this.tableType == 2 && this.isSubmit){
+                    console.log(data)
+                    this.total = data.total
+                    this.$set(this.tableConfig,'titleRows',data.titleRows)
+                    this.$set(this.tableConfig,'columns',data.columns)
+                    this.$set(this.tableConfig,'tableData',data.tableData)
+                    this.countSumCol(data.columns).then(()=>{
+                        if(this.showFooter){ //列数据汇总
+                            this.setFooterData(data);
+                        }
+                        if(this.isrowSum){ //行数据汇总
+                            this.rowSum();
+                        } 
+                        this.isMerge = true
+                        if(this.isMerge){ //合并单元格计算
+                            this.mergeCells()   
+                        }
+                        this.isSubmit = false 
+                    }) 
                 }
             })
             .catch(function (response) {
@@ -138,6 +173,7 @@ export default{
         },
         pageChange(pageIndex){
             this.pageIndex = pageIndex;
+            //console.log(this.pageIndex,'index')
             this.getTableData(pageIndex,this.pageSize);
         },
         pageSizeChange(pageSize){ 
@@ -152,113 +188,23 @@ export default{
         },
         sortChange(params){
             this.isCellMerge = false
-            console.log(params)
-            if(!this.multipleSort){//单列排序
-                for(let i in params){
-                    if(isNaN(this.tableConfig.tableData[0][i])){
-                        this.tableConfig.tableData.sort(function (a, b) {
-                            if (params[i] === 'asc'){
-                                return a[i].localeCompare(b[i])
-                            }else if(params[i] === 'desc'){
-                                return b[i].localeCompare(a[i])
-                            }else{
-                                return 0;
-                            }
-                        });
+            if (params.height.length > 0){
+                  this.tableConfig.tableData.sort(function (a, b) {
+                    if (params.height === 'asc'){
+                        return a.height - b.height;
+                    }else if(params.height === 'desc'){
+                            return b.height - a.height;
                     }else{
-                        this.tableConfig.tableData.sort(function (a, b) {
-                            if (params[i] === 'asc'){
-                                return a[i] - b[i];  
-                            }else if(params[i] === 'desc'){
-                                    return b[i] - a[i];
-                            }else{
-                                return 0;
-                            }
-                        });
-                    }
-                }
-            }else{//多列排序
-                var orderArray = []
-                for (let i in params){
-                    if (params[i].length > 0){
-                        var order={}
-                        order.field = i
-                        order.val = params[i]
-                        orderArray.push(order)
-                    }  
-                }    
-                this.tableConfig.tableData.sort((a, b) => {
-                    for(let n=0;n<orderArray.length;n++){ 
-                        let i=orderArray[n]['field']
-                        console.log(n,i,orderArray)
-                        if(isNaN(this.tableConfig.tableData[0][i])){    
-                            if (params[i] === 'asc'){
-                                if(a[i].localeCompare(b[i]) == 0){
-                                    if(n+1 < orderArray.length){
-                                        let c =orderArray[n+1]['field'];
-                                        if(isNaN(this.tableConfig.tableData[0][c])){
-                                            return  a[c].localeCompare(b[c])
-                                        }else{
-                                            return   a[c] - b[c]; 
-                                        }
-                                    }                                
-                                }
-                                    return a[i].localeCompare(b[i])
-                                
-                            }else if(params[i] === 'desc'){
-                                if(a[i].localeCompare(b[i]) == 0){
-                                    if(n+1 < orderArray.length){
-                                        let c =orderArray[n+1]['field'];
-                                        if(isNaN(this.tableConfig.tableData[0][c])){
-                                            return  b[c].localeCompare(a[c])
-                                        }else{
-                                            return   b[c] - a[c]; 
-                                        }
-                                    } 
-                                }
-                                    return b[i].localeCompare(a[i])
-                                
-                            }else{
-                                return 0;
-                            }
-                        }else{ 
-                                if (params[i] === 'asc'){
-                                if(a[i] == b[i]){
-                                    if(n+1 < orderArray.length){
-                                        let c =orderArray[n+1]['field'];
-                                        if(isNaN(this.tableConfig.tableData[0][c])){
-                                            return  a[c].localeCompare(b[c])
-                                        }else{
-                                            return   a[c] - b[c]; 
-                                        }
-                                    } 
-                                }
-                                return a[i] - b[i];  
-                            }else if(params[i] === 'desc'){
-                                if(a[i] == b[i]){
-                                    if(n+1 < orderArray.length){
-                                        let c =orderArray[n+1]['field'];
-                                        if(isNaN(this.tableConfig.tableData[0][c])){
-                                            return  b[c].localeCompare(a[c])
-                                        }else{
-                                            return   b[c] - a[c]; 
-                                        }
-                                    } 
-                                }
-                                return b[i] - a[i];
-                            }else{
-                                return 0;
-                            }
-                        }   
+                        return 0;
                     }
                 });
             }
             this.mergeCells();
-            //console.log(this.allArray)
-           // console.log(this.sortMapArray)
+            this.allCells();
+            console.log(this.allArray)
+            console.log(this.sortMapArray)
             setTimeout(()=>{
-                //this.isCellMerge = true
-                
+                this.isCellMerge = true
             },500)
             return  Promise.resolve();
         },
@@ -311,17 +257,25 @@ export default{
             });
         },
         countSumCol(columns){     
-            for (let i=1; i<columns.length; i++) {
+            for (let i=0; i<columns.length; i++) {
                 let column = columns[i];
                 if(column.sumFlag){ //需要汇总列的field数组      
                     var field = column.field
                     this.sumColumns.push(field)
                 }  
-                if(column.isSpan){ //需要合并单元格列的field数组      
+                if(column.groupby){ //需要合并单元格列的field数组      
                     var field = column.field
                     this.spanColumns.push(field)
-                }   
-            }        
+                }
+                if(column.isFrozen){ //需要冻结列的field数组      
+                    var field = column.field
+                    var fieldObj ={}
+                    fieldObj.index=i;
+                    fieldObj.field =field
+                    this.frozenColumns.push(fieldObj)
+                }      
+            }
+            return  Promise.resolve()        
         },
         countCols(columns){   //所有列field数组
             var columnfields = []        
@@ -356,18 +310,21 @@ export default{
         cellSeparate(rowIndex,rowData,field){
             var spanColumns =this.spanColumns;
             //console.log(spanColumns)
-            for (var j  in  spanColumns) {
+            for (var j  in this.allArray) {
                 var startIndex = 0;
-                if(rowIndex == startIndex && field == spanColumns[j]){
-                    //this.startIndex +=count
-                    return {
-                        colSpan: 1,
-                        rowSpan: 1,
-                        content: rowData[field]
+                var sortMap = this.allArray[j]
+                for (var prop in sortMap) {
+                    if(rowIndex == startIndex && field == spanColumns[j]){
+                        //this.startIndex +=count
+                        return {
+                            colSpan: 1,
+                            rowSpan: 1,
+                            content: rowData[field]
+                        }
                     }
-                }
-                startIndex += 1;
-                //console.log(startIndex)                  
+                    startIndex += 1;
+                    //console.log(startIndex)
+                }                   
             }
         },
         allCells(){
@@ -393,9 +350,9 @@ export default{
         },
         mergeCells() {
             //声明一个map计算相同属性值在data对象出现的次数和
+            console.log(this.spanColumns)
             var spanColumns =this.spanColumns;
             var data = this.tableConfig.tableData;
-            //console.log(this.tableConfig.tableData)
             var startIndex = 0;
             var endIndex = data.length;
             var sortMapArray =[];
@@ -419,16 +376,29 @@ export default{
             }
             //this.sortMap=sortMap;
             this.sortMapArray = sortMapArray
+            console.log(this.sortMapArray)
         },
         cellFormatter(n){ //小数位数
             var columns = this.tableConfig.columns
-            var colLast = columns[3]
+            var colLast = columns[2]
             this.$set(colLast,"formatter",(rowData,rowIndex,pagingIndex,field) => {          				
                 var number=rowData[field]*1;
                 return  number.toFixed(n);
             });   
         },
-        exportExcel () {              
+        nofrozencol(){
+            for(let o of this.frozenColumns){
+                console.log(o)
+               this.$set(this.tableConfig.columns[o.index],o.field,false)
+            }
+        },
+        frozencol(){
+            for(let o of this.frozenColumns){
+                this.$set(this.tableConfig.columns[o.index],o.field,true)
+            }
+        },
+        exportExcel () { 
+            console.log(2)           
             /* generate workbook object from table */
             let wb = XLSX.utils.table_to_book(document.querySelector('#serverTable'));
             /* get binary string as output */
@@ -440,16 +410,43 @@ export default{
                 if (typeof console !== 'undefined')
                     console.log(e, wbout)
             }
+             console.log(3) 
             return wbout
+        },
+        myexportExcel(){
+            this.nofrozencol();
+            this.exportExcel();  
+            //this.frozencol();  
         }
     },
     created(){
-        this.getTableInfo(1);
+        this.getTableInfo(this.resTableInit);
     },
-    mounted(){
-       
-    }
+    watch:{
+        tableResponse: {  
+    　　　　handler(newValue, oldValue) {  
+    　　　　　　 this.total = newValue.total;
+                this.tableConfig.tableData = newValue.rowData;  
+    　　　　},  
+    　　　　deep: true  
+　　    },
+        filterData: {  
+    　　　　handler(newValue, oldValue) {
+                //console.log(newValue)  
+                this.submitData = newValue; 
+    　　　　},  
+    　　　　deep: true  
+　　    },
+        resetpageIndex:function(val){
+            //console.log(val)
+            this.isSubmit = true;
+            this.$nextTick(()=>{
+                this.pageChange(1)
+            })
+           
+        }
   }
+}  
 </script>
 <style>
     .title-wrapper {

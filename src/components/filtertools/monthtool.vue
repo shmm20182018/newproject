@@ -38,6 +38,10 @@ export default {
     myrulename:function(val,oldval){  
       //console.log(val)  
       this.$emit("on-result-change",[val,this.myitem.id])
+    },
+    rulename(val){
+      console.log(val)
+      this.myrulename = val
     }
   }
 }

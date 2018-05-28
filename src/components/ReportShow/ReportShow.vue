@@ -7,29 +7,61 @@
       </transition>
     </div>
     <div class="table-wrapper">
-      <s-table  :resetpageIndex="pageIndex" :filterData="filterData"></s-table> 
+      <server-table v-if="tableShow" :routeParams="routerParams" :resTableInit="resTableInit" :resetpageIndex="pageIndex" :filterData="filterData"></server-table> 
+    </div>
+    <div class="chart-wrapper">
+      <server-chart v-if="chartShow"></server-chart> 
     </div>
   </div>
 </template>
 
 <script>
+import NProgress from 'nprogress'
 import FilterForm from '../FilterForm/FilterForm.vue'
 import ServerTable from '../ServerTable/ServerTable.vue'
-import ServerTable1 from '../ServerTable/ServerTable1.vue'
+import ServerChart from '../ServerChart/ServerChart.vue'
 export default {
+  props:{
+    id:{
+      type:String
+    },
+    engine:{
+      type: String
+    }
+  },
   data () {
     return {
-      id:'',
-      engine:'',
-      filterData:{},
+      resTableInit:{},//表格初始化数据
+      routerParams:{},//路由参数
+      filterData:{},//查询条件参数
       pageIndex:true,
       filterShow: true,
-      tableShow: true,
-      chartShow: true,
+      tableShow: false,
+      chartShow: false,
       iconArrow: 'el-icon-arrow-up'
     };
   },
   methods: {
+    getInfoData(){
+      NProgress.start();
+      const url ='api/report/init?id='+this.id+'&engine='+this.engine+'';   
+      this.$axios({
+          method: 'get',
+          url:url,
+          //data: params
+      }).then((res)=>{
+          console.log(res.data);
+          NProgress.done();
+          var data =res.data;
+          if(!data.isChart){
+            this.tableShow = true
+            this.resTableInit = data
+          }
+      })
+      .catch(function (response) {
+        console.log(response);
+      }) 
+    },
     showChange(show){
       if(show){
         this.filterShow = false
@@ -47,12 +79,13 @@ export default {
     }
   },
   created(){
-   //console.log(this.id)
+    this.routerParams = this.$route.params
+    this.getInfoData();
   },
   components: {
-      'ServerTable':ServerTable,
-      'STable':ServerTable1,
-      'FilterForm':FilterForm
+    'ServerChart':ServerChart,
+    'ServerTable':ServerTable,
+    'FilterForm':FilterForm
   }
 }
 

@@ -21,7 +21,7 @@ export default {
   data() {
     return {
       pageIndex:1,
-      pageSize:10,
+      pageSize:20,
       queryParams:[],
       items:[],
       ruleForm: {},
@@ -95,8 +95,8 @@ export default {
       });
     },
     resetForm(formName) {
-      this.$refs[formName].resetFields();
-      console.log(111)
+      this.$refs[formName].resetFields(); 
+      //console.log(this.ruleForm) 
     },
     createRules(){
       this.items.forEach(item => {
@@ -132,8 +132,13 @@ export default {
     },
     onResultChange(val){
       this.$set(this.ruleForm,val[1],val[0]);//④外层调用组件方注册变更方法，将组件内的数据变更，同步到组件外的数据状态中
-      this.$refs['ruleForm'].validateField(val[1]); //父组件更新后再次验证
-      var computedVal = val[0].substring(0,4)+val[0].substring(5,7)+val[0].substring(8) 
+      this.$refs['ruleForm'].validateField(val[1]); //父组件更新后再次验证;
+      var computedVal
+      if(val[0]){
+        computedVal = val[0].substring(0,4)+val[0].substring(5,7)+val[0].substring(8) 
+      }else{
+        computedVal = val[0]
+      }
       this.$set(this.submitForm,val[1],computedVal);
       this.$emit('on-filterdata-change',this.submitForm)
     }

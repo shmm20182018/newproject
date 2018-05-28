@@ -33,7 +33,14 @@ export default {
     myrulename:function(val,oldval){  
       //console.log(val)  
       this.$emit("on-result-change",[val,this.myitem.id])
-    }
+    },
+    ruleForm: {  
+　　　 handler(newValue, oldValue) {  
+        this.myrulename = newValue[this.myitem.id]; 
+        console.log(newValue)
+　　　 },  
+　　　 deep: true  
+　　 }
   }
 }
 </script>
