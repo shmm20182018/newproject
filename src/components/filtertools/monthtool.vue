@@ -2,7 +2,6 @@
   <el-col :span="6">
     <div class="grid-content">
       <el-form-item :label="item.title" :prop="item.id">
-        <span>{{computedValue}}</span>
         <el-date-picker
           v-model="myrulename" :disabled="item.readonly" 
           type="month"

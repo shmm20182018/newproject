@@ -3,7 +3,7 @@
     <div class="filter-tools">
       <i :class="iconArrow" class="icon-toggle" @click="showChange(filterShow)"></i>
       <transition name="slide-fade">
-        <filter-form  v-show="filterShow" :routeParams="routerParams" @on-filterdata-change="filterdataChange" @on-filter-submit="filterSubmit"></filter-form>
+        <filter-form  v-show="filterShow"  :resTableInit="resTableInit" :routeParams="routerParams" @on-filterdata-change="filterdataChange" @on-filter-submit="filterSubmit"></filter-form>
       </transition>
     </div>
     <div class="table-wrapper">

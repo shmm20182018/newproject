@@ -594,6 +594,24 @@ export default{
     .v-table-footer-class {
         height: 40px !important
     }
+    ::-webkit-scrollbar{  
+        width:4px;  
+        height:4px;  
+    }  
+    ::-webkit-scrollbar-track{  
+        background: #f6f6f6;  
+        border-radius:2px;  
+    }  
+    ::-webkit-scrollbar-thumb{  
+        background: #aaa;  
+        border-radius:2px;  
+    }  
+    ::-webkit-scrollbar-thumb:hover{  
+        background: #747474;  
+    }  
+    ::-webkit-scrollbar-corner{  
+        background: #f6f6f6;  
+    }  
     .v-table-body-class::-webkit-scrollbar{  
         width:4px;  
         height:4px;  

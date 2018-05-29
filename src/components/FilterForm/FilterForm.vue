@@ -1,8 +1,9 @@
 <template>
   <div>
-    <el-form :class="colorSeries" label-position="left" label-width="80px" :model="ruleForm" :inline="true" :rules="rules"  ref="ruleForm"  class="demo-ruleForm" size="mini">
+    <el-form :class="colorSeries" :show-message="false" label-position="left" label-width="80px" :model="ruleForm" :inline="true" :rules="rules"  ref="ruleForm"  class="demo-ruleForm" size="mini">
       <el-row :gutter="20">
         <component @on-result-change="onResultChange" :ruleForm="ruleForm" :rulename="ruleForm[item.id]" v-for="(item,index) in items" :is="item.componentName" :item="item" :index="index"  :key="item.id"></component>
+        <helptool></helptool>
         <el-col :span="6">
           <div class="grid-content">
             <el-form-item class="filtertool-btn">
@@ -22,9 +23,13 @@ import daterangetool from '@/components/filtertools/daterangetool.vue'
 import yeartool from '@/components/filtertools/yeartool.vue'
 import monthtool from '@/components/filtertools/monthtool.vue'
 import datetool from '@/components/filtertools/datetool.vue'
+import helptool from '@/components/filtertools/helptool.vue'
 export default {
   props:{
     routeParams:{
+      type:Object
+    },
+    resTableInit:{
       type:Object
     }
   },
@@ -50,29 +55,19 @@ export default {
       })
     },
     getQueryParam(){
-      NProgress.start();
-      const url ='api/report/init?id='+this.routeParams.id+'&engine='+this.routeParams.engine+'';    
-      //console.log(pageIndex,pageSize);
-      this.$axios({
-          method: 'get',
-          url:url,
-      }).then((res)=>{
-          NProgress.done(); 
-          if(res.data){
-            this.pageSize =res.data.pageSize
-            this.items =res.data.queryParams;
-            //console.log(this.items)
-            this.createRules();
-            this.tableType =res.data.tableType
-            if(this.tableType == 0){
-              this.colorSeries = 'green-style'
-            }
+      if(this.resTableInit){
+        if(!this.resTableInit.isChart){
+          this.pageSize = this.resTableInit.pageSize
+          this.tableType = this.resTableInit.tableType
+          if(this.tableType == 0){
+            this.colorSeries = 'green-style'
           }
-      })
-      .catch((res) => {
-        NProgress.done(); 
-        this.warnOpen(res.response.data)
-      }) 
+        }
+        this.items = this.resTableInit.queryParams;
+        console.log(this.resTableInit.queryParams)
+        //console.log(this.items)
+        this.createRules();    
+      }
     },
     getData(pageSize){
       NProgress.start();
@@ -121,25 +116,25 @@ export default {
         this.ruleForm[item.id] = item.defaultValue;
         switch (item.componentName){
           case 'texttool':
-            this.rules[item.id] = [{required: item.mandatory, message: `查询${item.defaultValue}不能为空`, trigger: 'blur' }]
+            this.rules[item.id] = [{required: item.mandatory, trigger: '' }]
             break;
           case 'selecttool':
-            this.rules[item.id] = [{required: item.mandatory, message: `查询${item.defaultValue}不能为空`, trigger: 'blur' }]
+            this.rules[item.id] = [{required: item.mandatory, message: '', trigger: '' }]
             break;
           case 'daterangetool':
-            this.rules[item.id] = [{required: item.mandatory, message: '日期范围不能为空', trigger: 'change' }]
+            this.rules[item.id] = [{required: item.mandatory, message: '', trigger: '' }]
             break;
           case 'yeartool':
-            this.rules[item.id] = [{required: item.mandatory, message: '查询年份不能为空', trigger: 'change' }]
+            this.rules[item.id] = [{required: item.mandatory, message: '查询年份不能为空', trigger: '' }]
             break;
           case 'monthtool':
-            this.rules[item.id] = [{required: item.mandatory, message: '查询不能为空', trigger: 'change' }]
+            this.rules[item.id] = [{required: item.mandatory, message: '查询不能为空', trigger: '' }]
             break;  
           case 'datetool':
-            this.rules[item.id] = [{required: item.mandatory, message: '查询日期不能为空', trigger: 'change' }]
+            this.rules[item.id] = [{required: item.mandatory, message: '查询日期不能为空', trigger: '' }]
             break;
-          case 7:
-            this.rules[item.id] = [{type:'',required: item.mandatory, message: '帮助关键字不能为空', trigger: 'blur' }]
+          case 'helptool':
+            this.rules[item.id] = [{required: item.mandatory, message: '帮助关键字不能为空', trigger: '' }]
             break;
         }
       });
@@ -153,9 +148,9 @@ export default {
       this.$refs['ruleForm'].validateField(val[1]); //父组件更新后再次验证;
       var computedVal
       //console.log(val[2])
-      if(val[2] == 'datetool'){
+      if(val[0] && val[2] == 'datetool'){
         computedVal = val[0].substring(0,4)+val[0].substring(5,7)+val[0].substring(8) 
-      }else if(val[2] == 'monthtool'){
+      }else if(val[0] && val[2] == 'monthtool'){
         computedVal = val[0].substring(0,4)+val[0].substring(5)
       }else{
         computedVal = val[0]
@@ -164,8 +159,16 @@ export default {
       this.$emit('on-filterdata-change',this.submitForm)
     }
   },
+  watch:{
+    resTableInit:{
+      handler(newValue, oldValue) { 
+        this.getQueryParam();
+　　　},  
+　　　deep: true 
+    }
+  },
   created(){
-    this.getQueryParam();
+    
     /*this.items=[
       {toolid:1,rulename:'text', isRequired:true, isDisabled:false, comname:'texttool',value:'山东',field:'province'},
       {toolid:1,rulename:'text1', isRequired:true, isDisabled:false,comname:'texttool',value:'青岛',field:'city'},
@@ -185,7 +188,8 @@ export default {
     'daterangetool':daterangetool,
     'yeartool':yeartool,
     'monthtool':monthtool,
-    'datetool':datetool
+    'datetool':datetool,
+    'helptool':helptool
   }
 }
 </script>
