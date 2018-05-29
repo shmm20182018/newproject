@@ -9,6 +9,7 @@
               is-vertical-resize
               :vertical-resize-offset='60'
               is-horizontal-resize
+              column-width-drag
               style="width:100%"
               :multiple-sort="false"
               :min-height="390"
@@ -179,7 +180,7 @@ export default{
                     }) 
                 }
             })
-            .catch(function (res) {
+            .catch((res) => {
                 NProgress.done(); 
                 this.warnOpen(res.response.data)
             }) 
@@ -484,6 +485,7 @@ export default{
         font-size: 14px;
         font-weight: 400;
         margin: 0;
+        text-align: center
     }
     .exportbtn {
         position: absolute;

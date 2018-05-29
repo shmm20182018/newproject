@@ -11,6 +11,10 @@ export default {
 </script>
 
 <style>
+html{
+  width: 100%;
+  overflow: hidden;
+}
 #nprogress .spinner {
   display: none;
 

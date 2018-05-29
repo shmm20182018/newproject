@@ -3,8 +3,7 @@
     <div class="grid-content">
       <el-form-item :label="item.title" :prop="item.id" class="filtertool-select">
         <el-select   v-model="myrulename" :disabled="item.readonly" placeholder="请选择">
-          <el-option label="济南" value="济南"></el-option>
-          <el-option label="青岛" value="青岛"></el-option>
+          <el-option v-for="(temp,index) in item.list" :key="temp.key" :index="index" :label="temp.Value" :value="temp.Key"></el-option>
         </el-select>
       </el-form-item>
     </div>
@@ -33,7 +32,7 @@ export default {
   watch:{
     myrulename:function(val,oldval){  
       //console.log(val)  
-      this.$emit("on-result-change",[val,this.myitem.id])
+      this.$emit("on-result-change",[val,this.myitem.id,this.myitem.componentName])
     }
   }
 }

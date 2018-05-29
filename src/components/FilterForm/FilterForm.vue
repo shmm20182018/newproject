@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-form :class="colorSeries" :model="ruleForm" :inline="true" :rules="rules"  ref="ruleForm" label-width="" class="demo-ruleForm" size="mini">
+    <el-form :class="colorSeries" label-position="left" label-width="80px" :model="ruleForm" :inline="true" :rules="rules"  ref="ruleForm"  class="demo-ruleForm" size="mini">
       <el-row :gutter="20">
         <component @on-result-change="onResultChange" :ruleForm="ruleForm" :rulename="ruleForm[item.id]" v-for="(item,index) in items" :is="item.componentName" :item="item" :index="index"  :key="item.id"></component>
         <el-col :span="6">
@@ -152,8 +152,11 @@ export default {
       this.$set(this.ruleForm,val[1],val[0]);//④外层调用组件方注册变更方法，将组件内的数据变更，同步到组件外的数据状态中
       this.$refs['ruleForm'].validateField(val[1]); //父组件更新后再次验证;
       var computedVal
-      if(val[0]){
+      //console.log(val[2])
+      if(val[2] == 'datetool'){
         computedVal = val[0].substring(0,4)+val[0].substring(5,7)+val[0].substring(8) 
+      }else if(val[2] == 'monthtool'){
+        computedVal = val[0].substring(0,4)+val[0].substring(5)
       }else{
         computedVal = val[0]
       }
@@ -198,11 +201,18 @@ export default {
   }
   .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item{
     display: flex;
-   
+    width: 100%;
   }
   .el-form-item__content{
-    flex: 1;
+    flex: 0.95;
   }
+  .el-form--inline .el-form-item__label {
+    flex: 0 0 80px;
+  }
+  .el-select{
+    width: 100%;
+  }
+
   .green-style .el-form-item.is-success .el-input__inner,  .green-style .el-form-item.is-success .el-input__inner:focus, .green-style .el-form-item.is-success .el-textarea__inner,  .green-style .el-form-item.is-success .el-textarea__inner:focus {
     border-color: #03A656;
   }

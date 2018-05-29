@@ -61,13 +61,14 @@ export default {
           var data =res.data;
           if(!data.queryParams){
             this.filterShow = false
+            this.pageIndex = !this.pageIndex
           }
           if(!data.isChart){
             this.tableShow = true
             this.resTableInit = data
           }
       })
-      .catch(function (res) {
+      .catch((res) => {
         NProgress.done(); 
         this.warnOpen(res.response.data)
       }) 

@@ -36,7 +36,7 @@ export default {
   watch:{
     myrulename:function(val,oldval){  
       //console.log(val)  
-      this.$emit("on-result-change",[val,this.myitem.id])
+      this.$emit("on-result-change",[val,this.myitem.id,this.myitem.componentName])
     },
     ruleForm: {  
 　　　 handler(newValue, oldValue) {  
