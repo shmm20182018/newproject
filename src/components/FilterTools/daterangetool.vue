@@ -1,15 +1,19 @@
 <template>
-   <el-form-item :label="item.title" :prop="item.id" class="filtertool-daterange">
-    <el-date-picker
-      v-model="myrulename" :disabled="item.readonly"
-      type="daterange"
-      unlink-panels
-      range-separator="至"
-      start-placeholder="开始日期"
-      end-placeholder="结束日期"
-      value-format="yyyy-MM-dd">
-    </el-date-picker>
-  </el-form-item>
+  <el-col :span="item.span">
+    <div class="grid-content">
+      <el-form-item :label="item.title" :prop="item.id" class="filtertool-daterange">
+        <el-date-picker
+          v-model="myrulename" :disabled="item.readonly"
+          type="daterange"
+          unlink-panels
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          value-format="yyyy-MM-dd">
+        </el-date-picker>
+      </el-form-item>
+    </div>
+  </el-col>
 </template>
 
 <script>

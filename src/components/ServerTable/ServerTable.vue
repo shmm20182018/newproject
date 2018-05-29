@@ -1,10 +1,11 @@
 <template>
     <div>
         <div class="title-wrapper" >     
-            <h3>{{tableConfig.title}}</h3>
+            <p>{{tableConfig.title}}</p>
             <el-button v-show="showExport" @click="myexportExcel" class="exportbtn"  size="medium" type="success">导出</el-button>
         </div>
        <v-table id="serverTable"
+             :class="colorSeries"
               is-vertical-resize
               :vertical-resize-offset='60'
               is-horizontal-resize
@@ -22,11 +23,13 @@
               :footer-cell-class-name="setFooterCellClass"
               :footer="footer"
               :footer-row-height="40"
+              :title-row-height="22"
+              :row-height="24"
               :cell-merge="cellMerge"
               >
       </v-table>
        <div  class="mt20 mb20 bold">
-        <v-pagination @page-change="pageChange" @page-size-change="pageSizeChange" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
+        <v-pagination size="small" @page-change="pageChange" @page-size-change="pageSizeChange" :page-index="pageIndex" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
        </div>
   </div>
 </template>
@@ -51,6 +54,7 @@ export default{
     },
     data(){
         return {
+            colorSeries:'wathet-style', //表格颜色风格默认样式
             total:50,
             submitData:{},
             startIndex:0,
@@ -87,10 +91,13 @@ export default{
             var data = val;
             if(data){
                 this.tableType = parseInt(data.tableType)
+                if(this.tableType == 0){
+                    this.colorSeries = 'green-style'
+                }
                 this.total = data.total,
                 this.queryParams = data.queryParams,
                 this.queryImmediately = data.queryImmediately,
-                this.showExport = data.showExport,
+                //this.showExport = data.showExport,
                 this.showFooter = data.columnSumFlag,
                 this.isrowSum = data.rowSumFlag,
                 this.isMerge = data. isMerge,
@@ -188,25 +195,39 @@ export default{
         },
         sortChange(params){
             this.isCellMerge = false
-            if (params.height.length > 0){
-                  this.tableConfig.tableData.sort(function (a, b) {
-                    if (params.height === 'asc'){
-                        return a.height - b.height;
-                    }else if(params.height === 'desc'){
-                            return b.height - a.height;
+            if(!this.multipleSort){//单列排序
+                for(let i in params){
+                    if(isNaN(this.tableConfig.tableData[0][i])){
+                        this.tableConfig.tableData.sort(function (a, b) {
+                            if (params[i] === 'asc'){
+                                return a[i].localeCompare(b[i])
+                            }else if(params[i] === 'desc'){
+                                return b[i].localeCompare(a[i])
+                            }else{
+                                return 0;
+                            }
+                        });
                     }else{
-                        return 0;
+                        this.tableConfig.tableData.sort(function (a, b) {
+                            if (params[i] === 'asc'){
+                                return a[i] - b[i];  
+                            }else if(params[i] === 'desc'){
+                                    return b[i] - a[i];
+                            }else{
+                                return 0;
+                            }
+                        });
                     }
-                });
+                }
             }
-            this.mergeCells();
+            /*this.mergeCells();
             this.allCells();
             console.log(this.allArray)
             console.log(this.sortMapArray)
             setTimeout(()=>{
                 this.isCellMerge = true
             },500)
-            return  Promise.resolve();
+            return  Promise.resolve();*/
         },
         setFooterData(data){ //列数据统计
             let result = [],
@@ -439,11 +460,9 @@ export default{
 　　    },
         resetpageIndex:function(val){
             //console.log(val)
+            this.pageIndex =1;
             this.isSubmit = true;
-            this.$nextTick(()=>{
-                this.pageChange(1)
-            })
-           
+            this.pageChange(1)
         }
   }
 }  
@@ -452,13 +471,54 @@ export default{
     .title-wrapper {
         position: relative;
     }
-    .title-wrapper h3 {
-        text-align: center;
+    .title-wrapper p {
+        height: 25px;
+        line-height: 25px;
+        padding-left: 4px;
+        font-size: 14px;
+        font-weight: 400;
+        margin: 0;
     }
     .exportbtn {
         position: absolute;
         right: 5px;
         bottom: 0px;
+    }
+    .v-table-class{
+        font-size: 12px;
+    }
+    .v-table-body-class{
+        color:#1a1a1a;
+    }
+    .v-table-sort-icon i{
+        color: #fff
+    }
+    .v-table-sort-icon i:first-child {
+        top: -2px;
+    }
+    .green-style .v-table-title-class td{
+        background-color: #29926F;
+        font-weight: bold;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+    } 
+     .green-style .v-table-body-class tr:nth-child(even){
+        background-color:rgba(77, 147, 117, 0.05)!important
+    }  
+    .green-style .v-table-body-class tr:nth-child(odd){
+        background-color: #D7EAE2   !important;
+    }
+     .green-style .v-table-body-class tr:hover{
+        background-color:rgba(77, 147, 117, 0.05) !important;
+    }
+     .green-style .v-page-li-active {
+        border-color: #2db7f5;
+        background-color: #2db7f5;
+    }
+    .v-page-li-active:hover {
+        border-color: #2db7f5;
+        background-color: #2db7f5;
     }
     .v-table--class .mt20 {
         margin-top: 5px;
@@ -471,6 +531,51 @@ export default{
         background-color: #f60;
         color:#fff;
     }
+     .blue-style .v-table-title-class td{
+        background-color: #0A5EAD;
+        font-weight: bold;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+    } 
+     .blue-style .v-table-body-class tr:nth-child(even){
+        background-color: #F3F7FB!important
+    }  
+     .blue-style .v-table-body-class tr:nth-child(odd){
+        background-color:  #D1E1EE !important;
+        color:#1a1a1a;
+    }
+     .blue-style .v-table-body-class tr:hover{
+        background-color:#D1E1EE !important;
+    }
+     .blue-style .v-page-li-active {
+        border-color: #2db7f5;
+        background-color: #2db7f5;
+    }
+
+
+    .wathet-style .v-table-title-class td{
+        background-color: #13B3BF;
+        font-weight: bold;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+    } 
+     .wathet-style .v-table-body-class tr:nth-child(even){
+        background-color: #F3FBFC!important
+    }  
+     .wathet-style .v-table-body-class tr:nth-child(odd){
+        background-color:  #D1F0F2 !important;
+        color:#1a1a1a;
+    }
+     .wathet-style .v-table-body-class tr:hover{
+        background-color:#D1F0F2 !important;
+    }
+     .wathet-style .v-page-li-active {
+        border-color: #2db7f5;
+        background-color: #2db7f5;
+    }
+
     .footer-cell-class-name-title {
         background-color: #f60;
         color: #fff;
@@ -481,5 +586,23 @@ export default{
     .v-table-footer-class {
         height: 40px !important
     }
+    .v-table-body-class::-webkit-scrollbar{  
+        width:4px;  
+        height:4px;  
+    }  
+    .v-table-body-class::-webkit-scrollbar-track{  
+        background: #f6f6f6;  
+        border-radius:2px;  
+    }  
+    .v-table-body-class::-webkit-scrollbar-thumb{  
+        background: #aaa;  
+        border-radius:2px;  
+    }  
+    .v-table-body-class::-webkit-scrollbar-thumb:hover{  
+        background: #747474;  
+    }  
+    .v-table-body-class::-webkit-scrollbar-corner{  
+        background: #f6f6f6;  
+    }  
 
 </style>

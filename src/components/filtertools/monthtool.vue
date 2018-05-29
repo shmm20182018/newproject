@@ -1,13 +1,17 @@
 <template>
-  <el-form-item :label="item.title" :prop="item.id">
-    <span>{{computedValue}}</span>
-    <el-date-picker
-      v-model="myrulename" :disabled="item.readonly" 
-      type="month"
-      placeholder="选择年月"
-      value-format="yyyy-MM">
-    </el-date-picker>
-  </el-form-item>
+  <el-col :span="item.span">
+    <div class="grid-content">
+      <el-form-item :label="item.title" :prop="item.id">
+        <span>{{computedValue}}</span>
+        <el-date-picker
+          v-model="myrulename" :disabled="item.readonly" 
+          type="month"
+          placeholder="选择年月"
+          value-format="yyyy-MM">
+        </el-date-picker>
+      </el-form-item>
+    </div>
+  </el-col>    
 </template>
 
 <script>

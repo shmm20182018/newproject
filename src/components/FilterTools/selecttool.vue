@@ -1,10 +1,14 @@
 <template>
-   <el-form-item :label="item.title" :prop="item.id" class="filtertool-select">
-    <el-select   v-model="myrulename" :disabled="item.readonly" placeholder="请选择">
-      <el-option label="济南" value="济南"></el-option>
-      <el-option label="青岛" value="青岛"></el-option>
-    </el-select>
-  </el-form-item>
+  <el-col :span="item.span">
+    <div class="grid-content">
+      <el-form-item :label="item.title" :prop="item.id" class="filtertool-select">
+        <el-select   v-model="myrulename" :disabled="item.readonly" placeholder="请选择">
+          <el-option label="济南" value="济南"></el-option>
+          <el-option label="青岛" value="青岛"></el-option>
+        </el-select>
+      </el-form-item>
+    </div>
+  </el-col>   
 </template>
 
 <script>

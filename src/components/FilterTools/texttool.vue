@@ -1,7 +1,11 @@
 <template>
-   <el-form-item :label="item.title" :prop="item.id" class="filtertool-text">
-    <el-input v-model="myrulename" :disabled="item.readonly"></el-input>
-  </el-form-item>
+  <el-col :span="item.span">
+    <div class="grid-content">
+      <el-form-item :label="item.title" :prop="item.id" class="filtertool-text">
+        <el-input v-model="myrulename" :disabled="item.readonly"></el-input>
+      </el-form-item>
+    </div>
+  </el-col>    
 </template>
 
 <script>

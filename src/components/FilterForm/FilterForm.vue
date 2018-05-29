@@ -1,11 +1,16 @@
 <template>
   <div>
-    <el-form :model="ruleForm" :inline="true" :rules="rules"  ref="ruleForm" label-width="100px" class="demo-ruleForm" size="small">
-      <component @on-result-change="onResultChange" :ruleForm="ruleForm" :rulename="ruleForm[item.id]" v-for="(item,index) in items" :is="item.componentName" :item="item" :index="index"  :key="item.id"></component>
-      <el-form-item class="filtertool-btn">
-        <el-button type="primary" @click="subForm('ruleForm')">立即创建</el-button>
-        <el-button @click="resetForm('ruleForm')">重置</el-button>
-      </el-form-item>
+    <el-form :class="colorSeries" :model="ruleForm" :inline="true" :rules="rules"  ref="ruleForm" label-width="" class="demo-ruleForm" size="mini">
+      <el-row :gutter="20">
+        <component @on-result-change="onResultChange" :ruleForm="ruleForm" :rulename="ruleForm[item.id]" v-for="(item,index) in items" :is="item.componentName" :item="item" :index="index"  :key="item.id"></component>
+        <el-col :span="6">
+          <div class="grid-content">
+            <el-form-item class="filtertool-btn">
+              <el-button type="primary" @click="subForm('ruleForm')">立即创建</el-button>
+            </el-form-item>
+          </div>
+        </el-col>
+      </el-row>
    </el-form>
   </div>
 </template>
@@ -20,6 +25,8 @@ import datetool from '@/components/filtertools/datetool.vue'
 export default {
   data() {
     return {
+      colorSeries:'wathet-style',
+      tableType:-1,
       pageIndex:1,
       pageSize:20,
       queryParams:[],
@@ -33,8 +40,6 @@ export default {
   methods: {
     getQueryParam(){
       NProgress.start();
-      var openid = location.href.slice(12);
-      console.log(openid)
       var params = new URLSearchParams();
       const url ='api/report/init?id=41837&engine=TJCX';    
       params.append('id','70050'); 
@@ -51,6 +56,11 @@ export default {
             this.items =res.data.queryParams;
             //console.log(this.items)
             this.createRules();
+            this.tableType =parseInt(res.data.tableType)
+            console.log(this.tableType)
+            if(this.tableType == 0){
+              this.colorSeries = 'green-style'
+            }
           }
       })
       .catch(function (response) {
@@ -86,6 +96,7 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.$emit('on-filter-submit',this.pageIndex)
+          
           //this.getData();
           alert('submit!');
         } else {
@@ -170,6 +181,25 @@ export default {
 </script>
 <style>
   .filtertool-btn{
-    padding-left: 100px;
+    
+  }
+  .el-form-item__label{
+    font-size: 12px
+  }
+  .el-date-editor.el-input, .el-date-editor.el-input__inner {
+    width: 100%;
+  }
+  .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item{
+    display: flex;
+   
+  }
+  .el-form-item__content{
+    flex: 1;
+  }
+  .green-style .el-form-item.is-success .el-input__inner, .el-form-item.is-success .el-input__inner:focus, .el-form-item.is-success .el-textarea__inner, .el-form-item.is-success .el-textarea__inner:focus {
+    border-color: #03A656;
+  }
+  .wathet-style .el-form-item.is-success .el-input__inner, .el-form-item.is-success .el-input__inner:focus, .el-form-item.is-success .el-textarea__inner, .el-form-item.is-success .el-textarea__inner:focus {
+    border-color: #13B5BC;
   }
 </style>

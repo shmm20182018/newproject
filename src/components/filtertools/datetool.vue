@@ -1,12 +1,16 @@
 <template>
-  <el-form-item :label="item.title" :prop="item.id">
-    <el-date-picker
-      v-model="myrulename" :disabled="item.readonly"
-      type="date"
-      placeholder="选择日期"
-      value-format="yyyy-MM-dd">
-    </el-date-picker>
-  </el-form-item>
+  <el-col :span="6">
+    <div class="grid-content">
+      <el-form-item :label="item.title" :prop="item.id">
+        <el-date-picker
+          v-model="myrulename" :disabled="item.readonly"
+          type="date"
+          placeholder="选择日期"
+          value-format="yyyy-MM-dd">
+        </el-date-picker>
+      </el-form-item>        
+    </div>
+  </el-col>
 </template>
 
 <script>
