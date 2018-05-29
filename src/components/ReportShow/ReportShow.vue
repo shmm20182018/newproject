@@ -3,7 +3,7 @@
     <div class="filter-tools">
       <i :class="iconArrow" class="icon-toggle" @click="showChange(filterShow)"></i>
       <transition name="slide-fade">
-        <filter-form v-show="filterShow" @on-filterdata-change="filterdataChange" @on-filter-submit="filterSubmit"></filter-form>
+        <filter-form  v-show="filterShow" :routeParams="routerParams" @on-filterdata-change="filterdataChange" @on-filter-submit="filterSubmit"></filter-form>
       </transition>
     </div>
     <div class="table-wrapper">
@@ -93,7 +93,6 @@ export default {
 <style>
 .filter-tools{
   position: relative;
-  border-top: 1px solid #ddd; 
   padding-top: 18px;
 }
 .icon-toggle{

@@ -23,6 +23,11 @@ import yeartool from '@/components/filtertools/yeartool.vue'
 import monthtool from '@/components/filtertools/monthtool.vue'
 import datetool from '@/components/filtertools/datetool.vue'
 export default {
+  props:{
+    routeParams:{
+      type:Object
+    }
+  },
   data() {
     return {
       colorSeries:'wathet-style',
@@ -40,24 +45,20 @@ export default {
   methods: {
     getQueryParam(){
       NProgress.start();
-      var params = new URLSearchParams();
-      const url ='api/report/init?id=41837&engine=TJCX';    
-      params.append('id','70050'); 
-      params.append('engine', 'TJCX');       //你要传给后台的参数值 key/value
+      const url ='api/report/init?id='+this.routeParams.id+'&engine='+this.routeParams.engine+'';    
+        //你要传给后台的参数值 key/value
       //console.log(pageIndex,pageSize);
       this.$axios({
           method: 'get',
           url:url,
       }).then((res)=>{
-          //console.log(res.data);
           NProgress.done(); 
           if(res.data){
             this.pageSize =res.data.pageSize
             this.items =res.data.queryParams;
             //console.log(this.items)
             this.createRules();
-            this.tableType =parseInt(res.data.tableType)
-            console.log(this.tableType)
+            this.tableType =res.data.tableType
             if(this.tableType == 0){
               this.colorSeries = 'green-style'
             }
@@ -196,10 +197,10 @@ export default {
   .el-form-item__content{
     flex: 1;
   }
-  .green-style .el-form-item.is-success .el-input__inner, .el-form-item.is-success .el-input__inner:focus, .el-form-item.is-success .el-textarea__inner, .el-form-item.is-success .el-textarea__inner:focus {
+  .green-style .el-form-item.is-success .el-input__inner,  .green-style .el-form-item.is-success .el-input__inner:focus, .green-style .el-form-item.is-success .el-textarea__inner,  .green-style .el-form-item.is-success .el-textarea__inner:focus {
     border-color: #03A656;
   }
-  .wathet-style .el-form-item.is-success .el-input__inner, .el-form-item.is-success .el-input__inner:focus, .el-form-item.is-success .el-textarea__inner, .el-form-item.is-success .el-textarea__inner:focus {
+  .wathet-style .el-form-item.is-success .el-input__inner, .wathet-style .el-form-item.is-success .el-input__inner:focus, .wathet-style .el-form-item.is-success .el-textarea__inner, .wathet-style  .el-form-item.is-success .el-textarea__inner:focus {
     border-color: #13B5BC;
   }
 </style>
