@@ -6,7 +6,7 @@
         <el-col :span="6">
           <div class="grid-content">
             <el-form-item class="filtertool-btn">
-              <el-button type="primary" @click="subForm('ruleForm')">立即创建</el-button>
+              <el-button type="primary" @click="subForm('ruleForm')">查询</el-button>
             </el-form-item>
           </div>
         </el-col>
@@ -43,10 +43,15 @@ export default {
     };
   },
   methods: {
+    warnOpen(val) {
+      this.$notify.error({
+        title: '错误',
+        message: val
+      })
+    },
     getQueryParam(){
       NProgress.start();
       const url ='api/report/init?id='+this.routeParams.id+'&engine='+this.routeParams.engine+'';    
-        //你要传给后台的参数值 key/value
       //console.log(pageIndex,pageSize);
       this.$axios({
           method: 'get',
@@ -64,8 +69,9 @@ export default {
             }
           }
       })
-      .catch(function (response) {
-          console.log(response);
+      .catch((res) => {
+        NProgress.done(); 
+        this.warnOpen(res.response.data)
       }) 
     },
     getData(pageSize){
@@ -89,15 +95,15 @@ export default {
           this.resData =res.data;
           this.$emit("on-result-response",this.resData)
         })
-        .catch(function (response) {
-            console.log(response);
+        .catch(function (res) {
+          NProgress.done(); 
+          this.warnOpen(res.response.data)
         }) 
     },
     subForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.$emit('on-filter-submit',this.pageIndex)
-          
+          this.$emit('on-filter-submit',this.pageIndex) 
           //this.getData();
           alert('submit!');
         } else {

@@ -11,5 +11,8 @@ export default {
 </script>
 
 <style>
+#nprogress .spinner {
+  display: none;
 
+}
 </style>

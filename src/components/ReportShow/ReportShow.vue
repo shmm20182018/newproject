@@ -42,6 +42,12 @@ export default {
     };
   },
   methods: {
+    warnOpen(val) {
+      this.$notify.error({
+        title: '错误',
+        message: val
+      })
+    },
     getInfoData(){
       NProgress.start();
       const url ='api/report/init?id='+this.id+'&engine='+this.engine+'';   
@@ -53,13 +59,17 @@ export default {
           console.log(res.data);
           NProgress.done();
           var data =res.data;
+          if(!data.queryParams){
+            this.filterShow = false
+          }
           if(!data.isChart){
             this.tableShow = true
             this.resTableInit = data
           }
       })
-      .catch(function (response) {
-        console.log(response);
+      .catch(function (res) {
+        NProgress.done(); 
+        this.warnOpen(res.response.data)
       }) 
     },
     showChange(show){

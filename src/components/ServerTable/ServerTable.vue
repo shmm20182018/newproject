@@ -87,6 +87,12 @@ export default{
         }
     },
     methods:{
+        warnOpen(val) {
+            this.$notify.error({
+                title: '错误',
+                message: val
+            })
+        },
         getTableInfo(val){
             var data = val;
             if(data){
@@ -117,7 +123,6 @@ export default{
         getTableData(pageIndex,pageSize){
             NProgress.start();
             var params = {};
-            console.log(this.tableType)
             if(this.tableType == 0 || !this.isSubmit){
                 var url ='api/report/search';  
             }else if(this.tableType == 2 && this.isSubmit){
@@ -174,8 +179,9 @@ export default{
                     }) 
                 }
             })
-            .catch(function (response) {
-                console.log(response);
+            .catch(function (res) {
+                NProgress.done(); 
+                this.warnOpen(res.response.data)
             }) 
         },
         pageChange(pageIndex){

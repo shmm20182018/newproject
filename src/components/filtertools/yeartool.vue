@@ -1,5 +1,5 @@
 <template>
-  <el-col :span="item.span">
+  <el-col :span="6">
     <div class="grid-content">
       <el-form-item :label="item.title" :prop="item.id">
         <el-date-picker
