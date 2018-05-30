@@ -1,0 +1,59 @@
+﻿测试target：'http://10.24.18.86/WebReport/api'
+
+
+接口名称：api/report/init
+作用：仅仅返回表格属性:控件初始时调用
+调用方式：Get
+参数 ：
+   id 报表di
+   engine 引擎类型
+
+   
+接口名称：api/report/search
+作用：仅仅返回查询数据:1.翻页时调用 2.明细表、分组表查询时调用
+调用方式：Post
+参数 ：
+	   id 报表di
+	   engine 引擎类型
+	   pageIndex  页码
+	   pageSize   每页大小
+	   condition  过滤条件
+data示例：
+  {'id':'70050','engine':'TJCX','pageIndex':2,'condition':{'参数1编号':'参数1value',........}}
+  
+  
+接口名称：api/report/searchAndInit
+作用：返回表格属性与数据: 交叉表查询时调用
+调用方式：Post
+参数 ：
+	   id 报表di
+	   engine 引擎类型
+	   pageSize   每页大小
+	   condition  过滤条件
+data示例：
+  {'id':'70050','engine':'TJCX','condition':{'参数1编号':'参数1value',........}}
+
+
+  
+接口名称：api/help/init
+作用：点击帮助放大镜时调用，返回表格属性与第一页数据
+调用方式：Post
+参数 ：
+	   helpID 帮助di
+	   helpBH 帮助编号
+	   helpTJ 帮助条件
+data示例：
+  {'helpID':'YXKHZD','helpBH':'YX1','helpTJ':'XXXXXX'}
+  
+    
+接口名称：api/help/search
+作用：帮助翻页与点击搜索时调用,返回表格数据
+调用方式：Post
+参数 ：
+	   helpID 帮助di
+	   helpBH 帮助编号
+	   helpTJ 帮助条件
+	   queryText 搜索框内容
+	   pageIndex  页码
+data示例：
+  {'helpID':'YXKHZD','helpBH':'YX1','helpTJ':'XXXXXX','queryText':'xxxxxx','pageIndex':2}
