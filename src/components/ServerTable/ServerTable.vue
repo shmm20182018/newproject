@@ -104,7 +104,7 @@ export default{
                 this.total = data.total,
                 this.queryParams = data.queryParams,
                 this.queryImmediately = data.queryImmediately,
-                //this.showExport = data.showExport,
+                this.showExport = data.showExport,
                 this.showFooter = data.columnSumFlag,
                 this.isrowSum = data.rowSumFlag,
                 this.isMerge = data. isMerge,
@@ -156,9 +156,8 @@ export default{
                     if(this.isMerge){ //合并单元格计算
                         this.mergeCells()   
                     }
-                    //if(){
-                        //this.cellFormatter(2)
-                    //}
+                    this.cellFormatter()
+                 
                 }else if(data && this.tableType == 2 && this.isSubmit){
                     console.log(data)
                     this.total = data.total
@@ -176,6 +175,7 @@ export default{
                         if(this.isMerge){ //合并单元格计算
                             this.mergeCells()   
                         }
+                        this.cellFormatter()
                         this.isSubmit = false 
                     }) 
                 }
@@ -406,13 +406,20 @@ export default{
             this.sortMapArray = sortMapArray
             console.log(this.sortMapArray)
         },
-        cellFormatter(n){ //小数位数
+        cellFormatter(){ //小数位数
             var columns = this.tableConfig.columns
-            var colLast = columns[2]
-            this.$set(colLast,"formatter",(rowData,rowIndex,pagingIndex,field) => {          				
-                var number=rowData[field]*1;
-                return  number.toFixed(n);
-            });   
+            for (let i=0;i<columns.length;i++){
+                var n = parseInt(columns[i].formatterContent)
+                if(columns[i].formatterType == 'N' && n>=0 && n<20){
+                    this.$set(columns[i],"formatter",(()=>{
+                        var num = n
+                        return (rowData,rowIndex,pagingIndex,field) => {         				
+                            var number=rowData[field] * 1;
+                            return  number.toFixed(num);
+                        }
+                    })(n));         
+                }
+            }    
         },
         nofrozencol(){
             for(let o of this.frozenColumns){
@@ -426,7 +433,8 @@ export default{
             }
         },
         exportExcel () { 
-            console.log(2)           
+            console.log(2)      
+            console.log(document.querySelector('#serverTable'))     
             /* generate workbook object from table */
             let wb = XLSX.utils.table_to_book(document.querySelector('#serverTable'));
             /* get binary string as output */
@@ -595,16 +603,16 @@ export default{
         height: 40px !important
     }
     ::-webkit-scrollbar{  
-        width:4px;  
-        height:4px;  
+        width:8px;  
+        height:8px;  
     }  
     ::-webkit-scrollbar-track{  
         background: #f6f6f6;  
-        border-radius:2px;  
+        border-radius:4px;  
     }  
     ::-webkit-scrollbar-thumb{  
         background: #aaa;  
-        border-radius:2px;  
+        border-radius:4px;  
     }  
     ::-webkit-scrollbar-thumb:hover{  
         background: #747474;  
@@ -613,16 +621,16 @@ export default{
         background: #f6f6f6;  
     }  
     .v-table-body-class::-webkit-scrollbar{  
-        width:4px;  
-        height:4px;  
+        width:8px;  
+        height:8px;  
     }  
     .v-table-body-class::-webkit-scrollbar-track{  
         background: #f6f6f6;  
-        border-radius:2px;  
+        border-radius:4px;  
     }  
     .v-table-body-class::-webkit-scrollbar-thumb{  
         background: #aaa;  
-        border-radius:2px;  
+        border-radius:4px;  
     }  
     .v-table-body-class::-webkit-scrollbar-thumb:hover{  
         background: #747474;  
