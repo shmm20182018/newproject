@@ -444,8 +444,8 @@ export default{
             for(let o of this.frozenColumns){
                 this.$set(this.tableConfig.columns[o.index],o.field,true)
             }
-        },
-        myexportExcel(){
+        },   
+        exportExcel(){
             var head= {};
             var headColLength = this.tableConfig.columns.length;
             var headRowLength = 1;
@@ -509,8 +509,6 @@ export default{
             let wb = XLSX.xlsxUtils.format2WB(data, "sheet1", undefined, "A1:"+dataKeys[dataKeys.length - 1]);
             let fileName =this.tableConfig.title+".xlsx";
             XLSX.xlsxUtils.saveAs(XLSX.xlsxUtils.format2Blob(wb),fileName);
-=======
->>>>>>> 357b378c0e2831bea4a512c71695fe1cea9d05cc
         }
     },
     created(){
