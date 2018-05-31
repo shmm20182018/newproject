@@ -2,7 +2,7 @@
   <el-col v-if="item" :span="6">
     <div class="grid-content">
       <el-form-item :label="item.title" :prop="item.id" class="filtertool-text help-tool">
-        <el-tooltip :v-show="myrulename || rowData.F_MC" :content="BHMC" placement="bottom-start" offset="">
+        <el-tooltip :disabled="false" :content="BHMC" placement="bottom-start" offset="">
             <el-input class="help-input" ref="helpInput" v-model="myrulename" :disabled="item.readonly" @focus="hideMC()" @blur="showMC()" ></el-input>
         </el-tooltip>
         <i class="help-input-title" v-show="MCShow" @click="inputFocus()">{{rowData.F_MC}}</i>
@@ -72,6 +72,7 @@ export default {
     },
     data () {
         return {
+            tooltipShow: false,//是否显示tooltip
             MCShow: true,//是否显示input隐藏值
             rowData:{},//点击式行数据
             qitem: this.item,
@@ -281,25 +282,25 @@ export default {
     line-height: 24px;
     cursor: pointer;
 }
-.help-tool .el-form-item__content{
+body .el-form-item__content{
     position: relative;
 }
-.help-tool .el-icon-question{
+body .el-icon-question{
     position: absolute;
     top: 5px;
     right: 5px;
     font-size: 18px;
     color: #DFE0E4;
 }
-.help-tool .el-icon-question:hover{
+body .el-icon-question:hover{
     color: #02AFEE;
     cursor: pointer;
 } 
-.help-tool .el-card__header{
+body .el-card__header{
     padding: 0px 10px;
     background-color: #F3F7FB;   
 } 
-.help-tool .card-title{
+body .card-title{
     color: #808080;
 }
 .help-tool .table-title{
@@ -345,5 +346,25 @@ export default {
     font-size: 12px;
     color: #808080;
     background:#fff;
+}
+body .el-tooltip__popper.is-dark {
+    background: #EEF2FC;
+    color: #8E9191;
+}
+body .el-tooltip__popper[x-placement^=bottom] {
+    margin-top: 5px;
+}
+body .el-tooltip__popper {
+    position: absolute;
+    border-radius: 4px;
+    padding: 4px;
+    background: #EEF2FC;
+}
+body .el-tooltip__popper[x-placement^=bottom] .popper__arrow {
+    top: -5px;
+    border-bottom-color: #EEF2FC;
+}
+body .el-tooltip__popper .popper__arrow::after {
+    border-width: 4px;
 }
 </style>
