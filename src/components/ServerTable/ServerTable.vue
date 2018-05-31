@@ -445,46 +445,6 @@ export default{
                 this.$set(this.tableConfig.columns[o.index],o.field,true)
             }
         },
-        exportExcel () { 
-            this.showtable = true;
-            console.log(2) 
-            var html = ``
-            var theader= ``;
-            if(this.tableType*1 != 2){
-                theader += `<tr>`
-                for(let o of this.tableConfig.columns){
-                    theader+= `<td>${o.title}</td>`
-                }
-                theader+= `</tr>`
-            }else{
-                for(let k of this.tableConfig.titleRows){
-                    theader += `<tr>`
-                    for (let o of k){
-                        theader +=`<td colspan='${o.clospan?o.colspan:1}' rowspan='${o.rowspan?o.rowspan:1}'>${o.title}</td>`
-                    }
-                    theader += `</tr>`
-                }
-            }
-            var tbody = '';
-            console.log(theader)
-           
-            document.querySelector('#exportTable').innerHTML = tableHtml   
-               
-            /* generate workbook object from table */
-            let wb = XLSX.utils.table_to_book(document.querySelector('#exportTable'));
-            /* get binary string as output */
-            let wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: true, type: 'array' });
-            try {
-                FileSaver.saveAs(new Blob([wbout], { type: 'application/octet-stream' }), this.tableConfig.title+'.xlsx');
-            } catch (e)
-            {
-                if (typeof console !== 'undefined')
-                    console.log(e, wbout)
-            }
-             console.log(3) 
-            return wbout
-<<<<<<< HEAD
-        },
         myexportExcel(){
             var head= {};
             var headColLength = this.tableConfig.columns.length;
