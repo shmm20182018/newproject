@@ -100,7 +100,6 @@ export default {
         if (valid) {
           this.$emit('on-filter-submit',this.pageIndex) 
           //this.getData();
-          alert('submit!');
         } else {
           console.log('error submit!!');
           return false;
