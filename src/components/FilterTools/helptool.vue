@@ -2,57 +2,55 @@
   <el-col v-if="item" :span="6">
     <div class="grid-content">
       <el-form-item :label="item.title" :prop="item.id" class="filtertool-text help-tool">
-        <el-tooltip :content="BHMC" placement="bottom-start" offset="50">
+        <el-tooltip :v-show="myrulename || rowData.F_MC" :content="BHMC" placement="bottom-start" offset="">
             <el-input class="help-input" ref="helpInput" v-model="myrulename" :disabled="item.readonly" @focus="hideMC()" @blur="showMC()" ></el-input>
         </el-tooltip>
-        <i class="help-input-title" v-show="this.MCShow" @click="inputFocus()">{{this.rowData.F_MC}}</i>
+        <i class="help-input-title" v-show="MCShow" @click="inputFocus()">{{rowData.F_MC}}</i>
         <i class="el-icon-question" @click="openHelp"></i>
-        <dnd-grid-container  v-if="helpShow" class="help-wrapper"  :layout.sync="layout">
-            <dnd-grid-box  boxId="box-a">
-                <el-card class="box-card">
-                    <div slot="header" class="clearfix">
-                        <span class="card-title">{{tableConfig.title}}</span>
-                        <img class="icon-close"  @click="closeHelp" src="../../assets/image/close2.png">
+        <div v-if="helpShow" class="help-wrapper"  v-drag="greet" id="drag" :style="style">
+            <el-card class="box-card">
+                <div slot="header" class="clearfix">
+                    <span class="card-title">{{tableConfig.title}}</span>
+                    <img class="icon-close"  @click="closeHelp" src="../../assets/image/close2.png">
+                </div>
+                <div  class="content-wapper">
+                    <v-table id=""
+                        :class="colorSeries"
+                        is-vertical-resize
+                        :vertical-resize-offset='60'
+                        is-horizontal-resize
+                        column-width-drag
+                        style="width:100%"
+                        :multiple-sort="false"
+                        :min-height="300"
+                        :height="350"
+                        row-hover-color="#eee"
+                        row-click-color="#edf7ff"
+                        :row-click="rowClick"
+                        even-bg-color="#f2f2f2"
+                        :title-rows="tableConfig.titleRows"
+                        :columns="tableConfig.columns"
+                        :table-data="tableConfig.tableData"
+                        :paging-index="(pageIndex-1)*pageSize"
+                        :title-row-height="22"
+                        :row-height="24"
+                        >
+                    </v-table>
+                    <div class="footer-wapper clear">
+                        <div  class="mt20 mb20 bold page-wrapper">
+                            <v-pagination size="small" @page-change="pageChange" :page-index="pageIndex" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'next', 'jumper']"></v-pagination>
+                            <span class="page-total">{{pageIndex+'/'+pageTotalCount}}</span>
+                        </div> 
+                        <el-form :inline="true"  class="search-form" size="mini">
+                            <el-form-item label="">
+                                <el-input v-model="searchText" class="search-input" placeholder="请输入关键词" width="150px"></el-input>
+                                <el-button type="primary" @click="onSubmit">查询</el-button>
+                            </el-form-item>  
+                        </el-form>
                     </div>
-                    <div  class="content-wapper">
-                        <v-table id=""
-                            :class="colorSeries"
-                            is-vertical-resize
-                            :vertical-resize-offset='60'
-                            is-horizontal-resize
-                            column-width-drag
-                            style="width:100%"
-                            :multiple-sort="false"
-                            :min-height="300"
-                            :height="350"
-                            row-hover-color="#eee"
-                            row-click-color="#edf7ff"
-                            :row-click="rowClick"
-                            even-bg-color="#f2f2f2"
-                            :title-rows="tableConfig.titleRows"
-                            :columns="tableConfig.columns"
-                            :table-data="tableConfig.tableData"
-                            :paging-index="(pageIndex-1)*pageSize"
-                            :title-row-height="22"
-                            :row-height="24"
-                            >
-                        </v-table>
-                        <div class="footer-wapper clear">
-                            <div  class="mt20 mb20 bold page-wrapper">
-                                <v-pagination size="small" @page-change="pageChange" :page-index="pageIndex" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'next', 'jumper']"></v-pagination>
-                                <span class="page-total">{{pageIndex+'/'+pageTotalCount}}</span>
-                            </div> 
-                            <el-form :inline="true"  class="search-form" size="mini">
-                                <el-form-item label="">
-                                    <el-input v-model="searchText" class="search-input" placeholder="请输入关键词" width="150px"></el-input>
-                                    <el-button type="primary" @click="onSubmit">查询</el-button>
-                                </el-form-item>  
-                            </el-form>
-                        </div>
-                    </div>
-                </el-card>
-            </dnd-grid-box>
-        </dnd-grid-container>
+                </div>
+            </el-card>
+        </div>
       </el-form-item>
     </div>
   </el-col>    
@@ -60,9 +58,6 @@
 
 <script>
 import NProgress from 'nprogress'
-import all from '@dattn/dnd-grid'
-import { Container, Box } from '@dattn/dnd-grid'
-import '@dattn/dnd-grid/dist/dnd-grid.css'
 export default {
     props:{
         ruleForm:{
@@ -111,19 +106,13 @@ export default {
                 columns: [],
                 titleRows: []
             },
-            layout: [
-            {
-                id: 'box-a',
-                hidden: false,
-                pinned: false,
-                position: {
-                    x: 0,
-                    y: 0,
-                    w: 600, // Multiplier for virtual grid width
-                    h: 422 // Multiplier for virtual grid height
-                }
+            style: {
+                width: '600px',
+                height: '422px',
+                position: 'fixed',
+                right: 'calc(50% - 300px)',
+                top: '50px'
             }
-            ]
         }
     },
     computed:{
@@ -140,6 +129,9 @@ export default {
         }
     },
     methods:{
+        greet(val){
+           //console.log(val)
+        },
         openHelp(){
             this.helpShow = true
         },
@@ -260,10 +252,6 @@ export default {
         if(this.item){
             this.getTableInfo()
         }
-    },
-    components:{
-        DndGridContainer: Container,
-        DndGridBox: Box
     }
 }
 </script>
@@ -282,7 +270,7 @@ export default {
     height: 422px;
     margin: 0 auto;
     border: 1px solid #DFE0E4;
-    z-index: 100;
+    z-index: 1000;
     background:#aaa;
     box-shadow:gray 0 0 30px
 }
