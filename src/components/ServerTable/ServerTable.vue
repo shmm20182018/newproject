@@ -1,8 +1,21 @@
 <template>
     <div>
+        <table v-if="showtable" id="exportTable" style="display:none">
+            <tbody>
+                
+            </tbody>
+        </table>
         <div class="title-wrapper" >     
             <p>{{tableConfig.title}}</p>
-            <el-button v-show="showExport" @click="myexportExcel" class="exportbtn"  size="medium" type="success">导出</el-button>
+            <el-dropdown  v-show="showExport" @click="exportExcel" class="exportbtn">
+                <span class="el-dropdown-link">
+                    <img src="../../assets/image/excel.png" width="20" height="20" alt="">
+                </span>
+                <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item>导出当前页</el-dropdown-item>
+                    <el-dropdown-item>导出全部</el-dropdown-item>
+                </el-dropdown-menu>
+            </el-dropdown>
         </div>
        <v-table id="serverTable"
              :class="colorSeries"
@@ -12,18 +25,18 @@
               column-width-drag
               style="width:100%"
               :multiple-sort="false"
-              :min-height="390"
+              :min-height="340"
               even-bg-color="#f2f2f2"
               :title-rows="tableConfig.titleRows"
               :columns="tableConfig.columns"
               :table-data="tableConfig.tableData"
+              :footer-cell-class-name="setFooterCellClass"
+              :footer="footer"
+              :footer-row-height="40"
               row-hover-color="#eee"
               row-click-color="#edf7ff"
               @sort-change="sortChange"
               :paging-index="(pageIndex-1)*pageSize"
-              :footer-cell-class-name="setFooterCellClass"
-              :footer="footer"
-              :footer-row-height="40"
               :title-row-height="22"
               :row-height="24"
               :cell-merge="cellMerge"
@@ -54,6 +67,7 @@ export default{
     },
     data(){
         return {
+            showtable:false, //导出excel时候再挂载隐藏表格
             colorSeries:'wathet-style', //表格颜色风格默认样式
             total:50,
             submitData:{},
@@ -128,8 +142,8 @@ export default{
             }else if(this.tableType == 2 && this.isSubmit){
                 var url ='api/report/searchAndInit'; 
             }            
-            params.id =  this.routeParams.id;
             params.engine = this.routeParams.engine 
+            params.id =  this.routeParams.id;
             params.pageIndex =  pageIndex       //你要传给后台的参数值 key/value
             params.pageSize = pageSize
             params.condition = this.submitData
@@ -155,9 +169,8 @@ export default{
                     if(this.isMerge){ //合并单元格计算
                         this.mergeCells()   
                     }
-                    //if(){
-                        //this.cellFormatter(2)
-                    //}
+                    this.cellFormatter()
+                 
                 }else if(data && this.tableType == 2 && this.isSubmit){
                     console.log(data)
                     this.total = data.total
@@ -175,6 +188,7 @@ export default{
                         if(this.isMerge){ //合并单元格计算
                             this.mergeCells()   
                         }
+                        this.cellFormatter()
                         this.isSubmit = false 
                     }) 
                 }
@@ -405,13 +419,20 @@ export default{
             this.sortMapArray = sortMapArray
             console.log(this.sortMapArray)
         },
-        cellFormatter(n){ //小数位数
+        cellFormatter(){ //小数位数
             var columns = this.tableConfig.columns
-            var colLast = columns[2]
-            this.$set(colLast,"formatter",(rowData,rowIndex,pagingIndex,field) => {          				
-                var number=rowData[field]*1;
-                return  number.toFixed(n);
-            });   
+            for (let i=0;i<columns.length;i++){
+                var n = parseInt(columns[i].formatterContent)
+                if(columns[i].formatterType == 'N' && n>=0 && n<20){
+                    this.$set(columns[i],"formatter",(()=>{
+                        var num = n
+                        return (rowData,rowIndex,pagingIndex,field) => {         				
+                            var number=rowData[field] * 1;
+                            return  number.toFixed(num);
+                        }
+                    })(n));         
+                }
+            }    
         },
         nofrozencol(){
             for(let o of this.frozenColumns){
@@ -425,9 +446,32 @@ export default{
             }
         },
         exportExcel () { 
-            console.log(2)           
+            this.showtable = true;
+            console.log(2) 
+            var html = ``
+            var theader= ``;
+            if(this.tableType*1 != 2){
+                theader += `<tr>`
+                for(let o of this.tableConfig.columns){
+                    theader+= `<td>${o.title}</td>`
+                }
+                theader+= `</tr>`
+            }else{
+                for(let k of this.tableConfig.titleRows){
+                    theader += `<tr>`
+                    for (let o of k){
+                        theader +=`<td colspan='${o.clospan?o.colspan:1}' rowspan='${o.rowspan?o.rowspan:1}'>${o.title}</td>`
+                    }
+                    theader += `</tr>`
+                }
+            }
+            var tbody = '';
+            console.log(theader)
+           
+            document.querySelector('#exportTable').innerHTML = tableHtml   
+               
             /* generate workbook object from table */
-            let wb = XLSX.utils.table_to_book(document.querySelector('#serverTable'));
+            let wb = XLSX.utils.table_to_book(document.querySelector('#exportTable'));
             /* get binary string as output */
             let wbout = XLSX.write(wb, { bookType: 'xlsx', bookSST: true, type: 'array' });
             try {
@@ -439,6 +483,7 @@ export default{
             }
              console.log(3) 
             return wbout
+<<<<<<< HEAD
         },
         myexportExcel(){
             var head= {};
@@ -504,6 +549,8 @@ export default{
             let wb = XLSX.xlsxUtils.format2WB(data, "sheet1", undefined, "A1:"+dataKeys[dataKeys.length - 1]);
             let fileName =this.tableConfig.title+".xlsx";
             XLSX.xlsxUtils.saveAs(XLSX.xlsxUtils.format2Blob(wb),fileName);
+=======
+>>>>>>> 357b378c0e2831bea4a512c71695fe1cea9d05cc
         }
     },
     created(){
@@ -654,16 +701,16 @@ export default{
         height: 40px !important
     }
     ::-webkit-scrollbar{  
-        width:4px;  
-        height:4px;  
+        width:8px;  
+        height:8px;  
     }  
     ::-webkit-scrollbar-track{  
         background: #f6f6f6;  
-        border-radius:2px;  
+        border-radius:4px;  
     }  
     ::-webkit-scrollbar-thumb{  
         background: #aaa;  
-        border-radius:2px;  
+        border-radius:4px;  
     }  
     ::-webkit-scrollbar-thumb:hover{  
         background: #747474;  
@@ -672,22 +719,25 @@ export default{
         background: #f6f6f6;  
     }  
     .v-table-body-class::-webkit-scrollbar{  
-        width:4px;  
-        height:4px;  
+        width:8px;  
+        height:8px;  
     }  
     .v-table-body-class::-webkit-scrollbar-track{  
         background: #f6f6f6;  
-        border-radius:2px;  
+        border-radius:4px;  
     }  
     .v-table-body-class::-webkit-scrollbar-thumb{  
         background: #aaa;  
-        border-radius:2px;  
+        border-radius:4px;  
     }  
     .v-table-body-class::-webkit-scrollbar-thumb:hover{  
         background: #747474;  
     }  
     .v-table-body-class::-webkit-scrollbar-corner{  
         background: #f6f6f6;  
-    }  
+    } 
+    .v-table-views {
+        border: 1px solid transparent;
+    } 
 
 </style>

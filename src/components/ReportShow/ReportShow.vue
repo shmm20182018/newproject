@@ -59,7 +59,8 @@ export default {
           console.log(res.data);
           NProgress.done();
           var data =res.data;
-          if(!data.queryParams){
+          console.log(data)
+          if(!data.queryParams.length){
             this.filterShow = false
             this.pageIndex = !this.pageIndex
           }
@@ -121,8 +122,5 @@ export default {
 .slide-fade-enter, .slide-fade-leave-to{
   transform: translateY(-100%);
   opacity: 0;
-}
-.table-wrapper {
-  
 }
 </style>

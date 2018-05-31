@@ -14,7 +14,7 @@ export default new Router({
       path: '/:engine/:id',
       name: 'ReportShow',
       component: ReportShow,
-      props: (route) => ({ id: route.params.id,engine:route.params.engine}) 
+      props: (route) => ({engine:route.params.engine,id: route.params.id}) 
     },
     {
       path: '/t',

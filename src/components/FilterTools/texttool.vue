@@ -1,5 +1,5 @@
 <template>
-  <el-col :span="6">
+  <el-col v-if="item" :span="6">
     <div class="grid-content">
       <el-form-item :label="item.title" :prop="item.id" class="filtertool-text">
         <el-input v-model="myrulename" :disabled="item.readonly"></el-input>
