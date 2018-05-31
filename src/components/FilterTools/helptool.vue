@@ -1,50 +1,58 @@
 <template>
-  <el-col :span="6">
+  <el-col v-if="item" :span="6">
     <div class="grid-content">
       <el-form-item :label="item.title" :prop="item.id" class="filtertool-text help-tool">
-        <el-input class="help-input" v-model="myrulename" :disabled="item.readonly" ></el-input>
+        <el-tooltip :content="BHMC" placement="bottom-start" offset="50">
+            <el-input class="help-input" ref="helpInput" v-model="myrulename" :disabled="item.readonly" @focus="hideMC()" @blur="showMC()" ></el-input>
+        </el-tooltip>
+        <i class="help-input-title" v-show="this.MCShow" @click="inputFocus()">{{this.rowData.F_MC}}</i>
         <i class="el-icon-question" @click="openHelp"></i>
-        <draggable v-if="helpShow" class="help-wrapper"  @start="drag=true" @end="drag=true">
-            <el-card class="box-card">
-                <div slot="header" class="clearfix">
-                    <span>{{this.tableConfig.title}}</span>
-                    <i class="el-input__icon el-icon-close"  @click="closeHelp"></i>
-                </div>
-                <div  class="content-wapper">
-                    <v-table id=""
-                        :class="colorSeries"
-                        is-vertical-resize
-                        :vertical-resize-offset='60'
-                        is-horizontal-resize
-                        column-width-drag
-                        style="width:100%"
-                        :multiple-sort="false"
-                        :min-height="200"
-                        even-bg-color="#f2f2f2"
-                        :title-rows="tableConfig.titleRows"
-                        :columns="tableConfig.columns"
-                        :table-data="tableConfig.tableData"
-                        row-hover-color="#eee"
-                        row-click-color="#edf7ff"
-                        :paging-index="(pageIndex-1)*pageSize"
-                        :title-row-height="22"
-                        :row-height="24"
-                        >
-                    </v-table>
-                    <div class="footer-wapper clear">
-                        <div  class="mt20 mb20 bold page-wrapper">
-                            <v-pagination size="small" @page-change="pageChange" :page-index="pageIndex" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'next', 'jumper']"></v-pagination>
-                        </div> 
-                        <el-form :inline="true"  class="search-form" size="mini">
-                            <el-form-item label="">
-                                <el-input v-model="searchText" class="search-input" placeholder="请输入关键词" width="150px"></el-input>
-                                <el-button type="primary" @click="onSubmit">查询</el-button>
-                            </el-form-item>  
-                        </el-form>
+        <dnd-grid-container  v-if="helpShow" class="help-wrapper"  :layout.sync="layout">
+            <dnd-grid-box  boxId="box-a">
+                <el-card class="box-card">
+                    <div slot="header" class="clearfix">
+                        <span class="card-title">{{tableConfig.title}}</span>
+                        <img class="icon-close"  @click="closeHelp" src="../../assets/image/close2.png">
                     </div>
-                </div>
-            </el-card>
-        </draggable>
+                    <div  class="content-wapper">
+                        <v-table id=""
+                            :class="colorSeries"
+                            is-vertical-resize
+                            :vertical-resize-offset='60'
+                            is-horizontal-resize
+                            column-width-drag
+                            style="width:100%"
+                            :multiple-sort="false"
+                            :min-height="300"
+                            :height="350"
+                            row-hover-color="#eee"
+                            row-click-color="#edf7ff"
+                            :row-click="rowClick"
+                            even-bg-color="#f2f2f2"
+                            :title-rows="tableConfig.titleRows"
+                            :columns="tableConfig.columns"
+                            :table-data="tableConfig.tableData"
+                            :paging-index="(pageIndex-1)*pageSize"
+                            :title-row-height="22"
+                            :row-height="24"
+                            >
+                        </v-table>
+                        <div class="footer-wapper clear">
+                            <div  class="mt20 mb20 bold page-wrapper">
+                                <v-pagination size="small" @page-change="pageChange" :page-index="pageIndex" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'next', 'jumper']"></v-pagination>
+                                <span class="page-total">{{pageIndex+'/'+pageTotalCount}}</span>
+                            </div> 
+                            <el-form :inline="true"  class="search-form" size="mini">
+                                <el-form-item label="">
+                                    <el-input v-model="searchText" class="search-input" placeholder="请输入关键词" width="150px"></el-input>
+                                    <el-button type="primary" @click="onSubmit">查询</el-button>
+                                </el-form-item>  
+                            </el-form>
+                        </div>
+                    </div>
+                </el-card>
+            </dnd-grid-box>
+        </dnd-grid-container>
       </el-form-item>
     </div>
   </el-col>    
@@ -52,7 +60,9 @@
 
 <script>
 import NProgress from 'nprogress'
-import draggable from 'vuedraggable'
+import all from '@dattn/dnd-grid'
+import { Container, Box } from '@dattn/dnd-grid'
+import '@dattn/dnd-grid/dist/dnd-grid.css'
 export default {
     props:{
         ruleForm:{
@@ -67,6 +77,8 @@ export default {
     },
     data () {
         return {
+            MCShow: true,//是否显示input隐藏值
+            rowData:{},//点击式行数据
             qitem: this.item,
             helpShow: false,
             searchText:'',
@@ -88,6 +100,7 @@ export default {
             showFooter:false,
             tableType:0,//明细表还是复杂表
             isSubmit:false,//是否由查询触发的请求
+            pageTotal:0,
             pageIndex:1,
             pageSize:10,
             tableConfig: {
@@ -97,7 +110,33 @@ export default {
                 tableData: [],
                 columns: [],
                 titleRows: []
+            },
+            layout: [
+            {
+                id: 'box-a',
+                hidden: false,
+                pinned: false,
+                position: {
+                    x: 0,
+                    y: 0,
+                    w: 600, // Multiplier for virtual grid width
+                    h: 422 // Multiplier for virtual grid height
+                }
             }
+            ]
+        }
+    },
+    computed:{
+        pageTotalCount(){
+            var yu = this.total%this.pageSize
+            if(yu){
+                return parseInt(this.total/this.pageSize) + 1
+            }else{
+                return parseInt(this.total/this.pageSize)
+            }
+        },
+        BHMC(){
+            return this.rowData.F_BH+'-'+this.rowData.F_MC
         }
     },
     methods:{
@@ -131,7 +170,7 @@ export default {
                 console.log(res.data);
                 NProgress.done();
                 var data =res.data;
-                this.total = data.total,
+                this.total = data.total*1,
                 this.queryParams = data.queryParams,
                 this.queryImmediately = data.queryImmediately,
                 this.showExport = data.showExport,
@@ -188,6 +227,21 @@ export default {
             this.pageIndex = pageIndex;
             this.getSearchData(pageIndex);
         },
+        rowClick(rowIndex, rowData, column){
+            console.log(rowData)
+            this.rowData = rowData 
+            var submitVal = 'F_'+ this.item.contentType    
+            this.myrulename = rowData[submitVal]
+        },
+        showMC(){
+            this.MCShow = true;
+        },
+        hideMC(){
+            this.MCShow = false;
+        },
+        inputFocus(){
+            this.$refs.helpInput.focus();
+        }
     },
     watch:{
         myrulename:function(val,oldval){  
@@ -203,10 +257,13 @@ export default {
         }
     },
     created(){
-       this.getTableInfo()
+        if(this.item){
+            this.getTableInfo()
+        }
     },
     components:{
-        draggable
+        DndGridContainer: Container,
+        DndGridBox: Box
     }
 }
 </script>
@@ -214,30 +271,27 @@ export default {
 .filtertool-text{
   width: 320px;
 }
+.content-wapper tbody tr{
+    cursor: pointer;
+}
 .help-wrapper{
     position: fixed;
     top: 50px;
     left: calc(50% - 300px);
     width: 600px;
-    height: 400px;
+    height: 422px;
     margin: 0 auto;
     border: 1px solid #DFE0E4;
-    z-index: 1000;
+    z-index: 100;
     background:#aaa;
     box-shadow:gray 0 0 30px
 }
-.help-wrapper .el-icon-close{
+.help-wrapper .icon-close{
     float: right; 
-    padding: 3px 0;
-    font-size: 12px;
     width: 24px;
     height: 24px;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 2px 2px #ccc;
-    font-weight: bold;
-    color: #666560;
-    line-height: 25px;
+    line-height: 24px;
+    cursor: pointer;
 }
 .help-tool .el-form-item__content{
     position: relative;
@@ -250,12 +304,20 @@ export default {
     color: #DFE0E4;
 }
 .help-tool .el-icon-question:hover{
-    color: #02AFEE
+    color: #02AFEE;
+    cursor: pointer;
 } 
 .help-tool .el-card__header{
-    padding: 6px 10px;
-    
+    padding: 0px 10px;
+    background-color: #F3F7FB;   
 } 
+.help-tool .card-title{
+    color: #808080;
+}
+.help-tool .table-title{
+    color: #F3F7FB;
+    height: 22px;
+}
 .help-tool form{
     display: inline-block
 } 
@@ -268,6 +330,15 @@ export default {
 .help-tool .page-wrapper .v-page-ul {
     margin: 4px 0;
 }
+.help-tool .page-wrapper .page-total {
+    display: inline-block;
+    vertical-align: top;
+    width: 50px;
+    height: 24px;
+    line-height: 24px;
+    margin: 4px 0;
+    font-size: 12px;
+}
 .help-tool .search-form{
     float: right;
 }
@@ -276,5 +347,15 @@ export default {
 }
 .help-tool .el-card__body {
     padding: 0px;
+}
+.help-input-title {
+    position: absolute;
+    left: 15px;
+    top: 2px;
+    height: 26px;
+    line-height: 26px;
+    font-size: 12px;
+    color: #808080;
+    background:#fff;
 }
 </style>
