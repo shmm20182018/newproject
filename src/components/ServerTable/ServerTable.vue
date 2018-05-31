@@ -12,7 +12,7 @@
                     <img src="../../assets/image/excel.png" width="20" height="20" alt="">
                 </span>
                 <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item class="exxxxxxx" @click.native="exportExcel" >导出当前页</el-dropdown-item>
+                    <el-dropdown-item  @click.native="exportExcel" >导出当前页</el-dropdown-item>
                     <el-dropdown-item>导出全部</el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
