@@ -35,8 +35,7 @@
   </div>
 </template>
 <script>
-import FileSaver from 'file-saver'
-import XLSX from 'xlsx'
+import XLSX from '../../utils/xlsx.js'
 import NProgress from 'nprogress'
 export default{
     props:{
@@ -104,7 +103,7 @@ export default{
                 this.total = data.total,
                 this.queryParams = data.queryParams,
                 this.queryImmediately = data.queryImmediately,
-                //this.showExport = data.showExport,
+                this.showExport = data.showExport,
                 this.showFooter = data.columnSumFlag,
                 this.isrowSum = data.rowSumFlag,
                 this.isMerge = data. isMerge,
@@ -442,9 +441,69 @@ export default{
             return wbout
         },
         myexportExcel(){
-            this.nofrozencol();
-            this.exportExcel();  
-            //this.frozencol();  
+            var head= {};
+            var headColLength = this.tableConfig.columns.length;
+            var headRowLength = 1;
+            var keyMap =[];
+            var data;
+            var dataKeys;
+            var cols = [];
+
+            //明细表
+            if(this.tableType==0){
+                this.tableConfig.columns.forEach((col,i)=>{
+                    head[XLSX.xlsxUtils.convertNum2Letter(i+1)+1] = {"v":col.title};
+                    cols.push({  wpx: col.width/2  });
+                    keyMap.push(col.field);
+                });
+            }
+            else{
+                //var head = { "A1": { "v": "日期" }, "B1": { "v": "配送信息" }, "C1": { "v": "" }, "D1": { "v": "" }, "E1": { "v": "" }, "F1": { "v": "" }, "A2": { "v": "" }, "B2": { "v": "姓名" }, "C2": { "v": "地址" }, "D2": { "v": "" }, "E2": { "v": "" }, "F2": { "v": "" }, "A3": { "v": "" }, "B3": { "v": "" }, "C3": { "v": "省份" }, "D3": { "v": "市区" }, "E3": { "v": "地址" }, "F3": { "v": "邮编" },
+                // "!merges": [{ "s": { "c": 1, "r": 0 }, "e": { "c": 5, "r": 0 } }, { "s": { "c": 2, "r": 1 }, "e": { "c": 5, "r": 1 } }, { "s": { "c": 0, "r": 0 }, "e": { "c": 0, "r": 2 } }, { "s": { "c": 1, "r": 1 }, "e": { "c": 1, "r": 2 } }] };
+                if(!this.tableConfig) return;
+                headRowLength = this.tableConfig.titleRows.length;
+                var titleRows = JSON.parse(JSON.stringify(this.tableConfig.titleRows));
+                var merges = [];
+           
+                for(let i = 0; i<headRowLength;i++){
+                    this.tableConfig.columns.forEach((col,j)=>{
+                        //找到包含该column的titleRow
+                        var r = titleRows[i].find((n) => n.fields.indexOf(col.field)>-1);
+                        if(i==0){
+                            keyMap.push(col.field);
+                            cols.push({  wpx: col.width/2  });
+                        }
+                        if(r.isInArray){
+                            head[XLSX.xlsxUtils.convertNum2Letter(j+1)+(i+1)] = {"v":""};
+                        }
+                        else{
+                            r.isInArray = true;
+                            let name = XLSX.xlsxUtils.convertNum2Letter(j+1)+(i+1);
+                            head[name] = {"v":r.title};
+                            //设置xlsx单元格样式
+                            if(i==0)
+                                 head[name].s =  { alignment: {vertical: "center",horizontal: "center",indent:0,wrapText: true}};
+                            if(r.colspan>1)
+                                 merges.push({"s":{"c":j,"r":i},"e":{"c":j+r.colspan-1,"r":i}});
+                        }
+                    });
+                }
+                head["!merges"] = merges;
+                head["!cols"] = cols;                
+            }
+
+            if(this.tableConfig.tableData && this.tableConfig.tableData.length>0){
+                data = XLSX.xlsxUtils.format2Sheet(this.tableConfig.tableData,0,headRowLength,keyMap);
+                dataKeys = Object.keys(data);
+                for (let k in head) data[k] = head[k];//追加列头
+            }
+            else{
+                data = head;
+                dataKeys = Object.keys(data);
+            }
+            let wb = XLSX.xlsxUtils.format2WB(data, "sheet1", undefined, "A1:"+dataKeys[dataKeys.length - 1]);
+            let fileName =this.tableConfig.title+".xlsx";
+            XLSX.xlsxUtils.saveAs(XLSX.xlsxUtils.format2Blob(wb),fileName);
         }
     },
     created(){
