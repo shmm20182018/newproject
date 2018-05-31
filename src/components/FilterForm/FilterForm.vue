@@ -2,7 +2,7 @@
   <div>
     <el-form :class="colorSeries" :show-message="false" label-position="left" label-width="80px" :model="ruleForm" :inline="true" :rules="rules"  ref="ruleForm"  class="demo-ruleForm" size="mini">
       <el-row :gutter="20">
-        <component @on-result-change="onResultChange" :ruleForm="ruleForm" :rulename="ruleForm[item.id]" v-for="(item,index) in items" :is="item.componentName" :item="item" :index="index"  :key="item.id"></component>
+        <component  @on-result-change="onResultChange" :ruleForm="ruleForm" :rulename="ruleForm[item.id]" v-for="(item,index) in items" :is="item.componentName" :item="item" :index="index"  :key="item.id"></component>
         <helptool></helptool>
         <el-col :span="6">
           <div class="grid-content">
@@ -194,9 +194,6 @@ export default {
 }
 </script>
 <style>
-  .filtertool-btn{
-    
-  }
   .el-form-item__label{
     font-size: 12px
   }

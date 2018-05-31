@@ -19,4 +19,9 @@ html{
   display: none;
 
 }
+.clear::after{
+  content:'';
+  display: 'block';
+  clear: both;
+}
 </style>
