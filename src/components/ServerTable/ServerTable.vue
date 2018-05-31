@@ -43,7 +43,7 @@
               >
       </v-table>
        <div  class="mt20 mb20 bold">
-        <v-pagination size="small" @page-change="pageChange" @page-size-change="pageSizeChange" :page-index="pageIndex" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
+        <v-pagination size="small" @page-change="pageChange" @page-size-change="pageSizeChange"  :pageSizeOption=[10,30,50,70,100] :page-index="pageIndex" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
        </div>
   </div>
 </template>
@@ -88,7 +88,7 @@ export default{
             tableType:0,//明细表还是复杂表
             isSubmit:false,//是否由查询触发的请求
             pageIndex:1,
-            pageSize:10,
+            pageSize:40,
             tableConfig: {
                 rowHeaders:[{field:'address'},{field:'hobby'}],//需要合并的列
                 multipleSort: false,
