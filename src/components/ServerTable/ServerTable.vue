@@ -7,10 +7,8 @@
         </table>
         <div class="title-wrapper" >     
             <p>{{tableConfig.title}}</p>
-            <el-dropdown  v-show="showExport" class="exportbtn">
-                <span class="el-dropdown-link">
-                    <img src="../../assets/image/excel.png" width="20" height="20" alt="">
-                </span>
+            <el-dropdown  v-show="showExport" @click="exportExcel" class="exportbtn">
+                  <i class="btn el-icon-document"></i>
                 <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item  @click.native="exportExcel" >导出当前页</el-dropdown-item>
                     <el-dropdown-item>导出全部</el-dropdown-item>
@@ -540,6 +538,8 @@ export default{
 <style>
     .title-wrapper {
         position: relative;
+        margin: 10px;
+
     }
     .title-wrapper p {
         height: 25px;
@@ -624,7 +624,6 @@ export default{
         background-color: #2db7f5;
     }
 
-
     .wathet-style .v-table-title-class td{
         background-color: #13B3BF;
         font-weight: bold;
@@ -696,5 +695,10 @@ export default{
     .v-table-views {
         border: 1px solid transparent;
     } 
+    .btn{
+        font-size:25px;
+
+
+    }
 
 </style>
