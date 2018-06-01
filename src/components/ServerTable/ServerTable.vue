@@ -50,9 +50,6 @@ import XLSX from '../../utils/xlsx.js'
 import NProgress from 'nprogress'
 export default{
     props:{
-        filterData:{//查询参数
-            type:Object
-        },
         resetpageIndex:{//查询是重置页面下标
             
         },
@@ -85,7 +82,7 @@ export default{
             isCellMerge: true,//单元格是否合并
             tableType:0,//明细表还是复杂表
             isSubmit:false,//是否由查询触发的请求
-            pageIndex:1,
+            pageIndex:-1,
             pageSize:40,
             tableConfig: {
                 rowHeaders:[{field:'address'},{field:'hobby'}],//需要合并的列
@@ -145,6 +142,7 @@ export default{
             params.pageIndex =  pageIndex       //你要传给后台的参数值 key/value
             params.pageSize = pageSize
             params.condition = this.submitData
+            //console.log(this.submitData)
             //console.log(pageIndex,pageSize,params);
             this.$axios({
                 method: 'post',
@@ -186,12 +184,13 @@ export default{
                         if(this.isMerge){ //合并单元格计算
                             this.mergeCells()   
                         }
-                        this.cellFormatter()
-                        this.isSubmit = false 
+                        this.cellFormatter() 
                     }) 
                 }
+                this.isSubmit = false
             })
             .catch((res) => {
+                this.isSubmit = false
                 NProgress.done(); 
                 this.warnOpen(res.response.data)
             }) 
@@ -199,7 +198,10 @@ export default{
         pageChange(pageIndex){
             this.pageIndex = pageIndex;
             //console.log(this.pageIndex,'index')
+           
             this.getTableData(pageIndex,this.pageSize);
+        
+           
         },
         pageSizeChange(pageSize){ 
             this.pageIndex = 1;
@@ -213,28 +215,33 @@ export default{
         },
         sortChange(params){
             this.isCellMerge = false
+            var columns = this.tableConfig.columns
             if(!this.multipleSort){//单列排序
                 for(let i in params){
-                    if(isNaN(this.tableConfig.tableData[0][i])){
-                        this.tableConfig.tableData.sort(function (a, b) {
-                            if (params[i] === 'asc'){
-                                return a[i].localeCompare(b[i])
-                            }else if(params[i] === 'desc'){
-                                return b[i].localeCompare(a[i])
+                    for(let j=0;j<columns.length;j++){
+                        if(columns[j]['field'] == i){
+                            if(columns[j]['formatterType'] == 'N'){
+                                this.tableConfig.tableData.sort(function (a, b) {
+                                    if (params[i] === 'asc'){
+                                        return a[i] - b[i];  
+                                    }else if(params[i] === 'desc'){
+                                            return b[i] - a[i];
+                                    }else{
+                                        return 0;
+                                    }
+                                });
                             }else{
-                                return 0;
+                                this.tableConfig.tableData.sort(function (a, b) {
+                                    if (params[i] === 'asc'){
+                                        return a[i].localeCompare(b[i])
+                                    }else if(params[i] === 'desc'){
+                                        return b[i].localeCompare(a[i])
+                                    }else{
+                                        return 0;
+                                    }
+                                });
                             }
-                        });
-                    }else{
-                        this.tableConfig.tableData.sort(function (a, b) {
-                            if (params[i] === 'asc'){
-                                return a[i] - b[i];  
-                            }else if(params[i] === 'desc'){
-                                    return b[i] - a[i];
-                            }else{
-                                return 0;
-                            }
-                        });
+                        }
                     }
                 }
             }
@@ -509,6 +516,14 @@ export default{
         }
     },
     created(){
+        this.bus.$on('filter-submit',(val)=>{
+            this.pageIndex =1;
+            this.isSubmit = true;
+            this.submitData = val
+            console.log(val)
+            this.pageChange(1)
+        })
+        //this.$set(this.resTableInit,'title','rrrr')
         this.getTableInfo(this.resTableInit);
     },
     watch:{
@@ -518,20 +533,7 @@ export default{
                 this.tableConfig.tableData = newValue.rowData;  
     　　　　},  
     　　　　deep: true  
-　　    },
-        filterData: {  
-    　　　　handler(newValue, oldValue) {
-                //console.log(newValue)  
-                this.submitData = newValue; 
-    　　　　},  
-    　　　　deep: true  
-　　    },
-        resetpageIndex:function(val){
-            //console.log(val)
-            this.pageIndex =1;
-            this.isSubmit = true;
-            this.pageChange(1)
-        }
+　　    }
   }
 }  
 </script>

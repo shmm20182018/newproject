@@ -47,6 +47,8 @@ Vue.directive('drag',//自定义指令                                      JS
             }
         }
     );
+let bus = new Vue()
+Vue.prototype.bus = bus   
 
 /* eslint-disable no-new */
 new Vue({

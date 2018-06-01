@@ -3,11 +3,11 @@
     <div class="filter-tools">
       <i :class="iconArrow" class="icon-toggle" @click="showChange(filterShow)"></i>
       <transition name="slide-fade">
-        <filter-form  v-show="filterShow"  :resTableInit="resTableInit" :routeParams="routerParams" @on-filterdata-change="filterdataChange" @on-filter-submit="filterSubmit"></filter-form>
+        <filter-form  v-show="filterShow"  :resTableInit="resTableInit" :routeParams="routerParams" ></filter-form>
       </transition>
     </div>
     <div class="table-wrapper">
-      <server-table v-if="tableShow" :routeParams="routerParams" :resTableInit="resTableInit" :resetpageIndex="pageIndex" :filterData="filterData"></server-table> 
+      <server-table v-if="tableShow" :routeParams="routerParams" :resTableInit="resTableInit" :resetpageIndex="pageIndex"></server-table> 
     </div>
     <div class="chart-wrapper">
       <server-chart v-if="chartShow"></server-chart> 
@@ -66,7 +66,8 @@ export default {
           }
           if(!data.isChart){
             this.tableShow = true
-            this.resTableInit = data
+            this.resTableInit2 = data
+            this.resTableInit = this.resTableInit2 
           }
       })
       .catch((res) => {
@@ -82,12 +83,6 @@ export default {
         this.filterShow = true
         this.iconArrow = 'el-icon-arrow-up'
       }
-    },
-    filterdataChange(val){
-      this.filterData = val
-    },
-    filterSubmit(val){
-      this.pageIndex = !this.pageIndex
     }
   },
   created(){

@@ -2,16 +2,18 @@
   <el-col v-if="item" :span="6">
     <div class="grid-content">
       <el-form-item :label="item.title" :prop="item.id" class="filtertool-text help-tool">
-        <el-tooltip :disabled="false" :content="BHMC" placement="bottom-start" offset="">
+        <el-tooltip :disabled="tooltipShow" effect="light" :content="BHMC" placement="bottom-start" offset="">
+            <div style="position:relative">
             <el-input class="help-input" ref="helpInput" v-model="myrulename" :disabled="item.readonly" @focus="hideMC()" @blur="showMC()" ></el-input>
-        </el-tooltip>
-        <i class="help-input-title" v-show="MCShow" @click="inputFocus()">{{rowData.F_MC}}</i>
-        <i class="el-icon-question" @click="openHelp"></i>
+            <i class="help-input-title" v-show="MCShow" @click="inputFocus()">{{rowData.F_MC?rowData.F_MC:blurData.mc}}</i>
+            </div>
+        </el-tooltip> 
+        <i class="el-icon-zoom-in" @click="openHelp"></i>
         <div v-if="helpShow" class="help-wrapper"  v-drag="greet" id="drag" :style="style">
             <el-card class="box-card">
                 <div slot="header" class="clearfix">
                     <span class="card-title">{{tableConfig.title}}</span>
-                    <img class="icon-close"  @click="closeHelp" src="../../assets/image/close2.png">
+                    <i class="icon-close el-icon-close"  @click="closeHelp"></i>
                 </div>
                 <div  class="content-wapper">
                     <v-table id=""
@@ -26,7 +28,7 @@
                         :height="350"
                         row-hover-color="#eee"
                         row-click-color="#edf7ff"
-                        :row-click="rowClick"
+                        :row-dblclick="rowClick"
                         even-bg-color="#f2f2f2"
                         :title-rows="tableConfig.titleRows"
                         :columns="tableConfig.columns"
@@ -72,9 +74,12 @@ export default {
     },
     data () {
         return {
-            tooltipShow: false,//是否显示tooltip
+            MC:'',
+            tooltipShow: true,//是否显示tooltip
             MCShow: true,//是否显示input隐藏值
-            rowData:{},//点击式行数据
+            initData:{},//表格初始化数据
+            rowData:{},//点击放大镜表格行数据
+            blurData:{},//失去焦点时匹配到的数据
             qitem: this.item,
             helpShow: false,
             searchText:'',
@@ -126,7 +131,16 @@ export default {
             }
         },
         BHMC(){
-            return this.rowData.F_BH+'-'+this.rowData.F_MC
+            if(this.rowData){
+                this.tooltipShow = false;
+                return this.rowData.F_BH+'-'+this.rowData.F_MC
+            }else if(this.blurData){
+                this.tooltipShow = false;
+                return this.blurData.bh+'-'+this.blurData.mc
+            }else{
+                return ''
+            }
+            
         }
     },
     methods:{
@@ -135,9 +149,11 @@ export default {
         },
         openHelp(){
             this.helpShow = true
+            this.initTable()
         },
         closeHelp(){
             this.helpShow = false
+            this.searchText = ''
         },
         onSubmit(){
             this.getSearchData()
@@ -148,6 +164,23 @@ export default {
                 message: val
             })
         },
+        initTable(){
+            var data = this.initData
+            this.total = data.total*1
+            this.queryParams = data.queryParams
+            this.queryImmediately = data.queryImmediately
+            this.showExport = data.showExport
+            this.showFooter = data.columnSumFlag
+            this.isrowSum = data.rowSumFlag
+            this.isMerge = data. isMerge
+            this.pageSize = data.pageSize * 1
+            this.$set(this.tableConfig,'sumFlag',data.sumFlag)
+            this.$set(this.tableConfig,'titleRows',data.titleRows)
+            this.$set(this.tableConfig,'title',data.title)
+            this.$set(this.tableConfig,'tableData',data.tableData)
+            this.$set(this.tableConfig,'columns',data.columns)
+            console.log(this.tableConfig.tableData)
+        },
         getTableInfo(){
             NProgress.start();
             const url ='api/help/init'; 
@@ -155,6 +188,7 @@ export default {
             params.helpID = this.qitem.helpID
             params.helpTJ = this.qitem.helpConditions
             params.helpBH = this.qitem.helpXH
+            params.queryText =''
             this.$axios({
                 method: 'post',
                 url:url,
@@ -162,22 +196,7 @@ export default {
             }).then((res)=>{
                 console.log(res.data);
                 NProgress.done();
-                var data =res.data;
-                this.total = data.total*1,
-                this.queryParams = data.queryParams,
-                this.queryImmediately = data.queryImmediately,
-                this.showExport = data.showExport,
-                this.showFooter = data.columnSumFlag,
-                this.isrowSum = data.rowSumFlag,
-                this.isMerge = data. isMerge,
-                this.pageSize = data.pageSize * 1,
-                this.$set(this.tableConfig,'sumFlag',data.sumFlag)
-                this.$set(this.tableConfig,'titleRows',data.titleRows)
-                this.$set(this.tableConfig,'title',data.title)
-                this.$set(this.tableConfig,'tableData',data.tableData)
-                this.$set(this.tableConfig,'columns',data.columns)
-                console.log(this.tableConfig.tableData)
-                
+                this.initData =res.data;                
             })
             .catch((res) => {
                 NProgress.done(); 
@@ -205,7 +224,7 @@ export default {
                 NProgress.done();
                 //console.log(res);
                 var data =res.data;
-                if(data && !this.isSubmit || this.tableType == 0){
+                if(data){
                     this.total = data.total
                     this.$set(this.tableConfig,'tableData',data.rowData)
                     this.isSubmit = false 
@@ -226,8 +245,39 @@ export default {
             var submitVal = 'F_'+ this.item.contentType    
             this.myrulename = rowData[submitVal]
         },
-        showMC(){
+        showMC(){ //input失去焦点时
             this.MCShow = true;
+            NProgress.start();
+            const url ='api/help/onblur'; 
+            var params = {};
+            params.helpID = this.qitem.helpID
+            params.helpTJ = this.qitem.helpConditions
+            params.helpBH = this.qitem.helpXH
+            params.queryText = this.myrulename
+            this.$axios({
+                method: 'post',
+                url:url,
+                data: params
+            }).then((res)=>{
+                console.log(res.data);
+                NProgress.done();
+                var data =res.data;
+                if(data.result){
+                    this.blurData = data
+                    //this.myrulename = 
+                }else{
+                    this.blurData = ''
+                    this.rowData = ''
+                    this.helpShow= true
+                    this.searchText = this.myrulename
+                    this.initTable()
+                }
+                
+            })
+            .catch((res) => {
+                NProgress.done(); 
+                this.warnOpen(res.response.data)
+            }) 
         },
         hideMC(){
             this.MCShow = false;
@@ -238,6 +288,9 @@ export default {
     },
     watch:{
         myrulename:function(val,oldval){  
+            if(val && val!=''){
+               // this.tooltipShow = false;
+            }
             //console.log(val)  
             this.$emit("on-result-change",[val,this.myitem.id,this.myitem.componentName])
         },
@@ -247,6 +300,11 @@ export default {
                 this.getTableInfo()
             },  
     　　　　deep: true 
+        },
+        MC(val,oldval){
+            if(val){
+                this.tooltipShow = false;
+            }
         }
     },
     created(){
@@ -273,6 +331,7 @@ export default {
     border: 1px solid #DFE0E4;
     z-index: 1000;
     background:#aaa;
+    border-radius: 4px;
     box-shadow:gray 0 0 30px
 }
 .help-wrapper .icon-close{
@@ -285,14 +344,14 @@ export default {
 body .el-form-item__content{
     position: relative;
 }
-body .el-icon-question{
+body .el-icon-zoom-in{
     position: absolute;
     top: 5px;
     right: 5px;
     font-size: 18px;
-    color: #DFE0E4;
+    color: #C3C5C8;
 }
-body .el-icon-question:hover{
+body .el-icon-zoom-in:hover{
     color: #02AFEE;
     cursor: pointer;
 } 
@@ -348,8 +407,8 @@ body .card-title{
     background:#fff;
 }
 body .el-tooltip__popper.is-dark {
-    background: #EEF2FC;
-    color: #8E9191;
+    background: #F5F7F9;
+    color: #C3C5C8;
 }
 body .el-tooltip__popper[x-placement^=bottom] {
     margin-top: 5px;
@@ -358,13 +417,28 @@ body .el-tooltip__popper {
     position: absolute;
     border-radius: 4px;
     padding: 4px;
-    background: #EEF2FC;
+    background: #F5F7F9;
 }
 body .el-tooltip__popper[x-placement^=bottom] .popper__arrow {
     top: -5px;
-    border-bottom-color: #EEF2FC;
+    border-bottom-color: #F5F7F9;
 }
 body .el-tooltip__popper .popper__arrow::after {
     border-width: 4px;
+    display: none;
 }
+body .el-tooltip__popper[x-placement^=bottom] .popper__arrow::after {
+    top: 1px;
+    margin-left: -5px;
+    border-top-width: 0;
+    border-bottom-color: #F5F7F9;
+    display: none;
+}
+.el-tooltip__popper.is-light[x-placement^=bottom] .popper__arrow {
+    display: none;
+}
+.help-tool .v-table-views{
+    height: 350px !important
+}
+    
 </style>
