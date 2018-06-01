@@ -98,7 +98,8 @@ export default {
     subForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.$emit('on-filter-submit',this.pageIndex) 
+          var newSubmitParams = this.submitForm
+          this.bus.$emit('filter-submit',newSubmitParams)
           //this.getData();
         } else {
           console.log('error submit!!');
@@ -111,34 +112,36 @@ export default {
       //console.log(this.ruleForm) 
     },
     createRules(){
-      this.items.forEach(item => {
-        this.ruleForm[item.id] = item.defaultValue;
-        switch (item.componentName){
-          case 'texttool':
-            this.rules[item.id] = [{required: item.mandatory, trigger: '' }]
-            break;
-          case 'selecttool':
-            this.rules[item.id] = [{required: item.mandatory, message: '', trigger: '' }]
-            break;
-          case 'daterangetool':
-            this.rules[item.id] = [{required: item.mandatory, message: '', trigger: '' }]
-            break;
-          case 'yeartool':
-            this.rules[item.id] = [{required: item.mandatory, message: '查询年份不能为空', trigger: '' }]
-            break;
-          case 'monthtool':
-            this.rules[item.id] = [{required: item.mandatory, message: '查询不能为空', trigger: '' }]
-            break;  
-          case 'datetool':
-            this.rules[item.id] = [{required: item.mandatory, message: '查询日期不能为空', trigger: '' }]
-            break;
-          case 'helptool':
-            this.rules[item.id] = [{required: item.mandatory, message: '帮助关键字不能为空', trigger: '' }]
-            break;
-        }
-      });
+      if(this.items){
+        this.items.forEach(item => {
+          this.ruleForm[item.id] = item.defaultValue;
+          switch (item.componentName){
+            case 'texttool':
+              this.rules[item.id] = [{required: item.mandatory, trigger: '' }]
+              break;
+            case 'selecttool':
+              this.rules[item.id] = [{required: item.mandatory, message: '', trigger: '' }]
+              break;
+            case 'daterangetool':
+              this.rules[item.id] = [{required: item.mandatory, message: '', trigger: '' }]
+              break;
+            case 'yeartool':
+              this.rules[item.id] = [{required: item.mandatory, message: '查询年份不能为空', trigger: '' }]
+              break;
+            case 'monthtool':
+              this.rules[item.id] = [{required: item.mandatory, message: '查询不能为空', trigger: '' }]
+              break;  
+            case 'datetool':
+              this.rules[item.id] = [{required: item.mandatory, message: '查询日期不能为空', trigger: '' }]
+              break;
+            case 'helptool':
+              this.rules[item.id] = [{required: item.mandatory, message: '帮助关键字不能为空', trigger: '' }]
+              break;
+          }
+        });
+      }
       this.submitForm = this.ruleForm
-      this.$emit('on-filterdata-change',this.submitForm)
+      //this.$emit('on-filterdata-change',this.submitForm)
       //console.log(this.ruleForm);
       //console.log(this.rules);
     },
@@ -155,18 +158,20 @@ export default {
         computedVal = val[0]
       }
       this.$set(this.submitForm,val[1],computedVal);
-      this.$emit('on-filterdata-change',this.submitForm)
+      //this.$emit('on-filterdata-change',this.submitForm)
     }
   },
   watch:{
     resTableInit:{
       handler(newValue, oldValue) { 
+        console.log(this.resTableInit)
         this.getQueryParam();
 　　　},  
 　　　deep: true 
     }
   },
   created(){
+    //this.$set(this.resTableInit,'title','rrrr')
     
     /*this.items=[
       {toolid:1,rulename:'text', isRequired:true, isDisabled:false, comname:'texttool',value:'山东',field:'province'},
