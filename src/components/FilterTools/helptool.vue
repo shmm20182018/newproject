@@ -5,7 +5,7 @@
         <el-tooltip :disabled="tooltipShow" effect="light" :content="BHMC" placement="bottom-start" offset="">
             <div style="position:relative">
             <el-input class="help-input" ref="helpInput" v-model="myrulename" :disabled="item.readonly" @focus="hideMC()" @blur="showMC()" ></el-input>
-            <i class="help-input-title" v-show="MCShow" @click="inputFocus()">{{rowData.F_MC?rowData.F_MC:blurData.mc}}</i>
+            <i class="help-input-title" v-show="MCShow" @click="inputFocus()">{{mcmcshow}}</i>
             </div>
         </el-tooltip> 
         <i class="el-icon-zoom-in" @click="openHelp"></i>
@@ -74,7 +74,9 @@ export default {
     },
     data () {
         return {
+            mcmcshow:'',
             MC:'',
+            BH:'',
             tooltipShow: true,//是否显示tooltip
             MCShow: true,//是否显示input隐藏值
             initData:{},//表格初始化数据
@@ -131,16 +133,10 @@ export default {
             }
         },
         BHMC(){
-            if(this.rowData){
-                this.tooltipShow = false;
-                return this.rowData.F_BH+'-'+this.rowData.F_MC
-            }else if(this.blurData){
-                this.tooltipShow = false;
-                return this.blurData.bh+'-'+this.blurData.mc
-            }else{
-                return ''
-            }
-            
+            if(this.BH){
+                this.tooltipShow = false
+                return this.BH +'-'+ this.mcmcshow
+            } 
         }
     },
     methods:{
@@ -182,7 +178,6 @@ export default {
             console.log(this.tableConfig.tableData)
         },
         getTableInfo(){
-            NProgress.start();
             const url ='api/help/init'; 
             var params = {};
             params.helpID = this.qitem.helpID
@@ -199,14 +194,11 @@ export default {
                 this.initData =res.data;                
             })
             .catch((res) => {
-                NProgress.done(); 
                 this.warnOpen(res.response.data)
             }) 
         },
         getSearchData(pageIndex){
-            NProgress.start();
             var params = {};
-            NProgress.start();
             const url ='api/help/search'; 
             var params = {};
             params.helpID = this.qitem.helpID
@@ -242,8 +234,10 @@ export default {
         rowClick(rowIndex, rowData, column){
             console.log(rowData)
             this.rowData = rowData 
-            var submitVal = 'F_'+ this.item.contentType    
+            var submitVal = this.item.contentType    
             this.myrulename = rowData[submitVal]
+            this.mcmcshow = rowData['F_MC']
+            this.BH = rowData['F_BH']
         },
         showMC(){ //input失去焦点时
             this.MCShow = true;
@@ -264,10 +258,16 @@ export default {
                 var data =res.data;
                 if(data.result){
                     this.blurData = data
-                    //this.myrulename = 
+                    var submitVal = this.item.contentType    
+                    this.myrulename = data[submitVal]
+                    this.mcmcshow = data['F_MC']
+                    this.BH = data['F_BH']
+                   
                 }else{
                     this.blurData = ''
                     this.rowData = ''
+                    this.mcmcshow = ''
+                    this.BH = ''
                     this.helpShow= true
                     this.searchText = this.myrulename
                     this.initTable()

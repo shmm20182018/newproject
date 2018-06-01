@@ -60,7 +60,7 @@ export default {
           NProgress.done();
           var data =res.data;
           console.log(data)
-          if(!data.queryParams.length){
+          if(!data.queryParams){
             this.filterShow = false
             this.pageIndex = !this.pageIndex
           }
