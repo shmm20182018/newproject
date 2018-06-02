@@ -142,7 +142,7 @@ export default{
             params.pageIndex =  pageIndex       //你要传给后台的参数值 key/value
             params.pageSize = pageSize
             params.condition = this.submitData
-            //console.log(this.submitData)
+            console.log(this.submitData)
             //console.log(pageIndex,pageSize,params);
             this.$axios({
                 method: 'post',
@@ -153,6 +153,7 @@ export default{
                 //console.log(res);
                 var data =res.data;
                 if(data && !this.isSubmit || this.tableType == 0){
+                    //console.log(data)
                     this.total = data.total
                     this.$set(this.tableConfig,'tableData',data.rowData)
                     if(this.showFooter){ //列数据汇总
@@ -396,7 +397,7 @@ export default{
         },
         mergeCells() {
             //声明一个map计算相同属性值在data对象出现的次数和
-            console.log(this.spanColumns)
+           // console.log(this.spanColumns)
             var spanColumns =this.spanColumns;
             var data = this.tableConfig.tableData;
             var startIndex = 0;
@@ -422,7 +423,7 @@ export default{
             }
             //this.sortMap=sortMap;
             this.sortMapArray = sortMapArray
-            console.log(this.sortMapArray)
+            //console.log(this.sortMapArray)
         },
         cellFormatter(){ //小数位数
             var columns = this.tableConfig.columns
@@ -520,12 +521,14 @@ export default{
             this.pageIndex =1;
             this.isSubmit = true;
             this.submitData = val
-            console.log(val)
             this.pageChange(1)
         })
         //this.$set(this.resTableInit,'title','rrrr')
         this.getTableInfo(this.resTableInit);
     },
+    beforeDestroy() {
+　　　　this.bus.$off();
+　　},
     watch:{
         tableResponse: {  
     　　　　handler(newValue, oldValue) {  

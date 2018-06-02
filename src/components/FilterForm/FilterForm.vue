@@ -98,9 +98,8 @@ export default {
     subForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          var newSubmitParams = this.submitForm
+          let newSubmitParams=Object.assign({}, this.submitForm);
           this.bus.$emit('filter-submit',newSubmitParams)
-          //this.getData();
         } else {
           console.log('error submit!!');
           return false;
@@ -158,13 +157,12 @@ export default {
         computedVal = val[0]
       }
       this.$set(this.submitForm,val[1],computedVal);
-      //this.$emit('on-filterdata-change',this.submitForm)
     }
   },
   watch:{
     resTableInit:{
       handler(newValue, oldValue) { 
-        console.log(this.resTableInit)
+       // console.log(this.resTableInit)
         this.getQueryParam();
 　　　},  
 　　　deep: true 
