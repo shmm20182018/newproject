@@ -1,5 +1,5 @@
 <template>
-  <el-col v-if="item" :span="6">
+  <el-col v-if="item" :span="toolSize">
     <div class="grid-content">
       <el-form-item :label="item.title" :prop="item.id" class="filtertool-text help-tool">
         <el-tooltip :disabled="tooltipShow" effect="light" :content="BHMC" placement="bottom-start" offset="">
@@ -33,15 +33,15 @@
                         :title-rows="tableConfig.titleRows"
                         :columns="tableConfig.columns"
                         :table-data="tableConfig.tableData"
-                        :paging-index="(pageIndex-1)*pageSize"
+                        :paging-index="(tableConfig.pageIndex-1)*tableConfig.pageSize"
                         :title-row-height="22"
                         :row-height="24"
                         >
                     </v-table>
                     <div class="footer-wapper clear">
                         <div  class="mt20 mb20 bold page-wrapper">
-                            <v-pagination size="small" @page-change="pageChange" :page-index="pageIndex" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'next', 'jumper']"></v-pagination>
-                            <span class="page-total">{{pageIndex+'/'+pageTotalCount}}</span>
+                            <v-pagination size="small" @page-change="pageChange" :page-index="tableConfig.pageIndex" :total="tableConfig.total" :page-size="tableConfig.pageSize" :layout="['total', 'prev', 'next', 'jumper']"></v-pagination>
+                            <span class="page-total">{{tableConfig.pageIndex+'/'+pageTotalCount}}</span>
                         </div> 
                         <el-form :inline="true"  class="search-form" size="mini">
                             <el-form-item label="">
@@ -68,8 +68,8 @@ export default {
         item:{
              type: Object
         },
-        rulename:{
-            type: String
+        toolSize:{
+    
         }
     },
     data () {
@@ -77,36 +77,31 @@ export default {
             mcmcshow:'',
             MC:'',
             BH:'',
+            ChangeValue: false,//判断input值是否发生变化
             tooltipShow: true,//是否显示tooltip
             MCShow: true,//是否显示input隐藏值
             initData:{},//表格初始化数据
             rowData:{},//点击放大镜表格行数据
             blurData:{},//失去焦点时匹配到的数据
             qitem: this.item,
-            helpShow: false,
+            helpShow: false,//弹出层显示
             searchText:'',
-            myrulename:this.rulename,
+            myrulename:this.item.defaultValue,
             myitem: this.item,
             showtable:false, //导出excel时候再挂载隐藏表格
             colorSeries:'wathet-style', //表格颜色风格默认样式
-            total:0,
             submitData:{},
             startIndex:0,
-            sortMapArray:[],//合并单元格rowspan-count
-            allArray:[],//存储所有和并列的数据用于复原表格
-            footer: [],
-            sumColumns:[],//所有需要footer合计的列
-            spanColumns:[],//所有需要合并单元格的列
-            frozenColumns:[],//所有需要冻结的列
-            queryImmediately:false,//初始化后立即查询数据
-            showExport:false,
-            showFooter:false,
-            tableType:0,//明细表还是复杂表
-            isSubmit:false,//是否由查询触发的请求
-            pageTotal:0,
-            pageIndex:1,
-            pageSize:10,
             tableConfig: {
+                total:50,
+                tableType:0,//明细表还是复杂表
+                pageIndex:1,
+                pageSize:40,
+                queryParams:{}, //查询参数           
+                showExport:false,
+                columnSumFlag:false,//是否列数据汇总
+                rowSumFlag: false, //行数据汇总
+                rowHeaders:[],//需要合并的列
                 multipleSort: false,
                 sumFlag: false, //是否需要合计
                 title:'', //表格标题
@@ -125,11 +120,11 @@ export default {
     },
     computed:{
         pageTotalCount(){
-            var yu = this.total%this.pageSize
+            var yu = this.tableConfig.total%this.tableConfig.pageSize
             if(yu){
-                return parseInt(this.total/this.pageSize) + 1
+                return parseInt(this.tableConfig.total/this.tableConfig.pageSize) + 1
             }else{
-                return parseInt(this.total/this.pageSize)
+                return parseInt(this.tableConfig.total/this.tableConfig.pageSize)
             }
         },
         BHMC(){
@@ -145,7 +140,7 @@ export default {
         },
         openHelp(){
             this.helpShow = true
-            this.initTable()
+            this.tableConfig = Object.assign({},this.tableConfig,this.initData)
         },
         closeHelp(){
             this.helpShow = false
@@ -160,23 +155,6 @@ export default {
                 message: val
             })
         },
-        initTable(){
-            var data = this.initData
-            this.total = data.total*1
-            this.queryParams = data.queryParams
-            this.queryImmediately = data.queryImmediately
-            this.showExport = data.showExport
-            this.showFooter = data.columnSumFlag
-            this.isrowSum = data.rowSumFlag
-            this.isMerge = data. isMerge
-            this.pageSize = data.pageSize * 1
-            this.$set(this.tableConfig,'sumFlag',data.sumFlag)
-            this.$set(this.tableConfig,'titleRows',data.titleRows)
-            this.$set(this.tableConfig,'title',data.title)
-            this.$set(this.tableConfig,'tableData',data.tableData)
-            this.$set(this.tableConfig,'columns',data.columns)
-            console.log(this.tableConfig.tableData)
-        },
         getTableInfo(){
             const url ='api/help/init'; 
             var params = {};
@@ -190,7 +168,6 @@ export default {
                 data: params
             }).then((res)=>{
                 console.log(res.data);
-                NProgress.done();
                 this.initData =res.data;                
             })
             .catch((res) => {
@@ -213,7 +190,6 @@ export default {
                 url:url,
                 data:params
             }).then((res)=>{
-                NProgress.done();
                 //console.log(res);
                 var data =res.data;
                 if(data){
@@ -232,7 +208,7 @@ export default {
             this.getSearchData(pageIndex);
         },
         rowClick(rowIndex, rowData, column){
-            console.log(rowData)
+            //console.log(rowData)
             this.rowData = rowData 
             var submitVal = this.item.contentType    
             this.myrulename = rowData[submitVal]
@@ -241,43 +217,44 @@ export default {
         },
         showMC(){ //input失去焦点时
             this.MCShow = true;
-            NProgress.start();
-            const url ='api/help/onblur'; 
-            var params = {};
-            params.helpID = this.qitem.helpID
-            params.helpTJ = this.qitem.helpConditions
-            params.helpBH = this.qitem.helpXH
-            params.queryText = this.myrulename
-            this.$axios({
-                method: 'post',
-                url:url,
-                data: params
-            }).then((res)=>{
-                console.log(res.data);
-                NProgress.done();
-                var data =res.data;
-                if(data.result){
-                    this.blurData = data
-                    var submitVal = this.item.contentType    
-                    this.myrulename = data[submitVal]
-                    this.mcmcshow = data['F_MC']
-                    this.BH = data['F_BH']
-                   
-                }else{
-                    this.blurData = ''
-                    this.rowData = ''
-                    this.mcmcshow = ''
-                    this.BH = ''
-                    this.helpShow= true
-                    this.searchText = this.myrulename
-                    this.initTable()
-                }
-                
-            })
-            .catch((res) => {
-                NProgress.done(); 
-                this.warnOpen(res.response.data)
-            }) 
+            if(this.ChangeValue){
+                const url ='api/help/onblur'; 
+                var params = {};
+                params.helpID = this.qitem.helpID
+                params.helpTJ = this.qitem.helpConditions
+                params.helpBH = this.qitem.helpXH
+                params.queryText = this.myrulename
+                this.$axios({
+                    method: 'post',
+                    url:url,
+                    data: params
+                }).then((res)=>{
+                    console.log(res.data);
+                    var data =res.data;
+                    if(data.result){
+                        this.blurData = data
+                        var submitVal = this.item.contentType    
+                        this.myrulename = data[submitVal]
+                        this.mcmcshow = data['F_MC']
+                        this.BH = data['F_BH']                   
+                    }else{
+                        this.blurData = ''
+                        this.rowData = ''
+                        this.mcmcshow = ''
+                        this.BH = ''
+                        this.tooltipShow = true
+                        this.helpShow= true
+                        this.searchText = this.myrulename
+                        this.tableConfig = Object.assign({},this.tableConfig,this.initData)
+                    }
+                    
+                })
+                .catch((res) => {
+                    NProgress.done(); 
+                    this.warnOpen(res.response.data)
+                }) 
+            }
+            this.ChangeValue = false
         },
         hideMC(){
             this.MCShow = false;
@@ -288,18 +265,12 @@ export default {
     },
     watch:{
         myrulename:function(val,oldval){  
-            if(val && val!=''){
-               // this.tooltipShow = false;
+            if(!val){
+               this.tooltipShow = true;
             }
-            //console.log(val)  
-            this.$emit("on-result-change",[val,this.myitem.id,this.myitem.componentName])
-        },
-        item:{
-            handler(newValue, oldValue) {
-                console.log(newValue)  
-                this.getTableInfo()
-            },  
-    　　　　deep: true 
+            this.ChangeValue = true
+            this.$set(this.item,'defaultValue',val)  
+            this.$emit("on-result-change",this.item.id)
         },
         MC(val,oldval){
             if(val){

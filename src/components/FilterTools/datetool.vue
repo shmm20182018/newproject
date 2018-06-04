@@ -1,5 +1,5 @@
 <template>
-  <el-col v-if="item" :span="6">
+  <el-col v-if="item" :span="toolSize">
     <div class="grid-content">
       <el-form-item :label="item.title" :prop="item.id">
         <el-date-picker
@@ -22,29 +22,29 @@ export default {
     item:{
       type: Object
     },
-    rulename:{
-      type: String
+    toolSize:{
+    
     }
   },
   data () {
     return {
-      myrulename:this.rulename,
-      myitem: this.item
-      
+      myrulename:this.item.defaultValue   
     };
   },
   watch:{
     myrulename:function(val,oldval){  
-      //console.log(val)  
-      this.$emit("on-result-change",[val,this.myitem.id,this.myitem.componentName])
-    },
-    ruleForm: {  
-　　　 handler(newValue, oldValue) {  
-        this.myrulename = newValue[this.myitem.id]; 
-        console.log(newValue)
-　　　 },  
-　　　 deep: true  
-　　 }
+      if(val){
+        var computedVal = val.substring(0,4)+val.substring(5,7)+val.substring(8)
+      }else{
+        var computedVal = val
+      }     
+      this.$set(this.item,'defaultValue',computedVal)
+      this.$set(this.ruleForm,this.item.id,val)
+     // this.$emit('update:this.ruleForm', [this.item.id,val],)
+      this.$emit("on-result-change",this.item.id)
+    }
+  },
+  created(){
   }
 }
 </script>
