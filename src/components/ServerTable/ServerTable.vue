@@ -451,13 +451,13 @@ export default{
             }
         },   
         exportExcel(){
-            var head= {};
+            var cols = [];
+            var head= {"!cols":cols};
             var headColLength = this.tableConfig.columns.length;
             var headRowLength = 1;
             var keyMap =[];
             var data;
-            var dataKeys;
-            var cols = [];
+            var dataKeys; 
             //明细表
             if(this.tableType==0){
                 this.tableConfig.columns.forEach((col,i)=>{
@@ -497,9 +497,9 @@ export default{
                         }
                     });
                 }
-                head["!merges"] = merges;
-                head["!cols"] = cols;                
+                head["!merges"] = merges;             
             }
+          
 
             if(this.tableConfig.tableData && this.tableConfig.tableData.length>0){
                 data = XLSX.xlsxUtils.format2Sheet(this.tableConfig.tableData,0,headRowLength,keyMap);
@@ -510,6 +510,7 @@ export default{
                 data = head;
                 dataKeys = Object.keys(data);
             }
+            console.log(dataKeys);
             let wb = XLSX.xlsxUtils.format2WB(data, "sheet1", undefined, "A1:"+dataKeys[dataKeys.length - 1]);
             let fileName =this.tableConfig.title+".xlsx";
             XLSX.xlsxUtils.saveAs(XLSX.xlsxUtils.format2Blob(wb),fileName);

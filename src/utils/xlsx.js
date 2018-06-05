@@ -131,6 +131,4 @@ const xlsxUtils = (function () {
 	return t
 })();
 
-export default  {
-    xlsxUtils
-}
+export default xlsxUtils
