@@ -2,8 +2,7 @@
   <div>
     <el-form :class="colorSeries" :show-message="false" label-position="left" label-width="80px" :model="ruleForm" :inline="true" :rules="rules"  ref="ruleForm"  class="demo-ruleForm" size="mini">
       <el-row :gutter="20">
-        <component  @on-result-change="onResultChange" :ruleForm="ruleForm" :rulename="ruleForm[item.id]" v-for="(item,index) in items" :is="item.componentName" :item="item" :index="index"  :key="item.id"></component>
-        <helptool></helptool>
+        <component :toolSize="toolSize" @on-result-change="onResultChange" :ruleForm.sync="ruleForm"  v-for="(item,index) in paramsInfo" :is="item.componentName" :item="item" :index="index"  :key="item.id"></component>
         <el-col :span="6">
           <div class="grid-content">
             <el-form-item class="filtertool-btn">
@@ -29,22 +28,19 @@ export default {
     routeParams:{
       type:Object
     },
-    resTableInit:{
-      type:Object
+    paramsInfo:{
+      type:Array
     }
   },
   data() {
     return {
       colorSeries:'wathet-style',
       tableType:-1,
-      pageIndex:1,
-      pageSize:20,
-      queryParams:[],
-      items:[],
       ruleForm: {},
       submitForm:{},//提交日期格式化
       rules: {},
-      resData:{}
+      resData:{},
+      toolSize:6,//过滤组件占得格数
     };
   },
   methods: {
@@ -55,52 +51,24 @@ export default {
       })
     },
     getQueryParam(){
-      if(this.resTableInit){
-        if(!this.resTableInit.isChart){
-          this.pageSize = this.resTableInit.pageSize
+      if(this.paramsInfo){
+        /*if(!this.resTableInit.isChart){
           this.tableType = this.resTableInit.tableType
           if(this.tableType == 0){
             this.colorSeries = 'green-style'
           }
-        }
-        this.items = this.resTableInit.queryParams;
-        console.log(this.resTableInit.queryParams)
+        }*/
+       // this.items = this.paramsInfo.queryParams;
+        //console.log(this.paramsInfo.queryParams)
         //console.log(this.items)
-        this.createRules();    
+         
       }
-    },
-    getData(pageSize){
-      NProgress.start();
-      var params = {};
-      const url ='api/report/search';
-      params.id =  70050;
-      params.engine = 'TJCX' 
-      params.pageIndex =  1       //你要传给后台的参数值 key/value
-      params.pageSize = this.pageSize
-      params.condition = this.submitForm
-      //console.log(params)
-      //console.log(pageIndex,pageSize);
-      this.$axios({
-          method: 'post',
-          url:url,
-          data:params
-      }).then((res)=>{
-          NProgress.done();
-          //console.log(res);
-          this.resData =res.data;
-          this.$emit("on-result-response",this.resData)
-        })
-        .catch(function (res) {
-          NProgress.done(); 
-          this.warnOpen(res.response.data)
-        }) 
     },
     subForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          var newSubmitParams = this.submitForm
+          let newSubmitParams=Object.assign({}, this.submitForm);
           this.bus.$emit('filter-submit',newSubmitParams)
-          //this.getData();
         } else {
           console.log('error submit!!');
           return false;
@@ -112,8 +80,8 @@ export default {
       //console.log(this.ruleForm) 
     },
     createRules(){
-      if(this.items){
-        this.items.forEach(item => {
+      if(this.paramsInfo){
+        this.paramsInfo.forEach(item => {
           this.ruleForm[item.id] = item.defaultValue;
           switch (item.componentName){
             case 'texttool':
@@ -141,50 +109,31 @@ export default {
         });
       }
       this.submitForm = this.ruleForm
-      //this.$emit('on-filterdata-change',this.submitForm)
       //console.log(this.ruleForm);
       //console.log(this.rules);
     },
     onResultChange(val){
-      this.$set(this.ruleForm,val[1],val[0]);//④外层调用组件方注册变更方法，将组件内的数据变更，同步到组件外的数据状态中
-      this.$refs['ruleForm'].validateField(val[1]); //父组件更新后再次验证;
-      var computedVal
-      //console.log(val[2])
-      if(val[0] && val[2] == 'datetool'){
-        computedVal = val[0].substring(0,4)+val[0].substring(5,7)+val[0].substring(8) 
-      }else if(val[0] && val[2] == 'monthtool'){
-        computedVal = val[0].substring(0,4)+val[0].substring(5)
-      }else{
-        computedVal = val[0]
-      }
-      this.$set(this.submitForm,val[1],computedVal);
-      //this.$emit('on-filterdata-change',this.submitForm)
+      this.$refs['ruleForm'].validateField(val); //父组件更新后再次验证;   
     }
   },
   watch:{
-    resTableInit:{
+    paramsInfo:{
       handler(newValue, oldValue) { 
-        console.log(this.resTableInit)
-        this.getQueryParam();
+        this.createRules();
+        //console.log(newValue)    
 　　　},  
 　　　deep: true 
     }
   },
   created(){
-    //this.$set(this.resTableInit,'title','rrrr')
-    
-    /*this.items=[
-      {toolid:1,rulename:'text', isRequired:true, isDisabled:false, comname:'texttool',value:'山东',field:'province'},
-      {toolid:1,rulename:'text1', isRequired:true, isDisabled:false,comname:'texttool',value:'青岛',field:'city'},
-      {toolid:2,rulename:'select',isRequired:true, isDisabled:false, comname:'selecttool',value:'',field:'city'},
-      {toolid:3,rulename:'daterange',isRequired:true, isDisabled:false, comname:'daterangetool',value:['2018-04-09','2018-04-30'],field:'date'},
-      {toolid:4,rulename:'year',isRequired:true, isDisabled:false, comname:'yeartool',value:'2017',field:'city'},
-      {toolid:5,rulename:'month',isRequired:true, isDisabled:false, comname:'monthtool',value:'2017-06',field:'city'},
-      {toolid:6,rulename:'date0',isRequired:false, isDisabled:true, comname:'datetool',value:'2014-06-09',field:'city'},
-      {toolid:6,rulename:'date1',isRequired:false, isDisabled:true, comname:'datetool',value:'2014-06-09',field:'city'},
-      {toolid:6,rulename:'date2',isRequired:true, isDisabled:false, comname:'datetool',value:'2015-10-31',field:'city'}
-    ];*/
-    
+    var screenWidth = document.body.clientWidth * 1//窗口的大小
+    //console.log(screenWidth)
+    if(screenWidth < 1200 && screenWidth > 768){
+      this.toolSize = 12
+    }else if(screenWidth <= 768){
+      this.toolSize = 24
+    }
+    //this.$set(this.resTableInit,'title','rrr   
   },
   components: {
     'texttool':texttool,
@@ -217,11 +166,14 @@ export default {
   .el-select{
     width: 100%;
   }
-
+ .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item {
+    margin-bottom: 8px;
+ }
   .green-style .el-form-item.is-success .el-input__inner,  .green-style .el-form-item.is-success .el-input__inner:focus, .green-style .el-form-item.is-success .el-textarea__inner,  .green-style .el-form-item.is-success .el-textarea__inner:focus {
     border-color: #03A656;
   }
   .wathet-style .el-form-item.is-success .el-input__inner, .wathet-style .el-form-item.is-success .el-input__inner:focus, .wathet-style .el-form-item.is-success .el-textarea__inner, .wathet-style  .el-form-item.is-success .el-textarea__inner:focus {
     border-color: #13B5BC;
   }
+
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <el-col v-if="item" :span="6">
+  <el-col v-if="item" :span="toolSize">
     <div class="grid-content">
       <el-form-item :label="item.title" :prop="item.id" class="filtertool-text">
         <el-input v-model="myrulename" :disabled="item.readonly"></el-input>
@@ -17,20 +17,20 @@ export default {
     item:{
       type: Object
     },
-    rulename:{
-      type: String
+    toolSize:{
+    
     }
   },
   data () {
     return {
-      myrulename:this.rulename,
-      myitem: this.item
+      myrulename:this.item.defaultValue,
     };
   },
   watch:{
-    myrulename:function(val,oldval){  
-      //console.log(val)  
-      this.$emit("on-result-change",[val,this.myitem.id,this.myitem.componentName])
+    myrulename:function(val,oldval){ 
+      this.$set(this.item,'defaultValue',val)       
+      this.$set(this.ruleForm,this.item.id,val)
+      this.$emit("on-result-change",this.item.id)
     }
   }
 }

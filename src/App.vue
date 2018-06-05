@@ -15,6 +15,9 @@ html{
   width: 100%;
   overflow: hidden;
 }
+body{
+  margin-top: 0
+}
 i{
   font-style: normal;
 }

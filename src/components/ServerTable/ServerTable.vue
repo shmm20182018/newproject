@@ -1,13 +1,12 @@
 <template>
     <div>
         <table v-if="showtable" id="exportTable" style="display:none">
-            <tbody>
-                
+            <tbody>     
             </tbody>
         </table>
         <div class="title-wrapper" >     
             <p>{{tableConfig.title}}</p>
-            <el-dropdown  v-show="showExport" @click="exportExcel" class="exportbtn">
+            <el-dropdown  v-show="tableConfig.showExport" @click="exportExcel" class="exportbtn">
                   <i class="btn el-icon-document"></i>
                 <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item  @click.native="exportExcel" >导出当前页</el-dropdown-item>
@@ -15,7 +14,7 @@
                 </el-dropdown-menu>
             </el-dropdown>
         </div>
-       <v-table id="serverTable"
+       <v-table id="serverTable" v-if="tableInfo"
              :class="colorSeries"
               is-vertical-resize
               :vertical-resize-offset='60'
@@ -34,14 +33,14 @@
               row-hover-color="#eee"
               row-click-color="#edf7ff"
               @sort-change="sortChange"
-              :paging-index="(pageIndex-1)*pageSize"
+              :paging-index="(tableConfig.pageIndex-1)*tableConfig.pageSize"
               :title-row-height="22"
               :row-height="24"
               :cell-merge="cellMerge"
               >
       </v-table>
-       <div  class="mt20 mb20 bold">
-        <v-pagination size="small" @page-change="pageChange" @page-size-change="pageSizeChange"  :pageSizeOption=[10,30,50,70,100] :page-index="pageIndex" :total="total" :page-size="pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
+       <div  class="mt20 mb20 bold table-pagination">
+        <v-pagination size="small" @page-change="pageChange" @page-size-change="pageSizeChange"  :pageSizeOption=[10,30,50,70,100] :page-index="tableConfig.pageIndex" :total="tableConfig.total" :page-size="tableConfig.pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
        </div>
   </div>
 </template>
@@ -56,15 +55,17 @@ export default{
         routeParams:{ //路由参数
             type:Object
         },
-        resTableInit:{ //表格初始化配置
+        tableInfo:{ //表格初始化配置
             type:Object
-        }
+        },
+        queryImmediately:{//初始化后立即查询数据
+            default:false
+        },
     },
     data(){
-        return {
+        return {  
             showtable:false, //导出excel时候再挂载隐藏表格
             colorSeries:'wathet-style', //表格颜色风格默认样式
-            total:50,
             submitData:{},
             startIndex:0,
             sortMapArray:[],//合并单元格rowspan-count
@@ -73,19 +74,19 @@ export default{
             sumColumns:[],//所有需要footer合计的列
             spanColumns:[],//所有需要合并单元格的列
             frozenColumns:[],//所有需要冻结的列
-            queryParams:{}, //查询参数
-            queryImmediately:false,//初始化后立即查询数据
-            showExport:false,
-            showFooter:false,
-            isrowSum: false, //行数据汇总
             isMerge: false,//客户定义单元格是否合并
             isCellMerge: true,//单元格是否合并
-            tableType:0,//明细表还是复杂表
-            isSubmit:false,//是否由查询触发的请求
-            pageIndex:-1,
-            pageSize:40,
+            isSubmit:false,//是否由查询触发的请求        
             tableConfig: {
-                rowHeaders:[{field:'address'},{field:'hobby'}],//需要合并的列
+                total:50,
+                tableType:0,//明细表还是复杂表
+                pageIndex:-1,
+                pageSize:40,
+                queryParams:{}, //查询参数           
+                showExport:false,
+                columnSumFlag:false,//是否列数据汇总
+                rowSumFlag: false, //行数据汇总
+                rowHeaders:[],//需要合并的列
                 multipleSort: false,
                 sumFlag: false, //是否需要合计
                 title:'', //表格标题
@@ -102,29 +103,16 @@ export default{
                 message: val
             })
         },
-        getTableInfo(val){
-            var data = val;
+        getTableInfo(data){
             if(data){
-                this.tableType = parseInt(data.tableType)
-                if(this.tableType == 0){
+                this.tableConfig = Object.assign({},this.tableConfig,data)
+                this.tableConfig.tableType = parseInt(data.tableType)
+                /*if(this.tableConfig.tableType == 0){
                     this.colorSeries = 'green-style'
-                }
-                this.total = data.total,
-                this.queryParams = data.queryParams,
-                this.queryImmediately = data.queryImmediately,
-                this.showExport = data.showExport,
-                this.showFooter = data.columnSumFlag,
-                this.isrowSum = data.rowSumFlag,
-                this.isMerge = data. isMerge,
-                this.pageSize = data.pageSize * 1,
-                this.$set(this.tableConfig,'sumFlag',data.sumFlag)
-                this.$set(this.tableConfig,'titleRows',data.titleRows)
-                this.$set(this.tableConfig,'title',data.title)
-                this.$set(this.tableConfig,'tableData',data.tableData)
-                this.$set(this.tableConfig,'columns',data.columns)
+                }*/
                 
                 if(this.queryImmediately){
-                    this.getTableData(this.pageIndex,this.pageSize);  
+                    this.getTableData(this.tableConfig.pageIndex,this.tableConfig.pageSize);  
                 }
                 this.countSumCol(data) 
             }
@@ -132,10 +120,10 @@ export default{
         getTableData(pageIndex,pageSize){
             NProgress.start();
             var params = {};
-            if(this.tableType == 0 || !this.isSubmit){
+            if(this.isSubmit){
                 var url ='api/report/search';  
-            }else if(this.tableType == 2 && this.isSubmit){
-                var url ='api/report/searchAndInit'; 
+            }else{
+                var url ='api/report/nextPage'; 
             }            
             params.engine = this.routeParams.engine 
             params.id =  this.routeParams.id;
@@ -150,43 +138,28 @@ export default{
                 data:params
             }).then((res)=>{
                 NProgress.done();
-                //console.log(res);
-                var data =res.data;
-                if(data && !this.isSubmit || this.tableType == 0){
-                    this.total = data.total
-                    this.$set(this.tableConfig,'tableData',data.rowData)
+               // console.log(res);
+                if(this.isSubmit){
+                    var data =res.data.tableInfo;
+                     this.tableConfig = Object.assign({},this.tableConfig,data);
+                }else{
+                    var data = res.data.tableData
+                    this.$set(this.tableConfig,'tableData',data)
+                }
+                //console.log(data)
+               
+                this.countSumCol(this.tableConfig.columns).then(()=>{
                     if(this.showFooter){ //列数据汇总
                         this.setFooterData(data);
                     }
-                    if(this.isrowSum){ //行数据汇总
+                    if(this.tableConfig.rowSumFlag){ //行数据汇总
                         this.rowSum();
                     } 
-                    this.isMerge = true
-                    if(this.isMerge){ //合并单元格计算
+                    if(this.tableConfig.columns[0]['groupby']){ //合并单元格计算
                         this.mergeCells()   
                     }
-                    this.cellFormatter()
-                 
-                }else if(data && this.tableType == 2 && this.isSubmit){
-                    console.log(data)
-                    this.total = data.total
-                    this.$set(this.tableConfig,'titleRows',data.titleRows)
-                    this.$set(this.tableConfig,'columns',data.columns)
-                    this.$set(this.tableConfig,'tableData',data.tableData)
-                    this.countSumCol(data.columns).then(()=>{
-                        if(this.showFooter){ //列数据汇总
-                            this.setFooterData(data);
-                        }
-                        if(this.isrowSum){ //行数据汇总
-                            this.rowSum();
-                        } 
-                        this.isMerge = true
-                        if(this.isMerge){ //合并单元格计算
-                            this.mergeCells()   
-                        }
-                        this.cellFormatter() 
-                    }) 
-                }
+                    this.cellFormatter() 
+                }) 
                 this.isSubmit = false
             })
             .catch((res) => {
@@ -196,16 +169,16 @@ export default{
             }) 
         },
         pageChange(pageIndex){
-            this.pageIndex = pageIndex;
+            this.$set(this.tableConfig,'pageIndex',pageIndex);
             //console.log(this.pageIndex,'index')
            
-            this.getTableData(pageIndex,this.pageSize);
+            this.getTableData(pageIndex,this.tableConfig.pageSize);
         
            
         },
         pageSizeChange(pageSize){ 
-            this.pageIndex = 1;
-            this.pageSize = pageSize;
+            this.$set(this.tableConfig,'pageIndex',1);
+            this.$set(this.tableConfig,'pageSize',pageSize);
             this.getTableData(1,pageSize);
         },
         sortChange2(params){
@@ -216,30 +189,33 @@ export default{
         sortChange(params){
             this.isCellMerge = false
             var columns = this.tableConfig.columns
+            //console.log(params)
             if(!this.multipleSort){//单列排序
                 for(let i in params){
-                    for(let j=0;j<columns.length;j++){
-                        if(columns[j]['field'] == i){
-                            if(columns[j]['formatterType'] == 'N'){
-                                this.tableConfig.tableData.sort(function (a, b) {
-                                    if (params[i] === 'asc'){
-                                        return a[i] - b[i];  
-                                    }else if(params[i] === 'desc'){
-                                            return b[i] - a[i];
-                                    }else{
-                                        return 0;
-                                    }
-                                });
-                            }else{
-                                this.tableConfig.tableData.sort(function (a, b) {
-                                    if (params[i] === 'asc'){
-                                        return a[i].localeCompare(b[i])
-                                    }else if(params[i] === 'desc'){
-                                        return b[i].localeCompare(a[i])
-                                    }else{
-                                        return 0;
-                                    }
-                                });
+                    if(params[i]){
+                        for(let j=0;j<columns.length;j++){
+                            if(columns[j]['field'] == i){
+                                if(columns[j]['formatterType'] == 'N'){
+                                    this.tableConfig.tableData.sort(function (a, b) {
+                                        if (params[i] === 'asc'){
+                                            return a[i] - b[i];  
+                                        }else if(params[i] === 'desc'){
+                                                return b[i] - a[i];
+                                        }else{
+                                            return 0;
+                                        }
+                                    });
+                                }else{
+                                    this.tableConfig.tableData.sort(function (a, b) {
+                                        if (params[i] === 'asc'){
+                                            return a[i].localeCompare(b[i])
+                                        }else if(params[i] === 'desc'){
+                                            return b[i].localeCompare(a[i])
+                                        }else{
+                                            return 0;
+                                        }
+                                    });
+                                }
                             }
                         }
                     }
@@ -380,7 +356,7 @@ export default{
             for (var j=0; j<spanColumns.length; j++) {
                 var fieldName = spanColumns[j];
                 var sortMap ={}
-                for (var i =0; i < this.pageSize; i++) {
+                for (var i =0; i < this.tableConfig.pageSize; i++) {
                     for (var prop in data[i]) {
                         if (prop == fieldName) {
                             var key = data[i][prop]
@@ -396,7 +372,7 @@ export default{
         },
         mergeCells() {
             //声明一个map计算相同属性值在data对象出现的次数和
-            console.log(this.spanColumns)
+           // console.log(this.spanColumns)
             var spanColumns =this.spanColumns;
             var data = this.tableConfig.tableData;
             var startIndex = 0;
@@ -405,7 +381,7 @@ export default{
             for (var j=0; j<spanColumns.length; j++) {
                 var fieldName = spanColumns[j];
                 var sortMap ={}
-                for (var i =0; i < this.pageSize; i++) {
+                for (var i =0; i < this.tableConfig.pageSize; i++) {
                     for (var prop in data[i]) {
                         if (prop == fieldName) {
                             var key = data[i][prop]
@@ -422,7 +398,7 @@ export default{
             }
             //this.sortMap=sortMap;
             this.sortMapArray = sortMapArray
-            console.log(this.sortMapArray)
+            //console.log(this.sortMapArray)
         },
         cellFormatter(){ //小数位数
             var columns = this.tableConfig.columns
@@ -459,7 +435,7 @@ export default{
             var data;
             var dataKeys; 
             //明细表
-            if(this.tableType==0){
+            if(this.tableConfig.tableType==0){
                 this.tableConfig.columns.forEach((col,i)=>{
                     head[XLSX.xlsxUtils.convertNum2Letter(i+1)+1] = {"v":col.title};
                     cols.push({  wpx: col.width/2  });
@@ -518,24 +494,18 @@ export default{
     },
     created(){
         this.bus.$on('filter-submit',(val)=>{
-            this.pageIndex =1;
+            this.tableConfig.pageIndex =1;
             this.isSubmit = true;
             this.submitData = val
-            console.log(val)
             this.pageChange(1)
         })
         //this.$set(this.resTableInit,'title','rrrr')
-        this.getTableInfo(this.resTableInit);
+        //console.log(this.tableInfo)
+        this.getTableInfo(this.tableInfo);
     },
-    watch:{
-        tableResponse: {  
-    　　　　handler(newValue, oldValue) {  
-    　　　　　　 this.total = newValue.total;
-                this.tableConfig.tableData = newValue.rowData;  
-    　　　　},  
-    　　　　deep: true  
-　　    }
-  }
+    beforeDestroy() {
+　　　　this.bus.$off();
+　　}
 }  
 </script>
 <style>
@@ -569,6 +539,9 @@ export default{
     }
     .v-table-sort-icon i:first-child {
         top: -2px;
+    }
+    .table-pagination{
+        margin-top: 5px;
     }
     .green-style .v-table-title-class td{
         background-color: #29926F;
@@ -660,16 +633,16 @@ export default{
         height: 40px !important
     }
     ::-webkit-scrollbar{  
-        width:8px;  
-        height:8px;  
+        width:12px;  
+        height:12px;  
     }  
     ::-webkit-scrollbar-track{  
         background: #f6f6f6;  
-        border-radius:4px;  
+        border-radius:6px;  
     }  
     ::-webkit-scrollbar-thumb{  
         background: #aaa;  
-        border-radius:4px;  
+        border-radius:6px;  
     }  
     ::-webkit-scrollbar-thumb:hover{  
         background: #747474;  
@@ -678,8 +651,8 @@ export default{
         background: #f6f6f6;  
     }  
     .v-table-body-class::-webkit-scrollbar{  
-        width:8px;  
-        height:8px;  
+        width:10px;  
+        height:10px;  
     }  
     .v-table-body-class::-webkit-scrollbar-track{  
         background: #f6f6f6;  
@@ -696,7 +669,7 @@ export default{
         background: #f6f6f6;  
     } 
     .v-table-views {
-        border: 1px solid transparent;
+      
     } 
     .btn{
         font-size:25px;

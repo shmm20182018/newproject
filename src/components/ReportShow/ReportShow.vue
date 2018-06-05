@@ -3,14 +3,14 @@
     <div class="filter-tools">
       <i :class="iconArrow" class="icon-toggle" @click="showChange(filterShow)"></i>
       <transition name="slide-fade">
-        <filter-form  v-show="filterShow"  :resTableInit="resTableInit" :routeParams="routerParams" ></filter-form>
+        <filter-form  v-show="filterShow"  :paramsInfo="resInitInfo.paramsInfo" :routeParams="routerParams" ></filter-form>
       </transition>
     </div>
     <div class="table-wrapper">
-      <server-table v-if="tableShow" :routeParams="routerParams" :resTableInit="resTableInit" :resetpageIndex="pageIndex"></server-table> 
+      <server-table v-if="tableShow" :queryImmediately="resInitInfo.queryImmediately" :routeParams="routerParams" :tableInfo="resInitInfo.tableInfo" :resetpageIndex="pageIndex"></server-table> 
     </div>
     <div class="chart-wrapper">
-      <server-chart v-if="chartShow"></server-chart> 
+      <server-chart v-if="chartShow" :queryImmediately="resInitInfo.queryImmediately" :chartInfo="resInitInfo.chartInfo"></server-chart> 
     </div>
   </div>
 </template>
@@ -31,7 +31,7 @@ export default {
   },
   data () {
     return {
-      resTableInit:{},//表格初始化数据
+      resInitInfo:{},//初始化时请求到的数据
       routerParams:{},//路由参数
       filterData:{},//查询条件参数
       pageIndex:true,
@@ -58,16 +58,16 @@ export default {
       }).then((res)=>{
           console.log(res.data);
           NProgress.done();
-          var data =res.data;
-          console.log(data)
-          if(!data.queryParams.length){
+          this.resInitInfo = Object.assign({},this.resInitInfo,res.data);
+          if(!this.resInitInfo.paramsInfo){
             this.filterShow = false
             this.pageIndex = !this.pageIndex
           }
-          if(!data.isChart){
+          if(this.resInitInfo.tableInfo){
             this.tableShow = true
-            this.resTableInit2 = data
-            this.resTableInit = this.resTableInit2 
+          }
+          if(this.resInitInfo.chartInfo){
+            this.chartShow = true
           }
       })
       .catch((res) => {
