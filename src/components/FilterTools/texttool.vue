@@ -1,8 +1,10 @@
 <template>
-  <el-col v-if="item" :span="toolSize">
+  <el-col v-if="internalParam" :span="toolSize">
     <div class="grid-content">
-      <el-form-item :label="item.title" :prop="item.id" class="filtertool-text">
-        <el-input v-model="myrulename" :disabled="item.readonly"></el-input>
+      <el-form-item :label="internalParam.title" :prop="internalParam.id" class="filtertool-text">
+        <el-input v-model.lazy="internalParam.defaultValue" 
+                  @change="$emit('update:ruleFormValue', internalParam.defaultValue)"
+                  :disabled="internalParam.readonly"></el-input>
       </el-form-item>
     </div>
   </el-col>    
@@ -10,28 +12,17 @@
 
 <script>
 export default {
- props:{
-    ruleForm:{
-      type: Object
-    },
-    item:{
-      type: Object
-    },
-    toolSize:{
-    
-    }
-  },
+ props:['param','toolSize','ruleFormValue'],
   data () {
     return {
-      myrulename:this.item.defaultValue,
+      internalParam:{
+        readonly:false,
+        defaultValue :""
+      },
     };
   },
-  watch:{
-    myrulename:function(val,oldval){ 
-      this.$set(this.item,'defaultValue',val)       
-      this.$set(this.ruleForm,this.item.id,val)
-      this.$emit("on-result-change",this.item.id)
-    }
+  created(){
+    this.internalParam =  this.$Clone(this.param);
   }
 }
 </script>
