@@ -6,7 +6,6 @@ import 'nprogress/nprogress.css'
 export default function(_method,_url,_data){
     var vm = this;
     return new Promise((resolve, reject) => {
-        debugger;
         NProgress.start(); 
         axios({
             method: _method,
