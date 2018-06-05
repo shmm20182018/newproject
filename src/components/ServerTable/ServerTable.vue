@@ -1,12 +1,8 @@
 <template>
     <div>
-        <table v-if="showtable" id="exportTable" style="display:none">
-            <tbody>     
-            </tbody>
-        </table>
         <div class="title-wrapper" >     
-            <p>{{tableConfig.title}}</p>
-            <el-dropdown  v-show="tableConfig.showExport" @click="exportExcel" class="exportbtn">
+            <p>{{interTableInfo.title}}</p>
+            <el-dropdown  class="exportbtn">
                   <i class="btn el-icon-document"></i>
                 <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item  @click.native="exportExcel" >导出当前页</el-dropdown-item>
@@ -15,7 +11,7 @@
             </el-dropdown>
         </div>
        <v-table id="serverTable" v-if="tableInfo"
-             :class="colorSeries"
+              class="wathet-style"
               is-vertical-resize
               :vertical-resize-offset='60'
               is-horizontal-resize
@@ -24,171 +20,118 @@
               :multiple-sort="false"
               :min-height="340"
               even-bg-color="#f2f2f2"
-              :title-rows="tableConfig.titleRows"
-              :columns="tableConfig.columns"
-              :table-data="tableConfig.tableData"
+              :title-rows="interTableInfo.titleRows"
+              :columns="interTableInfo.columns"
+              :table-data="interTableInfo.tableData"
               :footer-cell-class-name="setFooterCellClass"
               :footer="footer"
               :footer-row-height="40"
               row-hover-color="#eee"
               row-click-color="#edf7ff"
               @sort-change="sortChange"
-              :paging-index="(tableConfig.pageIndex-1)*tableConfig.pageSize"
+              :paging-index="(pageIndex-1)*interTableInfo.pageSize"
               :title-row-height="22"
               :row-height="24"
               :cell-merge="cellMerge"
               >
       </v-table>
        <div  class="mt20 mb20 bold table-pagination">
-        <v-pagination size="small" @page-change="pageChange" @page-size-change="pageSizeChange"  :pageSizeOption=[10,30,50,70,100] :page-index="tableConfig.pageIndex" :total="tableConfig.total" :page-size="tableConfig.pageSize" :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
+        <v-pagination size="small" @page-change="pageChange" 
+                                   @page-size-change="pageSizeChange"  
+                                   :pageSizeOption=[10,30,50,70,100]  
+                                   :total="interTableInfo.total" 
+                                   :page-size="interTableInfo.pageSize" 
+                                   :page-index="pageIndex"
+                                   :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
        </div>
   </div>
 </template>
 <script>
+import 'vue-easytable/libs/themes-base/index.css'
+import {VTable,VPagination} from 'vue-easytable'
 import XLSX from '../../utils/xlsx.js'
-import NProgress from 'nprogress'
-export default{
-    props:{
-        resetpageIndex:{//查询是重置页面下标
-            
-        },
-        routeParams:{ //路由参数
-            type:Object
-        },
-        tableInfo:{ //表格初始化配置
-            type:Object
-        },
-        queryImmediately:{//初始化后立即查询数据
-            default:false
-        },
-    },
+
+export default {
+    props:['tableInfo','queryParams','id','engine'],
     data(){
         return {  
-            showtable:false, //导出excel时候再挂载隐藏表格
-            colorSeries:'wathet-style', //表格颜色风格默认样式
-            submitData:{},
-            startIndex:0,
+            //本地缓存表格数据
+            pageIndex:1,
+            interTableData:[],
+            interTableInfo:{
+                total:50,
+                tableType:0,//明细表还是复杂表
+                pageSize:40,
+                queryParams:{}, //查询参数           
+                columnSumFlag:false,//是否列数据汇总
+                rowSumFlag: false, //行数据汇总
+                rowHeaders:[],//需要合并的列
+                multipleSort: false,
+                sumFlag: false, //是否需要合计
+                title:'', 
+                tableData: [],
+                columns: [],
+                titleRows: []
+            },
+
             sortMapArray:[],//合并单元格rowspan-count
             allArray:[],//存储所有和并列的数据用于复原表格
             footer: [],
             sumColumns:[],//所有需要footer合计的列
             spanColumns:[],//所有需要合并单元格的列
             frozenColumns:[],//所有需要冻结的列
-            isMerge: false,//客户定义单元格是否合并
-            isCellMerge: true,//单元格是否合并
-            isSubmit:false,//是否由查询触发的请求        
-            tableConfig: {
-                total:50,
-                tableType:0,//明细表还是复杂表
-                pageIndex:-1,
-                pageSize:40,
-                queryParams:{}, //查询参数           
-                showExport:false,
-                columnSumFlag:false,//是否列数据汇总
-                rowSumFlag: false, //行数据汇总
-                rowHeaders:[],//需要合并的列
-                multipleSort: false,
-                sumFlag: false, //是否需要合计
-                title:'', //表格标题
-                tableData: [],
-                columns: [],
-                titleRows: []
-            }
+
+        }
+    },
+    computed:{
+        requestParams:function(){
+            return {
+                id:this.id,
+                engine:this.engine,
+                pageIndex:this.pageIndex,
+                condition:this.queryParams,
+                pageSize: this.interTableInfo.pageSize
+        }
+    }
+    },
+    watch:{
+        'tableInfo':{
+            handler: function (newVal) {
+                this.interTableInfo = Object.assign({},this.interTableInfo,this.tableInfo);
+                console.log("servertable tableInfo handler");
+                console.log(this.interTableInfo);
+            },
+            deep: true
+        },
+        'queryParams':{
+            handler: function (newVal) {
+                this.interTableData.length = 0;
+            },
+            deep: true
         }
     },
     methods:{
-        warnOpen(val) {
-            this.$notify.error({
-                title: '错误',
-                message: val
-            })
-        },
-        getTableInfo(data){
-            if(data){
-                this.tableConfig = Object.assign({},this.tableConfig,data)
-                this.tableConfig.tableType = parseInt(data.tableType)
-                /*if(this.tableConfig.tableType == 0){
-                    this.colorSeries = 'green-style'
-                }*/
-                
-                if(this.queryImmediately){
-                    this.getTableData(this.tableConfig.pageIndex,this.tableConfig.pageSize);  
-                }
-                this.countSumCol(data) 
-            }
-        },
-        getTableData(pageIndex,pageSize){
-            NProgress.start();
-            var params = {};
-            if(this.isSubmit){
-                var url ='api/report/search';  
-            }else{
-                var url ='api/report/nextPage'; 
-            }            
-            params.engine = this.routeParams.engine 
-            params.id =  this.routeParams.id;
-            params.pageIndex =  pageIndex       //你要传给后台的参数值 key/value
-            params.pageSize = pageSize
-            params.condition = this.submitData
-            //console.log(this.submitData)
-            //console.log(pageIndex,pageSize,params);
-            this.$axios({
-                method: 'post',
-                url:url,
-                data:params
-            }).then((res)=>{
-                NProgress.done();
-               // console.log(res);
-                if(this.isSubmit){
-                    var data =res.data.tableInfo;
-                     this.tableConfig = Object.assign({},this.tableConfig,data);
-                }else{
-                    var data = res.data.tableData
-                    this.$set(this.tableConfig,'tableData',data)
-                }
-                //console.log(data)
-               
-                this.countSumCol(this.tableConfig.columns).then(()=>{
-                    if(this.showFooter){ //列数据汇总
-                        this.setFooterData(data);
-                    }
-                    if(this.tableConfig.rowSumFlag){ //行数据汇总
-                        this.rowSum();
-                    } 
-                    if(this.tableConfig.columns[0]['groupby']){ //合并单元格计算
-                        this.mergeCells()   
-                    }
-                    this.cellFormatter() 
-                }) 
-                this.isSubmit = false
-            })
-            .catch((res) => {
-                this.isSubmit = false
-                NProgress.done(); 
-                this.warnOpen(res.response.data)
-            }) 
-        },
         pageChange(pageIndex){
-            this.$set(this.tableConfig,'pageIndex',pageIndex);
-            //console.log(this.pageIndex,'index')
-           
-            this.getTableData(pageIndex,this.tableConfig.pageSize);
-        
-           
+            this.pageIndex = pageIndex;
+
+            if(this.interTableData[pageIndex]){
+                this.interTableInfo.tableData =  this.interTableData[pageIndex];
+                return;
+            }
+
+            this.$http('post',"api/report/nextPage",this.requestParams).then((res)=>{
+                this.interTableData[pageIndex] = res.data;
+                this.reportInfo.tableData = res.data;
+             });
         },
         pageSizeChange(pageSize){ 
-            this.$set(this.tableConfig,'pageIndex',1);
-            this.$set(this.tableConfig,'pageSize',pageSize);
-            this.getTableData(1,pageSize);
-        },
-        sortChange2(params){
-            this.sortChange(params).then(()=>{
-                this.isCellMerge = true
-            }) 
+            this.pageIndex = 1;
+            this.$set(this.interTableInfo,'pageSize',pageSize);
+            this.pageChange(1);
         },
         sortChange(params){
             this.isCellMerge = false
-            var columns = this.tableConfig.columns
+            var columns = this.interTableInfo.columns
             //console.log(params)
             if(!this.multipleSort){//单列排序
                 for(let i in params){
@@ -196,7 +139,7 @@ export default{
                         for(let j=0;j<columns.length;j++){
                             if(columns[j]['field'] == i){
                                 if(columns[j]['formatterType'] == 'N'){
-                                    this.tableConfig.tableData.sort(function (a, b) {
+                                    this.interTableInfo.tableData.sort(function (a, b) {
                                         if (params[i] === 'asc'){
                                             return a[i] - b[i];  
                                         }else if(params[i] === 'desc'){
@@ -206,7 +149,7 @@ export default{
                                         }
                                     });
                                 }else{
-                                    this.tableConfig.tableData.sort(function (a, b) {
+                                    this.interTableInfo.tableData.sort(function (a, b) {
                                         if (params[i] === 'asc'){
                                             return a[i].localeCompare(b[i])
                                         }else if(params[i] === 'desc'){
@@ -233,7 +176,7 @@ export default{
         setFooterData(data){ //列数据统计
             let result = [],
                 sumVal = ['求和'],
-                columns = this.tableConfig.columns
+                columns = this.interTableInfo.columns
             for (let i=1; i<columns.length; i++) {
                 let column = columns[i];
                 if(column.sumFlag){
@@ -262,7 +205,7 @@ export default{
             }
         },
         rowSum(){ //行数据统计
-            var columns = this.tableConfig.columns
+            var columns = this.interTableInfo.columns
             var colLast = columns[columns.length-1]
             this.$set(colLast,"formatter",(rowData) => {          				
                 var count = 0
@@ -351,12 +294,12 @@ export default{
         },
         allCells(){
             var spanColumns =this.spanColumns;
-            var data = this.tableConfig.tableData;
+            var data = this.interTableInfo.tableData;
             var allArray =[];
             for (var j=0; j<spanColumns.length; j++) {
                 var fieldName = spanColumns[j];
                 var sortMap ={}
-                for (var i =0; i < this.tableConfig.pageSize; i++) {
+                for (var i =0; i < this.interTableInfo.pageSize; i++) {
                     for (var prop in data[i]) {
                         if (prop == fieldName) {
                             var key = data[i][prop]
@@ -374,14 +317,14 @@ export default{
             //声明一个map计算相同属性值在data对象出现的次数和
            // console.log(this.spanColumns)
             var spanColumns =this.spanColumns;
-            var data = this.tableConfig.tableData;
+            var data = this.interTableInfo.tableData;
             var startIndex = 0;
             var endIndex = data.length;
             var sortMapArray =[];
             for (var j=0; j<spanColumns.length; j++) {
                 var fieldName = spanColumns[j];
                 var sortMap ={}
-                for (var i =0; i < this.tableConfig.pageSize; i++) {
+                for (var i =0; i < this.interTableInfo.pageSize; i++) {
                     for (var prop in data[i]) {
                         if (prop == fieldName) {
                             var key = data[i][prop]
@@ -401,7 +344,7 @@ export default{
             //console.log(this.sortMapArray)
         },
         cellFormatter(){ //小数位数
-            var columns = this.tableConfig.columns
+            var columns = this.interTableInfo.columns
             for (let i=0;i<columns.length;i++){
                 var n = parseInt(columns[i].formatterContent)
                 if(columns[i].formatterType == 'N' && n>=0 && n<20){
@@ -418,26 +361,26 @@ export default{
         nofrozencol(){
             for(let o of this.frozenColumns){
                 console.log(o)
-               this.$set(this.tableConfig.columns[o.index],o.field,false)
+               this.$set(this.interTableInfo.columns[o.index],o.field,false)
             }
         },
         frozencol(){
             for(let o of this.frozenColumns){
-                this.$set(this.tableConfig.columns[o.index],o.field,true)
+                this.$set(this.interTableInfo.columns[o.index],o.field,true)
             }
         },   
         exportExcel(){
             var cols = [];
             var head= {"!cols":cols};
-            var headColLength = this.tableConfig.columns.length;
+            var headColLength = this.interTableInfo.columns.length;
             var headRowLength = 1;
             var keyMap =[];
             var data;
             var dataKeys; 
             //明细表
-            if(this.tableConfig.tableType==0){
-                this.tableConfig.columns.forEach((col,i)=>{
-                    head[XLSX.xlsxUtils.convertNum2Letter(i+1)+1] = {"v":col.title};
+            if(this.interTableInfo.tableType==0){
+                this.interTableInfo.columns.forEach((col,i)=>{
+                    head[XLSX.convertNum2Letter(i+1)+1] = {"v":col.title};
                     cols.push({  wpx: col.width/2  });
                     keyMap.push(col.field);
                 });
@@ -445,13 +388,13 @@ export default{
             else{
                 //var head = { "A1": { "v": "日期" }, "B1": { "v": "配送信息" }, "C1": { "v": "" }, "D1": { "v": "" }, "E1": { "v": "" }, "F1": { "v": "" }, "A2": { "v": "" }, "B2": { "v": "姓名" }, "C2": { "v": "地址" }, "D2": { "v": "" }, "E2": { "v": "" }, "F2": { "v": "" }, "A3": { "v": "" }, "B3": { "v": "" }, "C3": { "v": "省份" }, "D3": { "v": "市区" }, "E3": { "v": "地址" }, "F3": { "v": "邮编" },
                 // "!merges": [{ "s": { "c": 1, "r": 0 }, "e": { "c": 5, "r": 0 } }, { "s": { "c": 2, "r": 1 }, "e": { "c": 5, "r": 1 } }, { "s": { "c": 0, "r": 0 }, "e": { "c": 0, "r": 2 } }, { "s": { "c": 1, "r": 1 }, "e": { "c": 1, "r": 2 } }] };
-                if(!this.tableConfig) return;
-                headRowLength = this.tableConfig.titleRows.length;
-                var titleRows = JSON.parse(JSON.stringify(this.tableConfig.titleRows));
+                if(!this.interTableInfo) return;
+                headRowLength = this.interTableInfo.titleRows.length;
+                var titleRows = this.$Clone(this.interTableInfo.titleRows);
                 var merges = [];
            
                 for(let i = 0; i<headRowLength;i++){
-                    this.tableConfig.columns.forEach((col,j)=>{
+                    this.interTableInfo.columns.forEach((col,j)=>{
                         //找到包含该column的titleRow
                         var r = titleRows[i].find((n) => n.fields.indexOf(col.field)>-1);
                         if(i==0){
@@ -459,11 +402,11 @@ export default{
                             cols.push({  wpx: col.width/2  });
                         }
                         if(r.isInArray){
-                            head[XLSX.xlsxUtils.convertNum2Letter(j+1)+(i+1)] = {"v":""};
+                            head[XLSX.convertNum2Letter(j+1)+(i+1)] = {"v":""};
                         }
                         else{
                             r.isInArray = true;
-                            let name = XLSX.xlsxUtils.convertNum2Letter(j+1)+(i+1);
+                            let name = XLSX.convertNum2Letter(j+1)+(i+1);
                             head[name] = {"v":r.title};
                             //设置xlsx单元格样式
                             if(i==0)
@@ -477,8 +420,8 @@ export default{
             }
           
 
-            if(this.tableConfig.tableData && this.tableConfig.tableData.length>0){
-                data = XLSX.xlsxUtils.format2Sheet(this.tableConfig.tableData,0,headRowLength,keyMap);
+            if(this.interTableInfo.tableData && this.interTableInfo.tableData.length>0){
+                data = XLSX.format2Sheet(this.interTableInfo.tableData,0,headRowLength,keyMap);
                 dataKeys = Object.keys(data);
                 for (let k in head) data[k] = head[k];//追加列头
             }
@@ -486,26 +429,15 @@ export default{
                 data = head;
                 dataKeys = Object.keys(data);
             }
-            console.log(dataKeys);
-            let wb = XLSX.xlsxUtils.format2WB(data, "sheet1", undefined, "A1:"+dataKeys[dataKeys.length - 1]);
-            let fileName =this.tableConfig.title+".xlsx";
-            XLSX.xlsxUtils.saveAs(XLSX.xlsxUtils.format2Blob(wb),fileName);
+            let wb = XLSX.format2WB(data, "sheet1", undefined, "A1:"+dataKeys[dataKeys.length - 1]);
+            let fileName =this.interTableInfo.title+".xlsx";
+            XLSX.saveAs(XLSX.format2Blob(wb),fileName);
         }
     },
-    created(){
-        this.bus.$on('filter-submit',(val)=>{
-            this.tableConfig.pageIndex =1;
-            this.isSubmit = true;
-            this.submitData = val
-            this.pageChange(1)
-        })
-        //this.$set(this.resTableInit,'title','rrrr')
-        //console.log(this.tableInfo)
-        this.getTableInfo(this.tableInfo);
-    },
-    beforeDestroy() {
-　　　　this.bus.$off();
-　　}
+    components: {
+        VTable,
+        VPagination
+  }
 }  
 </script>
 <style>

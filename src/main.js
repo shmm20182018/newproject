@@ -3,21 +3,16 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-import axios from 'axios'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
-import 'nprogress/nprogress.css'
-import 'vue-easytable/libs/themes-base/index.css'
-
-import {VTable,VPagination} from 'vue-easytable'
+import deepClone from './utils/deepClone.js'
+import http from './utils/http.js'
 
 
-Vue.component(VTable.name, VTable)
-Vue.component(VPagination.name, VPagination)
 Vue.use(ElementUI);
-
 Vue.config.productionTip = false
-Vue.prototype.$axios = axios
+Vue.prototype.$http= http
+Vue.prototype.$Clone = deepClone
 
 Vue.directive('drag',//自定义指令                                      JS
         {bind:function (el, binding) {
@@ -46,11 +41,8 @@ Vue.directive('drag',//自定义指令                                      JS
                 };
             }
         }
-    );
-let bus = new Vue()
-Vue.prototype.bus = bus   
+);
 
-/* eslint-disable no-new */
 new Vue({
   el: '#app',
   router,
