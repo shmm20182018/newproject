@@ -35,7 +35,7 @@
               :cell-merge="cellMerge"
               >
       </v-table>
-       <div  class="mt20 mb20 bold table-pagination">
+       <div v-if="interTableInfo.tableData && interTableInfo.tableData.length>0" class="mt20 mb20 bold table-pagination">
         <v-pagination size="small" @page-change="pageChange" 
                                    @page-size-change="pageSizeChange"  
                                    :pageSizeOption=[10,30,50,70,100]  
@@ -103,9 +103,9 @@ export default {
                 return;
             }
 
-            this.$http('post',"api/report/nextPage",this.requestParams).then((res)=>{
-                this.interTableData[pageIndex] = res.data;
-                this.reportInfo.tableData = res.data;
+            this.$Http('post',"api/report/nextPage",this.requestParams).then((res)=>{
+                this.interTableData[pageIndex] = res.data.tableData;
+                this.interTableInfo.tableData = res.data.tableData;
              });
         },
         pageSizeChange(pageSize){ 
