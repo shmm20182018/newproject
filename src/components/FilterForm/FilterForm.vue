@@ -22,9 +22,6 @@
 <script>
 import texttool from '@/components/filtertools/texttool.vue'
 import selecttool from '@/components/filtertools/selecttool.vue'
-import daterangetool from '@/components/filtertools/daterangetool.vue'
-import yeartool from '@/components/filtertools/yeartool.vue'
-import monthtool from '@/components/filtertools/monthtool.vue'
 import datetool from '@/components/filtertools/datetool.vue'
 import helptool from '@/components/filtertools/helptool.vue'
 export default {
