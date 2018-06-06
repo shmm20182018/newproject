@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div >
         <div class="title-wrapper" >     
             <p>{{interTableInfo.title}}</p>
             <el-dropdown  class="exportbtn">
@@ -10,15 +10,15 @@
                 </el-dropdown-menu>
             </el-dropdown>
         </div>
-       <v-table id="serverTable" v-if="tableInfo"
+       <v-table id="serverTable"
               class="wathet-style"
               is-vertical-resize
               :vertical-resize-offset='60'
               is-horizontal-resize
               column-width-drag
               style="width:100%"
-              :multiple-sort="false"
-              :min-height="340"
+              :error-content-height = '200'
+              :multiple-sort = "false"
               even-bg-color="#f2f2f2"
               :title-rows="interTableInfo.titleRows"
               :columns="interTableInfo.columns"
@@ -97,9 +97,7 @@ export default {
     watch:{
         'tableInfo':{
             handler: function (newVal) {
-                this.interTableInfo = Object.assign({},this.interTableInfo,this.tableInfo);
-                console.log("servertable tableInfo handler");
-                console.log(this.interTableInfo);
+                this.interTableInfo = Object.assign({},this.interTableInfo,this.tableInfo);  
             },
             deep: true
         },
@@ -339,9 +337,7 @@ export default {
                 }
                 sortMapArray.push(sortMap)
             }
-            //this.sortMap=sortMap;
             this.sortMapArray = sortMapArray
-            //console.log(this.sortMapArray)
         },
         cellFormatter(){ //小数位数
             var columns = this.interTableInfo.columns
@@ -360,7 +356,6 @@ export default {
         },
         nofrozencol(){
             for(let o of this.frozenColumns){
-                console.log(o)
                this.$set(this.interTableInfo.columns[o.index],o.field,false)
             }
         },
@@ -434,6 +429,9 @@ export default {
             XLSX.saveAs(XLSX.format2Blob(wb),fileName);
         }
     },
+    created(){
+         this.interTableInfo = Object.assign({},this.interTableInfo,this.tableInfo); 
+    },
     components: {
         VTable,
         VPagination
@@ -473,7 +471,7 @@ export default {
         top: -2px;
     }
     .table-pagination{
-        margin-top: 5px;
+        margin-top: 15px;
     }
     .green-style .v-table-title-class td{
         background-color: #29926F;

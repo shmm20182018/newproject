@@ -6,12 +6,12 @@
                    v-for="(param) in paramsInfo" 
                    :is="param.componentName" 
                    :param="param" 
-                   :ruleFormValue.sync="ruleForm[param.id]"  
+                   @rule-form-change="ruleFormChange"  
                    :key="param.id"></component>
         <el-col :span="6">
           <div class="grid-content">
             <el-form-item class="filtertool-btn">
-              <el-button type="primary" @click="submitForm('ruleForm')">查询</el-button>
+              <el-button type="primary" @click.prevent="submitForm('ruleForm')">查询</el-button>
             </el-form-item>
           </div>
         </el-col>
@@ -50,20 +50,27 @@ export default {
 
   },
   watch:{
-    'paramsInfo':function (val) {
-      if(this.paramsInfo){
-        this.paramsInfo.forEach(item => {
-          this.ruleForm[item.id] = item.defaultValue;
-          this.rules[item.id] = [{required: item.mandatory, trigger: '' }];
-        });
-      }
+    'paramsInfo':{
+         handler: function (newVal) {
+            if(this.paramsInfo){
+              this.paramsInfo.forEach(item => {
+                 this.$set(this.ruleForm,item.id,item.defaultValue);
+                 this.$set(this.rules,item.id,[{required: item.mandatory, trigger: '' }]);
+              });
+            }
+          },
+         deep: true
     }
   },
   methods: {
+    ruleFormChange(id,newVal){
+      this.$set(this.ruleForm,id,newVal);
+    },
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
-        if (valid) {          
-            this.$emit('update:queryParams',ruleForm);
+        if (valid) {       
+             this.$emit('query-params-change',this.ruleForm);
+             this.$emit('search-data');
         } else {
           return false;
         }

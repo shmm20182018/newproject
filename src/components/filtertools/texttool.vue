@@ -3,7 +3,7 @@
     <div class="grid-content">
       <el-form-item :label="internalParam.title" :prop="internalParam.id" class="filtertool-text">
         <el-input v-model.lazy="internalParam.defaultValue" 
-                  @change="$emit('update:ruleFormValue', internalParam.defaultValue)"
+                  @change="$emit('rule-form-change',param.id,internalParam.defaultValue)"
                   :disabled="internalParam.readonly"></el-input>
       </el-form-item>
     </div>
@@ -22,7 +22,7 @@ export default {
     };
   },
   created(){
-    this.internalParam =  this.$Clone(this.param);
+    this.internalParam = {...this.param};
   }
 }
 </script>

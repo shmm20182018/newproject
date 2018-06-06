@@ -5,18 +5,19 @@
       <transition name="slide-fade">
         <filter-form v-show="showFilterFlag" 
                      :paramsInfo="reportInfo.paramsInfo"
-                     :queryParams.sync ="queryParams"></filter-form>
+                     @query-params-change ="queryParamsChange"
+                     @search-data ="searchData"></filter-form>
       </transition>
     </div>
     <div class="table-wrapper">
-      <server-table v-if="reportInfo.tableInfo && queryParams " 
+      <server-table v-if=" reportInfo.tableInfo.columns && reportInfo.tableInfo.columns.length>0"
                     :tableInfo="reportInfo.tableInfo" 
                     :queryParams = "queryParams"
                     :id ="reportInfo.id"
                     :engine ="$route.params.engine"></server-table> 
     </div>
     <div class="chart-wrapper">
-      <server-chart v-if="reportInfo.chartInfo" :chartInfo="reportInfo.chartInfo" :queryParams = "queryParams"></server-chart> 
+      <server-chart v-if="reportInfo.chartInfo.series" :chartInfo="reportInfo.chartInfo" :queryParams = "queryParams"></server-chart> 
     </div>
   </div>
 </template>
@@ -28,6 +29,7 @@ import ServerChart from '../components/ServerChart/ServerChart.vue'
 export default {
   data () {
     return {
+      showTableFlag :false,
       showFilterFlag : false,
       reportInfo:{
         id:'',
@@ -44,30 +46,34 @@ export default {
       return 'api/report/init?id='+this.$route.params.id+'&engine='+this.$route.params.engine;   
     },
     iconArrow:function(){
-      return this.showFilterFlag == true? 'el-icon-arrow-down':'el-icon-arrow-up';
+      return this.showFilterFlag == true ? 'el-icon-arrow-down':'el-icon-arrow-up';
     },
     pageSize:function(){
-      if(this.tableInfo.pageSize)
-        return this.tableInfo.pageSize 
+      if(this.reportInfo.tableInfo.pageSize)
+        return this.reportInfo.tableInfo.pageSize 
       else 
         return 0;
     },
     searchParams:function(){
+
       return {
         id:this.$route.params.id,
         engine:this.$route.params.engine,
         condition:this.queryParams,
-        pageSize: this.tableInfo.hasOwnProperty('pageSize') ? this.tableInfo.pageSize : 0
+        pageSize: this.pageSize
       }
     }
   },
   methods: {
+    queryParamsChange(val){
+         this.queryParams = {...val};
+    },
     getReportInfo(){
-      this.$http('get',this.initApiUrl).then((res)=>{
-          this.reportInfo = Object.assign({},this.reportInfo,res.data);
-          console.log(this.reportInfo);
-          if(this.reportInfo.paramsInfo.length>0)
-            this.showFilterFlag =true;
+      this.$Http('get',this.initApiUrl).then((res)=>{
+          this.reportInfo = {...this.reportInfo,...res.data };
+          if(this.reportInfo.paramsInfo.length>0){
+            this.showFilterFlag =true;        
+          }
           if(this.queryImmediately)
             searchData(true);
       });
@@ -81,8 +87,11 @@ export default {
           queryParams[param.id] = param.defaultValue;
         });
       }
-      this.$http('post',"api/report/search",searchParams).then((res)=>{
-          this.reportInfo = Object.assign({},this.reportInfo,res.data);
+      this.$Http('post',"api/report/search",this.searchParams).then((res)=>{
+        if(res.data.tableInfo)
+             this.reportInfo.tableInfo = Object.assign({}, this.reportInfo.tableInfo,res.data.tableInfo );
+        if(res.data.chartInfo)
+             this.reportInfo.chartInfo = Object.assign({}, this.reportInfo.chartInfo,res.data.chartInfo );
       });
     }
   },
