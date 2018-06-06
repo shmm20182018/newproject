@@ -62,7 +62,6 @@ export default {
                 total:50,
                 tableType:0,//明细表还是复杂表
                 pageSize:40,
-                queryParams:{}, //查询参数           
                 columnSumFlag:false,//是否列数据汇总
                 rowSumFlag: false, //行数据汇总
                 rowHeaders:[],//需要合并的列
