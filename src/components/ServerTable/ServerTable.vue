@@ -58,20 +58,7 @@ export default {
             //本地缓存表格数据
             pageIndex:1,
             interTableData:[],
-            interTableInfo:{
-                total:50,
-                tableType:0,//明细表还是复杂表
-                pageSize:40,
-                columnSumFlag:false,//是否列数据汇总
-                rowSumFlag: false, //行数据汇总
-                rowHeaders:[],//需要合并的列
-                multipleSort: false,
-                sumFlag: false, //是否需要合计
-                title:'', 
-                tableData: [],
-                columns: [],
-                titleRows: []
-            },
+            interTableInfo:{},
 
             sortMapArray:[],//合并单元格rowspan-count
             allArray:[],//存储所有和并列的数据用于复原表格
