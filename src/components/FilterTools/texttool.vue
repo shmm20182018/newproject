@@ -1,10 +1,10 @@
 <template>
-  <el-col v-if="internalParam" :span="toolSize">
+  <el-col  :span="toolSize">
     <div class="grid-content">
-      <el-form-item :label="internalParam.title" :prop="internalParam.id" class="filtertool-text">
-        <el-input v-model.lazy="internalParam.defaultValue" 
-                  @change="$emit('rule-form-change',param.id,internalParam.defaultValue)"
-                  :disabled="internalParam.readonly"></el-input>
+      <el-form-item :label="param.title" :prop="param.id" class="filtertool-text">
+        <el-input v-model.lazy="internalValue" 
+                  @change="$emit('rule-form-change',param.id,internalValue)"
+                  :disabled="param.readonly"></el-input>
       </el-form-item>
     </div>
   </el-col>    
@@ -15,15 +15,9 @@ export default {
  props:['param','toolSize','ruleFormValue'],
   data () {
     return {
-      internalParam:{
-        readonly:false,
-        defaultValue :""
-      },
+      internalValue: this.param.defaultValue,
     };
   },
-  created(){
-    this.internalParam = {...this.param};
-  }
 }
 </script>
 <style>
