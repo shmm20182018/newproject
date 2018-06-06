@@ -15,7 +15,7 @@ export default {
  props:['param','toolSize','ruleFormValue'],
   data () {
     return {
-      internalValue : this.param.defaultValue,
+      internalValue: this.param.defaultValue,
     };
   },
 }
