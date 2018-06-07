@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="filter-tools">
-      <i :class="iconArrow" class="icon-toggle" @click="filterToggle"></i>
+      <i :class="iconArrowFilter" class="icon-toggle" @click="showToggle('filter')"></i>
       <transition name="slide-fade">
         <filter-form v-show="showFilterFlag" 
                      :paramsInfo="reportInfo.paramsInfo"
@@ -9,15 +9,23 @@
                      @search-data ="searchData"></filter-form>
       </transition>
     </div>
-    <div class="table-wrapper">
-      <server-table v-if=" reportInfo.tableInfo.columns && reportInfo.tableInfo.columns.length>0"
-                    :tableInfo="reportInfo.tableInfo" 
-                    :queryParams = "queryParams"
-                    :id ="reportInfo.id"
-                    :engine ="$route.params.engine"></server-table> 
+    <div class="table-wrapper" v-if="reportInfo.tableInfo.columns" v-show="reportInfo.tableInfo.columns.length>0">
+      <i :class="iconArrowTable" class="icon-toggle" @click="showToggle('table')"></i>
+      <transition name="slide-fade" >
+        <server-table  v-show="showTableFlag"
+                      :tableInfo="reportInfo.tableInfo" 
+                      :queryParams = "queryParams"
+                      :id ="reportInfo.id"
+                      :engine ="$route.params.engine"
+                      ref="stable">
+        </server-table> 
+      </transition>              
     </div>
-    <div class="chart-wrapper">
-      <server-chart v-if="reportInfo.chartInfo.series" :chartInfo="reportInfo.chartInfo" :queryParams = "queryParams"></server-chart> 
+    <div class="chart-wrapper" v-show="showChartFlag">
+      <i :class="iconArrowChart" class="icon-toggle" @click="showToggle('chart')"></i>
+      <transition name="slide-fade">
+        <server-chart v-if="reportInfo.chartInfo.series"  :chartInfo="reportInfo.chartInfo" :queryParams = "queryParams"></server-chart> 
+      </transition> 
     </div>
   </div>
 </template>
@@ -29,6 +37,7 @@ import ServerChart from '../components/ServerChart/ServerChart.vue'
 export default {
   data () {
     return {
+      showChartFlag :false,
       showTableFlag :false,
       showFilterFlag : false,
       reportInfo:{
@@ -45,8 +54,14 @@ export default {
     initApiUrl:function(){
       return 'api/report/init?id='+this.$route.params.id+'&engine='+this.$route.params.engine;   
     },
-    iconArrow:function(){
+    iconArrowFilter:function(){
       return this.showFilterFlag == true ? 'el-icon-arrow-down':'el-icon-arrow-up';
+    },
+    iconArrowTable:function(){
+      return this.showTableFlag == true ? 'el-icon-arrow-down':'el-icon-arrow-up';
+    },
+    iconArrowChart:function(){
+      return this.showChartFlag == true ? 'el-icon-arrow-down':'el-icon-arrow-up';
     },
     pageSize:function(){
       if(this.reportInfo.tableInfo.pageSize)
@@ -78,8 +93,16 @@ export default {
             searchData(true);
       });
     },
-    filterToggle(){
-      this.showFilterFlag =!this.showFilterFlag;
+    showToggle(type){
+      if(type == 'filter'){
+        this.showFilterFlag =!this.showFilterFlag;        
+      }
+      if(type == 'table'){
+        this.showTableFlag =!this.showTableFlag;        
+      }
+      if(type == 'chart'){
+        this.showChartFlag =!this.showChartFlag;        
+      }
     },
     searchData(immediately){
       if(immediately){
@@ -88,10 +111,21 @@ export default {
         });
       }
       this.$Http('post',"api/report/search",this.searchParams).then((res)=>{
-        if(res.data.tableInfo)
-             this.reportInfo.tableInfo = Object.assign({}, this.reportInfo.tableInfo,res.data.tableInfo );
-        if(res.data.chartInfo)
-             this.reportInfo.chartInfo = Object.assign({}, this.reportInfo.chartInfo,res.data.chartInfo );
+         console.log(this.reportInfo)
+        if(res.data.tableInfo){
+          this.reportInfo.tableInfo = Object.assign({}, this.reportInfo.tableInfo,res.data.tableInfo );
+          this.$nextTick(()=>{
+             // this.$refs.stable.$emit('changeData') 
+             this.$refs.stable.dataHandle(true)   
+          }) 
+          this.showTableFlag = true  
+        }
+        if(res.data.chartInfo.dataset){
+          this.$set(this.reportInfo.chartInfo,'dataset',res.data.chartInfo.dataset);
+          //this.reportInfo.chartInfo = Object.assign({}, this.reportInfo.chartInfo,res.data.chartInfo );
+          this.showChartFlag = true 
+          console.log(this.showChartFlag)
+        }   
       });
     }
   },
@@ -107,7 +141,12 @@ export default {
 
 </script>
 <style>
-.filter-tools{
+.chart-wrapper{
+  width: 100%;
+  display: flex;
+  justify-content:center;
+}
+.filter-tools,.table-wrapper,.chart-wrapper{
   position: relative;
   padding-top: 18px;
 }
@@ -118,10 +157,10 @@ export default {
   font-size: 18px;
 }
 .slide-fade-enter-active {
-  transition: all .2s ease;
+  transition: all .3s ease;
 }
 .slide-fade-leave-active {
-  transition: all .2s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+  transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
 }
 .slide-fade-enter, .slide-fade-leave-to{
   transform: translateY(-100%);

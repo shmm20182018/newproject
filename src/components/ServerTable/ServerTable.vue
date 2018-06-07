@@ -1,5 +1,5 @@
 <template>
-    <div >
+    <div>
         <div class="title-wrapper" >     
             <p>{{interTableInfo.title}}</p>
             <el-dropdown  class="exportbtn">
@@ -32,6 +32,7 @@
               :paging-index="(pageIndex-1)*interTableInfo.pageSize"
               :title-row-height="22"
               :row-height="24"
+              :page-size="interTableInfo.pageSize" 
               :cell-merge="cellMerge"
               >
       </v-table>
@@ -59,13 +60,13 @@ export default {
             pageIndex:1,
             interTableData:[],
             interTableInfo:{},
-
             sortMapArray:[],//合并单元格rowspan-count
             allArray:[],//存储所有和并列的数据用于复原表格
             footer: [],
             sumColumns:[],//所有需要footer合计的列
             spanColumns:[],//所有需要合并单元格的列
             frozenColumns:[],//所有需要冻结的列
+            formatColumns:[],//需要保留小数位数的列
 
         }
     },
@@ -77,15 +78,15 @@ export default {
                 pageIndex:this.pageIndex,
                 condition:this.queryParams,
                 pageSize: this.interTableInfo.pageSize
+            }
         }
-    }
     },
     watch:{
         'tableInfo':{
             handler: function (newVal) {
-                this.interTableInfo = Object.assign({},this.interTableInfo,this.tableInfo);  
+                this.interTableInfo = Object.assign({},this.interTableInfo,newVal);
             },
-            deep: true
+            deep: false
         },
         'queryParams':{
             handler: function (newVal) {
@@ -95,20 +96,36 @@ export default {
         }
     },
     methods:{
+        dataHandle(isPage){
+            this.countSumCol(this.interTableInfo.columns).then(()=>{
+                if(this.interTableInfo.colSumFlag){ //列数据汇总
+                    this.setFooterData(this.interTableData);
+                }
+                if(this.interTableInfo.rowSumFlag){ //行数据汇总
+                    this.rowSum();
+                } 
+                if(this.interTableInfo.columns[0]['groupby']){ //合并单元格计算
+                    this.mergeCells()   
+               }
+               if(this.formatColumns.length>0 && isPage){//单元格数据保留小数位数
+                    this.cellFormatter() 
+                }
+            });
+        },
         pageChange(pageIndex){
             this.pageIndex = pageIndex;
-
             if(this.interTableData[pageIndex]){
                 this.interTableInfo.tableData =  this.interTableData[pageIndex];
                 return;
             }
-
             this.$Http('post',"api/report/nextPage",this.requestParams).then((res)=>{
-                this.interTableData[pageIndex] = res.data.tableData;
-                this.interTableInfo.tableData = res.data.tableData;
+                this.interTableData[pageIndex] = res.data;
+                this.$set(this.interTableInfo,'tableData',res.data); 
+                this.dataHandle(false)                        
              });
         },
         pageSizeChange(pageSize){ 
+            this.interTableData.length = 0;
             this.pageIndex = 1;
             this.$set(this.interTableInfo,'pageSize',pageSize);
             this.pageChange(1);
@@ -222,7 +239,10 @@ export default {
                     fieldObj.index=i;
                     fieldObj.field =field
                     this.frozenColumns.push(fieldObj)
-                }      
+                }  
+                if(column.formatterType == 'N'){ //需要格式化单元格的数组
+                    this.formatColumns.push(column)
+                }    
             }
             return  Promise.resolve()        
         },
@@ -241,17 +261,19 @@ export default {
             for (var j  in this.sortMapArray) {
                 var startIndex = 0;
                 var sortMap = this.sortMapArray[j]
+                var colorIndex = true
                 for (var prop in sortMap) {
-                    var count = sortMap[prop] * 1;
+                    var count = sortMap[prop] * 1;  
                     if(rowIndex == startIndex && field == spanColumns[j]){
                         //this.startIndex +=count
                         return {
                             colSpan: 1,
                             rowSpan: count,
-                            content: prop 
+                            content: `<div class="${colorIndex?'span-cell-div-odd':'span-cell-div-even'}"><span style="padding:0 4px">${prop}</span></div>` 
                         }
                     }
                     startIndex += count;
+                    colorIndex = !colorIndex
                     //console.log(startIndex)
                 }                   
             }
@@ -326,19 +348,19 @@ export default {
             this.sortMapArray = sortMapArray
         },
         cellFormatter(){ //小数位数
-            var columns = this.interTableInfo.columns
+            var columns = this.formatColumns
             for (let i=0;i<columns.length;i++){
                 var n = parseInt(columns[i].formatterContent)
                 if(columns[i].formatterType == 'N' && n>=0 && n<20){
-                    this.$set(columns[i],"formatter",(()=>{
-                        var num = n
-                        return (rowData,rowIndex,pagingIndex,field) => {         				
+                   this.$set(columns[i],"formatter",(() => {
+                       var num = n //不能直接用n！
+                        return (rowData,rowIndex,pagingIndex,field) => {     				
                             var number=rowData[field] * 1;
                             return  number.toFixed(num);
                         }
                     })(n));         
                 }
-            }    
+            } 
         },
         nofrozencol(){
             for(let o of this.frozenColumns){
@@ -416,7 +438,13 @@ export default {
         }
     },
     created(){
-         this.interTableInfo = Object.assign({},this.interTableInfo,this.tableInfo); 
+        this.interTableInfo = Object.assign({},this.interTableInfo,this.tableInfo); 
+    },
+    mounted(){
+        //this.$on('changeData',this.dataHandle)   
+    },
+    updated(){
+        // console.log(this.interTableInfo.pageSize)
     },
     components: {
         VTable,
@@ -584,13 +612,30 @@ export default {
     .v-table-body-class::-webkit-scrollbar-corner{  
         background: #f6f6f6;  
     } 
-    .v-table-views {
-      
+    .span-cell-div-even{
+        position:absolute;
+        left: 0;
+        top: 0;
+        right: 1px;
+        bottom: 1px;
+        background-color: #F2FBFC;
+    }
+    .span-cell-div-odd{
+        position:absolute;
+        left: 0;
+        top: 0;
+        right: 1px;
+        bottom: 1px;
+        background-color: #CCF1F2;
+    }
+    .span-cell-div-even:hover,.span-cell-div-odd:hover{
+        background-color: #CCF1F2;
+    }
+    .v-table-body-class td {
+       position: relative;
     } 
     .btn{
         font-size:25px;
-
-
     }
 
 </style>
