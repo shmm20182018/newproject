@@ -1,9 +1,12 @@
 <template>
-  <el-col v-if="item" :span="toolSize">
+  <el-col :span="toolSize">
     <div class="grid-content">
-      <el-form-item :label="item.title" :prop="item.id" class="filtertool-select">
-        <el-select   v-model="myrulename" :disabled="item.readonly" placeholder="请选择">
-          <el-option v-for="(temp,index) in item.list" :key="temp.key" :index="index" :label="temp.Value" :value="temp.Key"></el-option>
+      <el-form-item :label="param.title" :prop="param.id" class="filtertool-select">
+          <el-select  v-model="internalValue" 
+                      @input="$emit('rule-form-change',param.id,internalValue)"
+                      :disabled="param.readonly" 
+                      clearable placeholder="请选择">
+          <el-option v-for="(temp,index) in param.list" :key="temp.key" :index="index" :label="temp.Value" :value="temp.Key"></el-option>
         </el-select>
       </el-form-item>
     </div>
@@ -12,28 +15,11 @@
 
 <script>
 export default {
-  props:{
-    ruleForm:{
-      type: Object
-    },
-    item:{ //查询信息
-      type: Object
-    },
-    toolSize:{
-    
-    }
-  },
+  props:['param','toolSize','ruleFormValue'],
   data () {
     return {
-      myrulename:this.item.defaultValue,
+       internalValue : this.param.defaultValue
     };
-  },
-  watch:{
-    myrulename:function(val,oldval){   
-      this.$set(this.item,'defaultValue',val)     
-      this.$set(this.ruleForm,this.item.id,val)
-      this.$emit("on-result-change",this.item.id)
-    }
   }
 }
 </script>
