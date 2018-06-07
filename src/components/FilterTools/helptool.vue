@@ -1,23 +1,28 @@
 <template>
-  <el-col v-if="item" :span="toolSize">
+  <el-col :span="toolSize">
     <div class="grid-content">
-      <el-form-item :label="item.title" :prop="item.id" class="filtertool-text help-tool">
-        <el-tooltip :disabled="tooltipShow" effect="light" :content="BHMC" placement="bottom-start" offset="">
+      <el-form-item :label="param.title" :prop="param.id" class="filtertool-text help-tool">
+        <el-tooltip :disabled="tooltipFlag" effect="light" :content="toolTipContent" placement="bottom-start" offset="">
             <div style="position:relative">
-            <el-input class="help-input" ref="helpInput" v-model="myrulename" :disabled="item.readonly" @focus="hideMC()" @blur="showMC()" ></el-input>
-            <i class="help-input-title" v-show="MCShow" @click="inputFocus()">{{mcmcshow}}</i>
+            <el-input class="help-input" ref="helpInput" 
+                     v-model.lazy="inputShowText"  
+                     @focus="focusHandler" 
+                     @blur="blurHandler($event)"        
+                     :disabled="param.readonly" 
+            ></el-input>
             </div>
         </el-tooltip> 
-        <i class="el-icon-zoom-in" @click="openHelp"></i>
-        <div v-if="helpShow" class="help-wrapper"  v-drag="greet" id="drag" :style="style">
+         <i class="el-icon-zoom-in" @click="openHelp"></i>
+        <div v-if="helpShowFlag" class="help-wrapper" id="drag" :style="helpStyle">
             <el-card class="box-card">
                 <div slot="header" class="clearfix">
-                    <span class="card-title">{{tableConfig.title}}</span>
+                    <span class="card-title">{{tableInfo.title}}</span>
                     <i class="icon-close el-icon-close"  @click="closeHelp"></i>
                 </div>
                 <div  class="content-wapper">
-                    <v-table id=""
-                        :class="colorSeries"
+                    <v-table  ref='table'
+                        id=""
+                        class="wathet-style"
                         is-vertical-resize
                         :vertical-resize-offset='60'
                         is-horizontal-resize
@@ -28,20 +33,19 @@
                         :height="350"
                         row-hover-color="#eee"
                         row-click-color="#edf7ff"
-                        :row-dblclick="rowClick"
+                        :row-dblclick="rowDoubleClick"
                         even-bg-color="#f2f2f2"
-                        :title-rows="tableConfig.titleRows"
-                        :columns="tableConfig.columns"
-                        :table-data="tableConfig.tableData"
-                        :paging-index="(tableConfig.pageIndex-1)*tableConfig.pageSize"
+                        :columns="tableInfo.columns"
+                        :table-data="tableInfo.tableData"
+                        :paging-index="(pageIndex-1)*tableInfo.pageSize"
                         :title-row-height="22"
                         :row-height="24"
                         >
                     </v-table>
                     <div class="footer-wapper clear">
                         <div  class="mt20 mb20 bold page-wrapper">
-                            <v-pagination size="small" @page-change="pageChange" :page-index="tableConfig.pageIndex" :total="tableConfig.total" :page-size="tableConfig.pageSize" :layout="['total', 'prev', 'next', 'jumper']"></v-pagination>
-                            <span class="page-total">{{tableConfig.pageIndex+'/'+pageTotalCount}}</span>
+                            <v-pagination size="small" @page-change="pageChange" :page-index="pageIndex" :total="tableInfo.total" :page-size="tableInfo.pageSize" :layout="['total', 'prev', 'next', 'jumper']"></v-pagination>
+                            <span class="page-total">{{pageCount}}</span>
                         </div> 
                         <el-form :inline="true"  class="search-form" size="mini">
                             <el-form-item label="">
@@ -59,230 +63,284 @@
 </template>
 
 <script>
-import NProgress from 'nprogress'
+import 'vue-easytable/libs/themes-base/index.css'
+import {VTable,VPagination} from 'vue-easytable'
 export default {
-    props:{
-        ruleForm:{
-            type: Object
-        },
-        item:{
-             type: Object
-        },
-        toolSize:{
-    
-        }
-    },
+    props:['param','toolSize','ruleFormValue'],
     data () {
         return {
-            mcmcshow:'',
-            MC:'',
-            BH:'',
-            ChangeValue: false,//判断input值是否发生变化
-            tooltipShow: true,//是否显示tooltip
-            MCShow: true,//是否显示input隐藏值
-            initData:{},//表格初始化数据
-            rowData:{},//点击放大镜表格行数据
-            blurData:{},//失去焦点时匹配到的数据
-            qitem: this.item,
-            helpShow: false,//弹出层显示
+            internalValue : this.param.defaultValue,
+            helpBhValue: '',
+            helpMcValue: '',
+            inputShowText:this.param.defaultValue,
+            showTextState:'default',
+            helpShowFlag: false,
+            tableInfo:{},
+            interTableData:[],
+            pageIndex:1,
             searchText:'',
-            myrulename:this.item.defaultValue,
-            myitem: this.item,
-            showtable:false, //导出excel时候再挂载隐藏表格
-            colorSeries:'wathet-style', //表格颜色风格默认样式
-            submitData:{},
-            startIndex:0,
-            tableConfig: {
-                total:50,
-                tableType:0,//明细表还是复杂表
-                pageIndex:1,
-                pageSize:40,
-                queryParams:{}, //查询参数           
-                showExport:false,
-                columnSumFlag:false,//是否列数据汇总
-                rowSumFlag: false, //行数据汇总
-                rowHeaders:[],//需要合并的列
-                multipleSort: false,
-                sumFlag: false, //是否需要合计
-                title:'', //表格标题
-                tableData: [],
-                columns: [],
-                titleRows: []
-            },
-            style: {
+            helpStyle: {
                 width: '600px',
                 height: '422px',
                 position: 'fixed',
                 right: 'calc(50% - 300px)',
                 top: '50px'
             }
+
+
+            // mcmcshow:'',
+            // MC:'',
+            // BH:'',
+            // ChangeValue: false,//判断input值是否发生变化
+            // tooltipShow: true,//是否显示tooltip
+            // MCShow: true,//是否显示input隐藏值
+            // initData:{},//表格初始化数据
+            // rowData:{},//点击放大镜表格行数据
+            // blurData:{},//失去焦点时匹配到的数据
+            // helpShow: false,//弹出层显示
+            // searchText:'',
+            // showtable:false, //导出excel时候再挂载隐藏表格
+            // submitData:{},
+            // startIndex:0,
+            // tableInfo: {
+            //     total:50,
+            //     tableType:0,//明细表还是复杂表
+            //     pageIndex:1,
+            //     pageSize:40,
+            //     queryParams:{}, //查询参数           
+            //     showExport:false,
+            //     columnSumFlag:false,//是否列数据汇总
+            //     rowSumFlag: false, //行数据汇总
+            //     rowHeaders:[],//需要合并的列
+            //     multipleSort: false,
+            //     sumFlag: false, //是否需要合计
+            //     title:'', //表格标题
+            //     tableData: [],
+            //     columns: [],
+            //     titleRows: []
+            // },
+
         }
     },
     computed:{
-        pageTotalCount(){
-            var yu = this.tableConfig.total%this.tableConfig.pageSize
-            if(yu){
-                return parseInt(this.tableConfig.total/this.tableConfig.pageSize) + 1
-            }else{
-                return parseInt(this.tableConfig.total/this.tableConfig.pageSize)
-            }
+        tooltipFlag(){
+             return this.helpBhValue == ''? true:false;
         },
-        BHMC(){
-            if(this.BH){
-                this.tooltipShow = false
-                return this.BH +'-'+ this.mcmcshow
-            } 
-        }
-    },
-    methods:{
-        greet(val){
-           //console.log(val)
+        toolTipContent(){
+            return this.helpBhValue+'-'+this.helpMcValue;
         },
-        openHelp(){
-            this.helpShow = true
-            this.tableConfig = Object.assign({},this.tableConfig,this.initData)
+        pageCount(){
+            return  parseInt((this.tableInfo.total  +  this.tableInfo.pageSize  - 1) / this.tableInfo.pageSize);  
         },
-        closeHelp(){
-            this.helpShow = false
-            this.searchText = ''
+        initRequestData(){
+            var data = { queryText:''};
+            ({ helpID: data.helpID, helpXH: data.helpBH,helpConditions: data.helpTJ} = this.param);
+            return data;
         },
-        onSubmit(){
-            this.getSearchData()
+        onBlurRequestData(){
+            var data = { queryText:this.inputShowText };
+            ({ helpID: data.helpID, helpXH: data.helpBH,helpConditions: data.helpTJ} = this.param);
+            return data;
         },
-        warnOpen(val) {
-            this.$notify.error({
-                title: '错误',
-                message: val
-            })
-        },
-        getTableInfo(){
-            const url ='api/help/init'; 
-            var params = {};
-            params.helpID = this.qitem.helpID
-            params.helpTJ = this.qitem.helpConditions
-            params.helpBH = this.qitem.helpXH
-            params.queryText =''
-            this.$axios({
-                method: 'post',
-                url:url,
-                data: params
-            }).then((res)=>{
-                console.log(res.data);
-                this.initData =res.data;                
-            })
-            .catch((res) => {
-                this.warnOpen(res.response.data)
-            }) 
-        },
-        getSearchData(pageIndex){
-            var params = {};
-            const url ='api/help/search'; 
-            var params = {};
-            params.helpID = this.qitem.helpID
-            params.helpTJ = this.qitem.helpConditions
-            params.helpBH = this.qitem.helpXH
-            params.queryText = this.searchText
-            params.pageIndex = this.pageIndex
-              
-            //console.log(pageIndex,pageSize,params);
-            this.$axios({
-                method: 'post',
-                url:url,
-                data:params
-            }).then((res)=>{
-                //console.log(res);
-                var data =res.data;
-                if(data){
-                    this.total = data.total
-                    this.$set(this.tableConfig,'tableData',data.rowData)
-                    this.isSubmit = false 
-                }
-            })
-            .catch((res) => {
-                NProgress.done(); 
-                this.warnOpen(res.response.data)
-            }) 
-        },
-        pageChange(pageIndex){ 
-            this.pageIndex = pageIndex;
-            this.getSearchData(pageIndex);
-        },
-        rowClick(rowIndex, rowData, column){
-            //console.log(rowData)
-            this.rowData = rowData 
-            var submitVal = this.item.contentType    
-            this.myrulename = rowData[submitVal]
-            this.mcmcshow = rowData['F_MC']
-            this.BH = rowData['F_BH']
-        },
-        showMC(){ //input失去焦点时
-            this.MCShow = true;
-            if(this.ChangeValue){
-                const url ='api/help/onblur'; 
-                var params = {};
-                params.helpID = this.qitem.helpID
-                params.helpTJ = this.qitem.helpConditions
-                params.helpBH = this.qitem.helpXH
-                params.queryText = this.myrulename
-                this.$axios({
-                    method: 'post',
-                    url:url,
-                    data: params
-                }).then((res)=>{
-                    console.log(res.data);
-                    var data =res.data;
-                    if(data.result){
-                        this.blurData = data
-                        var submitVal = this.item.contentType    
-                        this.myrulename = data[submitVal]
-                        this.mcmcshow = data['F_MC']
-                        this.BH = data['F_BH']                   
-                    }else{
-                        this.blurData = ''
-                        this.rowData = ''
-                        this.mcmcshow = ''
-                        this.BH = ''
-                        this.tooltipShow = true
-                        this.helpShow= true
-                        this.searchText = this.myrulename
-                        this.tableConfig = Object.assign({},this.tableConfig,this.initData)
-                    }
-                    
-                })
-                .catch((res) => {
-                    NProgress.done(); 
-                    this.warnOpen(res.response.data)
-                }) 
-            }
-            this.ChangeValue = false
-        },
-        hideMC(){
-            this.MCShow = false;
-        },
-        inputFocus(){
-            this.$refs.helpInput.focus();
+        searchRequestData(){
+            var data = { queryText:this.searchText,pageIndex:this.pageIndex };
+            ({ helpID: data.helpID, helpXH: data.helpBH,helpConditions: data.helpTJ} = this.param);
+            return data;
         }
     },
     watch:{
-        myrulename:function(val,oldval){  
-            if(!val){
-               this.tooltipShow = true;
-            }
-            this.ChangeValue = true
-            this.$set(this.item,'defaultValue',val)  
-            this.$emit("on-result-change",this.item.id)
+        'showTextState':function(val){
+            this.getShowText(val);
         },
-        MC(val,oldval){
-            if(val){
-                this.tooltipShow = false;
-            }
+        'internalValue':function(val){
+            this.$emit('rule-form-change',this.param.id,val);
         }
     },
-    created(){
-        if(this.item){
-            this.getTableInfo()
-        }
-    }
+    methods:{
+        setHelpValue(nm,bh,mc){
+            this.internalValue = nm;
+            this.helpBhValue =  bh;
+            this.helpMcValue =  mc;
+        },
+        getShowText(state){
+            if(state == 'default' )
+                this.inputShowText = this.internalValue;
+            else if(state == 'focus')
+                this.inputShowText = this.internalValue ;
+            else //blur 
+                 this.inputShowText = this.helpMcValue ==''? this.internalValue:this.helpMcValue ;
+        },
+        onBlurRequest(){
+            this.$Http('post','api/help/onblur',this.onBlurRequestData).then((res)=>{
+                if(!res.data.result){
+                    this.searchText= this.inputShowText;
+                    this.setHelpValue('','','');
+                    alert('未找到帮助，应该打开帮助');
+                }
+                else{
+                    this.setHelpValue(res.data.F_NM,res.data.F_BH,res.data.F_MC);
+                    this.showTextState ='blur'
+                }
+            });
+        },
+        blurHandler(event){
+            if(this.helpBhValue=='' || event.target._value!=this.internalValue)
+                this.onBlurRequest();
+            else
+                this.showTextState = 'blur';
+        },
+        focusHandler(){
+            this.showTextState = 'focus';
+        },
+        openHelp(){
+            this.$Http('post','api/help/init',this.initRequestData).then((res)=>{
+                this.tableInfo = {...this.tableInfo,...res.data };
+                this.interTableData[1]=this.tableInfo.tableData;
+                this.helpShowFlag = true;
+            });
+        },
+        closeHelp(){
+            this.helpShowFlag = false;
+        },        
+        rowDoubleClick(rowIndex, rowData, column){
+            this.setHelpValue(rowData['F_NM'],rowData['F_BH'],rowData['F_MC']);
+            this.helpShowFlag = false;
+            this.inputShowText =  this.helpMcValue;
+        },
+        pageChange(pageIndex){ 
+            this.pageIndex = pageIndex;
+
+            if(this.interTableData[pageIndex]){
+                this.tableInfo.tableData =  this.interTableData[pageIndex];
+                return;
+            }
+
+            this.$Http('post',"api/help/search",this.searchRequestData).then((res)=>{
+                this.tableInfo.tableData = res.data.rowData;
+                this.tableInfo.total = res.data.total;
+                if( this.tableInfo.tableData.length>0)
+                    this.interTableData[pageIndex] = this.tableInfo.tableData ;
+
+             });
+        },
+        onSubmit(){
+            this.interTableData.length = 0;
+            this.pageChange(1);
+        },
+
+
+
+        // greet(val){
+        //    //console.log(val)
+        // },
+
+
+
+        // warnOpen(val) {
+        //     this.$notify.error({
+        //         title: '错误',
+        //         message: val
+        //     })
+        // },
+        // getTableInfo(){
+        //     const url ='api/help/init'; 
+        //     var params = {};
+        //     params.helpID = this.qitem.helpID
+        //     params.helpTJ = this.qitem.helpConditions
+        //     params.helpBH = this.qitem.helpXH
+        //     params.queryText =''
+        //     this.$axios({
+        //         method: 'post',
+        //         url:url,
+        //         data: params
+        //     }).then((res)=>{
+        //         console.log(res.data);
+        //         this.initData =res.data;                
+        //     })
+        //     .catch((res) => {
+        //         this.warnOpen(res.response.data)
+        //     }) 
+        // },
+        // getSearchData(pageIndex){
+        //     var params = {};
+        //     const url ='api/help/search'; 
+        //     var params = {};
+        //     params.helpID = this.qitem.helpID
+        //     params.helpTJ = this.qitem.helpConditions
+        //     params.helpBH = this.qitem.helpXH
+        //     params.queryText = this.searchText
+        //     params.pageIndex = this.pageIndex
+              
+        //     //console.log(pageIndex,pageSize,params);
+        //     this.$axios({
+        //         method: 'post',
+        //         url:url,
+        //         data:params
+        //     }).then((res)=>{
+        //         //console.log(res);
+        //         var data =res.data;
+        //         if(data){
+        //             this.total = data.total
+        //             this.$set(this.tableInfo,'tableData',data.rowData)
+        //             this.isSubmit = false 
+        //         }
+        //     })
+        //     .catch((res) => {
+        //         NProgress.done(); 
+        //         this.warnOpen(res.response.data)
+        //     }) 
+        // },
+
+
+        // showMC(){ //input失去焦点时
+        //     this.MCShow = true;
+        //     if(this.ChangeValue){
+        //         const url ='api/help/onblur'; 
+        //         var params = {};
+        //         params.helpID = this.qitem.helpID
+        //         params.helpTJ = this.qitem.helpConditions
+        //         params.helpBH = this.qitem.helpXH
+        //         params.queryText = this.myrulename
+        //         this.$axios({
+        //             method: 'post',
+        //             url:url,
+        //             data: params
+        //         }).then((res)=>{
+        //             console.log(res.data);
+        //             var data =res.data;
+        //             if(data.result){
+        //                 this.blurData = data
+        //                 var submitVal = this.item.contentType    
+        //                 this.myrulename = data[submitVal]
+        //                 this.mcmcshow = data['F_MC']
+        //                 this.BH = data['F_BH']                   
+        //             }else{
+        //                 this.blurData = ''
+        //                 this.rowData = ''
+        //                 this.mcmcshow = ''
+        //                 this.BH = ''
+        //                 this.tooltipShow = true
+        //                 this.helpShow= true
+        //                 this.searchText = this.myrulename
+        //                 this.tableInfo = Object.assign({},this.tableInfo,this.initData)
+        //             }
+                    
+        //         })
+        //         .catch((res) => {
+        //             NProgress.done(); 
+        //             this.warnOpen(res.response.data)
+        //         }) 
+        //     }
+        //     this.ChangeValue = false
+        // },
+        // hideMC(){
+        //     this.MCShow = false;
+        // }
+    },
+   components: {
+     VTable,
+     VPagination
+  }
 }
 </script>
 <style>

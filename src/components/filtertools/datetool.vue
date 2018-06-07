@@ -9,7 +9,7 @@
             :type="getType()"
             :value-format="getValueFormat()">
         </el-date-picker>
-      </el-form-item>
+      </el-form-item>        
     </div>
   </el-col>
 </template>

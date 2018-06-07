@@ -75,13 +75,10 @@ export default {
     }
   },
   components: {
-    'texttool':texttool,
-    'selecttool':selecttool,
-    'daterangetool':daterangetool,
-    'yeartool':yeartool,
-    'monthtool':monthtool,
-    'datetool':datetool,
-    'helptool':helptool
+     texttool,
+     selecttool,
+     datetool,
+     helptool
   }
 }
 </script>
