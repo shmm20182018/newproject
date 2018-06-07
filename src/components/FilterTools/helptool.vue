@@ -4,7 +4,8 @@
       <el-form-item :label="param.title" :prop="param.id" class="filtertool-text help-tool">
         <el-tooltip :disabled="tooltipFlag" effect="light" :content="toolTipContent" placement="bottom-start" offset="">
             <div style="position:relative">
-            <el-input class="help-input" ref="helpInput" 
+            <el-input class="help-input" 
+                     ref="helpInput" 
                      v-model.lazy="inputShowText"  
                      @focus="focusHandler" 
                      @blur="blurHandler($event)"        
@@ -12,7 +13,7 @@
             ></el-input>
             </div>
         </el-tooltip> 
-         <i class="el-icon-zoom-in" @click="openHelp"></i>
+         <i class="el-icon-search" @click="openHelp"></i>
         <div v-if="helpShowFlag" class="help-wrapper" id="drag" :style="helpStyle">
             <el-card class="box-card">
                 <div slot="header" class="clearfix">
@@ -230,14 +231,14 @@ export default {
 body .el-form-item__content{
     position: relative;
 }
-body .el-icon-zoom-in{
+body .el-icon-search{
     position: absolute;
     top: 5px;
     right: 5px;
     font-size: 18px;
     color: #C3C5C8;
 }
-body .el-icon-zoom-in:hover{
+body .el-icon-search:hover{
     color: #02AFEE;
     cursor: pointer;
 } 

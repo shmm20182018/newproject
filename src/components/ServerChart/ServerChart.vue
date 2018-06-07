@@ -1,5 +1,5 @@
 <template>
-<chart :options="option" theme="light" ></chart>
+<chart :options="chartInfo" theme="light" ></chart>
 </template>
 
 <script>
@@ -20,31 +20,24 @@ import 'echarts/lib/component/visualMap'
 import 'echarts/lib/component/dataset'
 
 export default {
+  props:['chartInfo'],
   components: {
     chart: ECharts
   },
   data: function () {
     return {
-      option:{
-                xAxis: {
-                    type: 'category',
-                    // data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-                },
-                yAxis: {
-                    type: 'value'
-                },
-                series: [{
-                    // data: [120, 200, 150, 80, 70, 110, 130],
-                    type: 'bar'
-                }]
-            }
     }
+  },
+  watch:{
+  },
+  created(){
   }
 }
 </script>
 
 <style>
 .echarts {
-  height: 300px;
+  width: 80%;
+  height: 400px;
 }
 </style>
