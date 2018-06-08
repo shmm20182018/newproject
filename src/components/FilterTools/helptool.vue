@@ -23,6 +23,7 @@
                 <div  class="content-wapper">
                     <v-table  ref='table'
                         id=""
+                        :error-content-height = '320'
                         class="wathet-style"
                         is-vertical-resize
                         :vertical-resize-offset='60'
@@ -100,7 +101,7 @@ export default {
             return  parseInt((this.tableInfo.total  +  this.tableInfo.pageSize  - 1) / this.tableInfo.pageSize);  
         },
         initRequestData(){
-            var data = { queryText:''};
+            var data = { queryText: this.searchText};
             ({ helpID: data.helpID, helpXH: data.helpBH,helpConditions: data.helpTJ} = this.param);
             return data;
         },
@@ -142,7 +143,7 @@ export default {
                 if(!res.data.result){
                     this.searchText= this.inputShowText;
                     this.setHelpValue('','','');
-                    alert('未找到帮助，应该打开帮助');
+                    this.openHelp();
                 }
                 else{
                     this.setHelpValue(res.data.F_NM,res.data.F_BH,res.data.F_MC);
