@@ -21,10 +21,10 @@
         </server-table> 
       </transition>              
     </div>
-    <div class="chart-wrapper" v-show="showChartFlag">
+    <div class="chart-wrapper" v-if="reportInfo.chartInfo.dataset" >
       <i :class="iconArrowChart" class="icon-toggle" @click="showToggle('chart')"></i>
       <transition name="slide-fade">
-        <server-chart v-if="reportInfo.chartInfo.series"  :chartInfo="reportInfo.chartInfo" :queryParams = "queryParams"></server-chart> 
+        <server-chart v-show="showChartFlag" :chartInfo="reportInfo.chartInfo" :queryParams = "queryParams"></server-chart> 
       </transition> 
     </div>
   </div>
@@ -88,6 +88,12 @@ export default {
           this.reportInfo = {...this.reportInfo,...res.data };
           if(this.reportInfo.paramsInfo.length>0){
             this.showFilterFlag =true;        
+          }
+          if(this.reportInfo.tableInfo.columns.length>0){
+            this.showTableFlag =true;        
+          }
+          if(this.reportInfo.chartInfo.dataset){
+            this.showChartFlag =true;        
           }
           if(this.queryImmediately)
             searchData(true);

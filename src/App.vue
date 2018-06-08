@@ -13,7 +13,7 @@ export default {
 <style>
 html{
   width: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 body{
   margin-top: 0
