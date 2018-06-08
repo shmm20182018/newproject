@@ -11,7 +11,7 @@
     </div>
     <div class="table-wrapper" v-if="reportInfo.tableInfo.columns" v-show="reportInfo.tableInfo.columns.length>0">
       <i :class="iconArrowTable" class="icon-toggle" @click="showToggle('table')"></i>
-      <transition name="slide-fade" >
+      <transition name="fade" >
         <server-table  v-show="showTableFlag"
                       :tableInfo="reportInfo.tableInfo" 
                       :queryParams = "queryParams"
@@ -21,9 +21,9 @@
         </server-table> 
       </transition>              
     </div>
-    <div class="chart-wrapper" v-if="reportInfo.chartInfo.dataset" >
+    <div class="chart-wrapper" v-if="reportInfo.chartInfo.series" >
       <i :class="iconArrowChart" class="icon-toggle" @click="showToggle('chart')"></i>
-      <transition name="slide-fade">
+      <transition name="fade">
         <server-chart v-show="showChartFlag" :chartInfo="reportInfo.chartInfo" :queryParams = "queryParams"></server-chart> 
       </transition> 
     </div>
@@ -92,7 +92,7 @@ export default {
           if(this.reportInfo.tableInfo.columns.length>0){
             this.showTableFlag =true;        
           }
-          if(this.reportInfo.chartInfo.dataset){
+          if(this.reportInfo.chartInfo.series){
             this.showChartFlag =true;        
           }
           if(this.queryImmediately)
@@ -123,14 +123,12 @@ export default {
           this.$nextTick(()=>{
              // this.$refs.stable.$emit('changeData') 
              this.$refs.stable.dataHandle(true)   
-          }) 
-          this.showTableFlag = true  
+          })
+          this.showTableFlag =true; 
         }
         if(res.data.chartInfo.dataset){
           this.$set(this.reportInfo.chartInfo,'dataset',res.data.chartInfo.dataset);
-          //this.reportInfo.chartInfo = Object.assign({}, this.reportInfo.chartInfo,res.data.chartInfo );
-          this.showChartFlag = true 
-          console.log(this.showChartFlag)
+          this.showChartFlag =true; 
         }   
       });
     }
@@ -170,6 +168,15 @@ export default {
 }
 .slide-fade-enter, .slide-fade-leave-to{
   transform: translateY(-100%);
+  opacity: 0;
+}
+.fade-enter-active {
+  transition: all .3s ease;
+}
+.fade-leave-active {
+  transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.fade-enter, .fade-leave-to{
   opacity: 0;
 }
 </style>
