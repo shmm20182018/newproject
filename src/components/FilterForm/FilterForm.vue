@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="filterForm">
     <el-form class="wathet-style demo-ruleForm" :show-message="false" label-position="left" label-width="80px" :model="ruleForm" :inline="true" :rules="rules"  ref="ruleForm" size="mini">
       <el-row :gutter="20">
         <component :toolSize="toolColSize" 
@@ -83,32 +83,32 @@ export default {
 }
 </script>
 <style>
-  .el-form-item__label{
+ .filterForm .el-form-item__label{
     font-size: 12px
   }
-  .el-date-editor.el-input, .el-date-editor.el-input__inner {
+  .filterForm  .el-date-editor.el-input, .el-date-editor.el-input__inner {
     width: 100%;
   }
-  .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item{
+  .filterForm  .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item{
     display: flex;
     width: 100%;
   }
-  .el-form-item__content{
+ .filterForm   .el-form-item__content{
     flex: 0.95;
   }
-  .el-form--inline .el-form-item__label {
+  .filterForm  .el-form--inline .el-form-item__label {
     flex: 0 0 80px;
   }
-  .el-select{
+ .filterForm   .el-select{
     width: 100%;
   }
- .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item {
+  .filterForm .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item {
     margin-bottom: 8px;
  }
-  .green-style .el-form-item.is-success .el-input__inner,  .green-style .el-form-item.is-success .el-input__inner:focus, .green-style .el-form-item.is-success .el-textarea__inner,  .green-style .el-form-item.is-success .el-textarea__inner:focus {
+ .filterForm   .green-style .el-form-item.is-success .el-input__inner,  .green-style .el-form-item.is-success .el-input__inner:focus, .green-style .el-form-item.is-success .el-textarea__inner,  .green-style .el-form-item.is-success .el-textarea__inner:focus {
     border-color: #03A656;
   }
-  .wathet-style .el-form-item.is-success .el-input__inner, .wathet-style .el-form-item.is-success .el-input__inner:focus, .wathet-style .el-form-item.is-success .el-textarea__inner, .wathet-style  .el-form-item.is-success .el-textarea__inner:focus {
+ .filterForm   .wathet-style .el-form-item.is-success .el-input__inner, .wathet-style .el-form-item.is-success .el-input__inner:focus, .wathet-style .el-form-item.is-success .el-textarea__inner, .wathet-style  .el-form-item.is-success .el-textarea__inner:focus {
     border-color: #13B5BC;
   }
 

@@ -446,7 +446,7 @@ export default {
         text-align: center;
         color: #666;
     }
-    .exportbtn {
+   .table-wrapper  .exportbtn {
         position: absolute;
         right: 5px;
         bottom: 0px;
