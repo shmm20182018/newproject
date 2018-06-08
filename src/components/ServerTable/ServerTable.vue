@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="table-wrapper">
         <div class="title-wrapper" >     
             <p>{{interTableInfo.title}}</p>
             <el-dropdown  class="exportbtn">
@@ -577,42 +577,24 @@ export default {
     .v-table-footer-class {
         height: 40px !important
     }
-    ::-webkit-scrollbar{  
+    .table-wrapper ::-webkit-scrollbar{  
         width:12px;  
         height:12px;  
     }  
-    ::-webkit-scrollbar-track{  
+    .table-wrapper ::-webkit-scrollbar-track{  
         background: #f6f6f6;  
         border-radius:6px;  
     }  
-    ::-webkit-scrollbar-thumb{  
+    .table-wrapper ::-webkit-scrollbar-thumb{  
         background: #aaa;  
         border-radius:6px;  
     }  
-    ::-webkit-scrollbar-thumb:hover{  
+    .table-wrapper ::-webkit-scrollbar-thumb:hover{  
         background: #747474;  
     }  
-    ::-webkit-scrollbar-corner{  
+    .table-wrapper ::-webkit-scrollbar-corner{  
         background: #f6f6f6;  
     }  
-    .v-table-body-class::-webkit-scrollbar{  
-        width:10px;  
-        height:10px;  
-    }  
-    .v-table-body-class::-webkit-scrollbar-track{  
-        background: #f6f6f6;  
-        border-radius:4px;  
-    }  
-    .v-table-body-class::-webkit-scrollbar-thumb{  
-        background: #aaa;  
-        border-radius:4px;  
-    }  
-    .v-table-body-class::-webkit-scrollbar-thumb:hover{  
-        background: #747474;  
-    }  
-    .v-table-body-class::-webkit-scrollbar-corner{  
-        background: #f6f6f6;  
-    } 
     .span-cell-div-even{
         position:absolute;
         left: 0;

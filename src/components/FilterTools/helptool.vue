@@ -327,5 +327,22 @@ body .el-tooltip__popper[x-placement^=bottom] .popper__arrow::after {
 .help-tool .v-table-views{
     height: 350px !important
 }
-    
+.help-wrapper ::-webkit-scrollbar{  
+    width:8px;  
+    height:8px;  
+}  
+.help-wrapper ::-webkit-scrollbar-track{  
+    background: #f6f6f6;  
+    border-radius:4px;  
+}  
+.help-wrapper ::-webkit-scrollbar-thumb{  
+    background: #aaa;  
+    border-radius:4px;  
+}  
+.help-wrapper ::-webkit-scrollbar-thumb:hover{  
+    background: #747474;  
+}  
+.help-wrapper ::-webkit-scrollbar-corner{  
+    background: #f6f6f6;  
+}     
 </style>
