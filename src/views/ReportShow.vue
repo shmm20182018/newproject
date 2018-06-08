@@ -117,11 +117,9 @@ export default {
         });
       }
       this.$Http('post',"api/report/search",this.searchParams).then((res)=>{
-         console.log(this.reportInfo)
         if(res.data.tableInfo){
           this.reportInfo.tableInfo = Object.assign({}, this.reportInfo.tableInfo,res.data.tableInfo );
           this.$nextTick(()=>{
-             // this.$refs.stable.$emit('changeData') 
              this.$refs.stable.dataHandle(true)   
           })
           this.showTableFlag =true; 
