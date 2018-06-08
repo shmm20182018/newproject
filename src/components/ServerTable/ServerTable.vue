@@ -133,7 +133,6 @@ export default {
         sortChange(params){
             this.isCellMerge = false
             var columns = this.interTableInfo.columns
-            //console.log(params)
             if(!this.multipleSort){//单列排序
                 for(let i in params){
                     if(params[i]){
@@ -165,14 +164,6 @@ export default {
                     }
                 }
             }
-            /*this.mergeCells();
-            this.allCells();
-            console.log(this.allArray)
-            console.log(this.sortMapArray)
-            setTimeout(()=>{
-                this.isCellMerge = true
-            },500)
-            return  Promise.resolve();*/
         },
         setFooterData(data){ //列数据统计
             let result = [],
@@ -218,7 +209,6 @@ export default {
                         }
                     }   					
                 }
-                //console.log(count)
                 return count;
             });
         },
@@ -257,7 +247,6 @@ export default {
         },
         cellMerge(rowIndex,rowData,field){
             var spanColumns =this.spanColumns;
-            //console.log(spanColumns)
             for (var j  in this.sortMapArray) {
                 var startIndex = 0;
                 var sortMap = this.sortMapArray[j]
@@ -265,7 +254,6 @@ export default {
                 for (var prop in sortMap) {
                     var count = sortMap[prop] * 1;  
                     if(rowIndex == startIndex && field == spanColumns[j]){
-                        //this.startIndex +=count
                         return {
                             colSpan: 1,
                             rowSpan: count,
@@ -274,19 +262,16 @@ export default {
                     }
                     startIndex += count;
                     colorIndex = !colorIndex
-                    //console.log(startIndex)
                 }                   
             }
         },
         cellSeparate(rowIndex,rowData,field){
             var spanColumns =this.spanColumns;
-            //console.log(spanColumns)
             for (var j  in this.allArray) {
                 var startIndex = 0;
                 var sortMap = this.allArray[j]
                 for (var prop in sortMap) {
                     if(rowIndex == startIndex && field == spanColumns[j]){
-                        //this.startIndex +=count
                         return {
                             colSpan: 1,
                             rowSpan: 1,
@@ -294,7 +279,7 @@ export default {
                         }
                     }
                     startIndex += 1;
-                    //console.log(startIndex)
+            
                 }                   
             }
         },
@@ -321,7 +306,6 @@ export default {
         },
         mergeCells() {
             //声明一个map计算相同属性值在data对象出现的次数和
-           // console.log(this.spanColumns)
             var spanColumns =this.spanColumns;
             var data = this.interTableInfo.tableData;
             var startIndex = 0;
@@ -439,12 +423,6 @@ export default {
     },
     created(){
         this.interTableInfo = Object.assign({},this.interTableInfo,this.tableInfo); 
-    },
-    mounted(){
-        //this.$on('changeData',this.dataHandle)   
-    },
-    updated(){
-        // console.log(this.interTableInfo.pageSize)
     },
     components: {
         VTable,
