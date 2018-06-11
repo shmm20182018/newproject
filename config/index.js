@@ -52,7 +52,7 @@ module.exports = {
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: '/drp/WebReport',
+    assetsPublicPath: '/drp/WebReport/',
 
     /**
      * Source Maps

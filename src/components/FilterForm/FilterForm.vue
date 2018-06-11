@@ -84,35 +84,32 @@ export default {
 }
 </script>
 <style>
-.filterForm .el-form{
-    overflow: hidden;
-  }
-.filterForm .el-form-item__label{
+ .filterForm .el-form-item__label{
     font-size: 12px
   }
-.filterForm .el-date-editor.el-input, .el-date-editor.el-input__inner {
+  .filterForm  .el-date-editor.el-input, .el-date-editor.el-input__inner {
     width: 100%;
   }
-.filterForm .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item{
+  .filterForm  .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item{
     display: flex;
     width: 100%;
   }
-.filterForm .el-form-item__content{
+ .filterForm   .el-form-item__content{
     flex: 0.95;
   }
-.filterForm .el-form--inline .el-form-item__label {
+  .filterForm  .el-form--inline .el-form-item__label {
     flex: 0 0 80px;
   }
-.filterForm .el-select{
+ .filterForm   .el-select{
     width: 100%;
   }
-.filterForm .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item {
+  .filterForm .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item {
     margin-bottom: 8px;
  }
-.filterForm .green-style .el-form-item.is-success .el-input__inner,  .green-style .el-form-item.is-success .el-input__inner:focus, .green-style .el-form-item.is-success .el-textarea__inner,  .green-style .el-form-item.is-success .el-textarea__inner:focus {
+ .filterForm   .green-style .el-form-item.is-success .el-input__inner,  .green-style .el-form-item.is-success .el-input__inner:focus, .green-style .el-form-item.is-success .el-textarea__inner,  .green-style .el-form-item.is-success .el-textarea__inner:focus {
     border-color: #03A656;
   }
-.filterForm .wathet-style .el-form-item.is-success .el-input__inner, .wathet-style .el-form-item.is-success .el-input__inner:focus, .wathet-style .el-form-item.is-success .el-textarea__inner, .wathet-style  .el-form-item.is-success .el-textarea__inner:focus {
+ .filterForm   .wathet-style .el-form-item.is-success .el-input__inner, .wathet-style .el-form-item.is-success .el-input__inner:focus, .wathet-style .el-form-item.is-success .el-textarea__inner, .wathet-style  .el-form-item.is-success .el-textarea__inner:focus {
     border-color: #13B5BC;
   }
 .phone-style-class .el-form-item__content{

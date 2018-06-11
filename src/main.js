@@ -6,14 +6,14 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import deepCloneArray from './utils/deepClone.js'
 import http from './utils/http.js'
-import $ from 'jquery'
+// import $ from 'jquery'
 import App from './App'
 
 Vue.use(ElementUI);
 Vue.config.productionTip = false
 Vue.prototype.$Http= http
 Vue.prototype.$Clone = deepCloneArray
-Vue.prototype.$Extend =$.extend
+// Vue.prototype.$Extend =$.extend
 
 Vue.directive('drag',//自定义指令                                 
         {bind:function (el, binding) {

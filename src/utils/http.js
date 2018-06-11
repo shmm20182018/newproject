@@ -15,8 +15,9 @@ export default function(_method,_url,_data){
             resolve(res);
         })
         .catch((res) => {
-            vm.$notify.error({
-                title: '错误',
+            vm.$message({
+                showClose: true,
+                type: 'error',
                 message: res.response.data
             });
             reject(res);

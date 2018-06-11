@@ -150,7 +150,6 @@ export default {
         sortChange(params){
             this.isCellMerge = false
             var columns = this.interTableInfo.columns
-            //console.log(params)
             if(!this.multipleSort){//单列排序
                 for(let i in params){
                     if(params[i]){
@@ -182,14 +181,6 @@ export default {
                     }
                 }
             }
-            /*this.mergeCells();
-            this.allCells();
-            console.log(this.allArray)
-            console.log(this.sortMapArray)
-            setTimeout(()=>{
-                this.isCellMerge = true
-            },500)
-            return  Promise.resolve();*/
         },
         setFooterData(data){ //列数据统计
             let result = [],
@@ -235,7 +226,6 @@ export default {
                         }
                     }   					
                 }
-                //console.log(count)
                 return count;
             });
         },
@@ -296,13 +286,11 @@ export default {
         },
         cellSeparate(rowIndex,rowData,field){
             var spanColumns =this.spanColumns;
-            //console.log(spanColumns)
             for (var j  in this.allArray) {
                 var startIndex = 0;
                 var sortMap = this.allArray[j]
                 for (var prop in sortMap) {
                     if(rowIndex == startIndex && field == spanColumns[j]){
-                        //this.startIndex +=count
                         return {
                             colSpan: 1,
                             rowSpan: 1,
@@ -310,7 +298,7 @@ export default {
                         }
                     }
                     startIndex += 1;
-                    //console.log(startIndex)
+            
                 }                   
             }
         },
@@ -339,29 +327,29 @@ export default {
             //声明一个map计算相同属性值在data对象出现的次数和
            // var data = this.interTableInfo.tableData;
             var sortMapArray =[];
-              var fieldName = this.spanColumns[rowIndex];
-                var sortMap ={}
-                for (var i =startIndex; i < endIndex; i++) {
-                    for (var prop in this.interTableInfo.tableData[i]) {
-                        if (prop == fieldName) {
-                            var key = this.interTableInfo.tableData[i][prop]
-                            if (sortMap.hasOwnProperty(key)) {
-                                sortMap[key] = sortMap[key] * 1 + 1;
-                            } else {
-                                sortMap[key] = 1;
-                            }
-                            break;
+            var fieldName = this.spanColumns[rowIndex];
+            var sortMap ={}
+            for (var i =startIndex; i < endIndex; i++) {
+                for (var prop in this.interTableInfo.tableData[i]) {
+                    if (prop == fieldName) {
+                        var key = this.interTableInfo.tableData[i][prop]
+                        if (sortMap.hasOwnProperty(key)) {
+                            sortMap[key] = sortMap[key] * 1 + 1;
+                        } else {
+                            sortMap[key] = 1;
                         }
+                        break;
                     }
                 }
-                //console.log(sortMap)
-                for (var prop in sortMap) {
-                    this.sortMapArray[rowIndex].push(sortMap)
-                    var count = sortMap[prop] * 1;
-                    if (rowIndex < this.spanColumns.length - 1)
-                        this.mergeCell(rowIndex + 1, startIndex, startIndex + count)
-                    startIndex += count;
-                }
+            }
+            //console.log(sortMap)
+            for (var prop in sortMap) {
+                this.sortMapArray[rowIndex].push(sortMap)
+                var count = sortMap[prop] * 1;
+                if (rowIndex < this.spanColumns.length - 1)
+                    this.mergeCell(rowIndex + 1, startIndex, startIndex + count)
+                startIndex += count;
+            }
         },
         mergeCells() {
             for(let i in this.spanColumns){

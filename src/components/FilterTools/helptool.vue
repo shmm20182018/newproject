@@ -374,7 +374,6 @@ body .el-tooltip__popper[x-placement^=bottom] .popper__arrow::after {
     border: 1px solid #DFE0E4;
     z-index: 1000;
     background: rgba(7,17,27,0.8);
-	backdrop-filter: blur(10px);
     border-radius: 4px;
     box-shadow:none
 }
