@@ -1,12 +1,13 @@
 <template>
-  <div>
+  <div :class="phoneClass">
     <div class="filter-tools">
       <i :class="iconArrowFilter" class="icon-toggle" @click="showToggle('filter')"></i>
       <transition name="slide-fade">
         <filter-form v-show="showFilterFlag" 
                      :paramsInfo="reportInfo.paramsInfo"
                      @query-params-change ="queryParamsChange"
-                     @search-data ="searchData"></filter-form>
+                     @search-data ="searchData"
+                     :phoneFlag="phoneFlag"></filter-form>
       </transition>
     </div>
     <div class="table-wrapper" v-if="reportInfo.tableInfo.columns" v-show="reportInfo.tableInfo.columns.length>0">
@@ -17,8 +18,9 @@
                       :queryParams = "queryParams"
                       :id ="reportInfo.id"
                       :engine ="$route.params.engine"
+                      :phoneFlag="phoneFlag"
                       ref="stable">
-        </server-table> 
+        </server-table>
       </transition>              
     </div>
     <div class="chart-wrapper" v-if="reportInfo.chartInfo.series" >
@@ -34,6 +36,7 @@
 import FilterForm from '../components/FilterForm/FilterForm.vue'
 import ServerTable from '../components/ServerTable/ServerTable.vue'
 import ServerChart from '../components/ServerChart/ServerChart.vue'
+
 export default {
   data () {
     return {
@@ -47,10 +50,21 @@ export default {
         tableInfo:{},
         chartInfo:{}
       },
-      queryParams:{}
+      queryParams:{},
+      phoneFlag:false,
     };
   },
   computed:{
+    phoneClass(){
+      var screenWidth = document.body.clientWidth * 1//窗口的大小
+      if(screenWidth >= 1200){
+        return 'pc-style-class'
+      }else{
+        this.phoneFlag = true
+        return 'phone-style-class'  
+          //this.tableHeight = 1*100%
+      }
+    },
     initApiUrl:function(){
       return 'api/report/init?id='+this.$route.params.id+'&engine='+this.$route.params.engine;   
     },
@@ -117,13 +131,9 @@ export default {
         });
       }
       this.$Http('post',"api/report/search",this.searchParams).then((res)=>{
-         console.log(this.reportInfo)
+        // console.log(this.reportInfo)
         if(res.data.tableInfo){
-          this.reportInfo.tableInfo = Object.assign({}, this.reportInfo.tableInfo,res.data.tableInfo );
-          this.$nextTick(()=>{
-             // this.$refs.stable.$emit('changeData') 
-             this.$refs.stable.dataHandle(true)   
-          })
+          this.reportInfo.tableInfo = Object.assign({},this.reportInfo.tableInfo,res.data.tableInfo); 
           this.showTableFlag =true; 
         }
         if(res.data.chartInfo.dataset){
@@ -139,7 +149,7 @@ export default {
   components: {
     ServerChart,
     ServerTable,
-    FilterForm
+    FilterForm 
   }
 }
 

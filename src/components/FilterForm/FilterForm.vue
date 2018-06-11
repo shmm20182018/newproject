@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="filterForm">
     <el-form class="wathet-style demo-ruleForm" :show-message="false" label-position="left" label-width="80px" :model="ruleForm" :inline="true" :rules="rules"  ref="ruleForm" size="mini">
       <el-row :gutter="20">
         <component :toolSize="toolColSize" 
@@ -7,8 +7,9 @@
                    :is="param.componentName" 
                    :param="param" 
                    @rule-form-change="ruleFormChange"  
-                   :key="param.id"></component>
-        <el-col :span="6">
+                   :key="param.id"
+                   :phoneFlag="phoneFlag"></component>
+        <el-col :span="toolColSize">
           <div class="grid-content">
             <el-form-item class="filtertool-btn">
               <el-button type="primary" @click.prevent="submitForm('ruleForm')">查询</el-button>
@@ -25,7 +26,7 @@ import selecttool from '@/components/filtertools/selecttool.vue'
 import datetool from '@/components/filtertools/datetool.vue'
 import helptool from '@/components/filtertools/helptool.vue'
 export default {
-  props:['paramsInfo','queryParams'],
+  props:['paramsInfo','queryParams','phoneFlag'],
   data() {
     return {
       ruleForm: {},
@@ -83,33 +84,42 @@ export default {
 }
 </script>
 <style>
-  .el-form-item__label{
+.filterForm .el-form{
+    overflow: hidden;
+  }
+.filterForm .el-form-item__label{
     font-size: 12px
   }
-  .el-date-editor.el-input, .el-date-editor.el-input__inner {
+.filterForm .el-date-editor.el-input, .el-date-editor.el-input__inner {
     width: 100%;
   }
-  .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item{
+.filterForm .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item{
     display: flex;
     width: 100%;
   }
-  .el-form-item__content{
+.filterForm .el-form-item__content{
     flex: 0.95;
   }
-  .el-form--inline .el-form-item__label {
+.filterForm .el-form--inline .el-form-item__label {
     flex: 0 0 80px;
   }
-  .el-select{
+.filterForm .el-select{
     width: 100%;
   }
- .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item {
+.filterForm .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item {
     margin-bottom: 8px;
  }
-  .green-style .el-form-item.is-success .el-input__inner,  .green-style .el-form-item.is-success .el-input__inner:focus, .green-style .el-form-item.is-success .el-textarea__inner,  .green-style .el-form-item.is-success .el-textarea__inner:focus {
+.filterForm .green-style .el-form-item.is-success .el-input__inner,  .green-style .el-form-item.is-success .el-input__inner:focus, .green-style .el-form-item.is-success .el-textarea__inner,  .green-style .el-form-item.is-success .el-textarea__inner:focus {
     border-color: #03A656;
   }
-  .wathet-style .el-form-item.is-success .el-input__inner, .wathet-style .el-form-item.is-success .el-input__inner:focus, .wathet-style .el-form-item.is-success .el-textarea__inner, .wathet-style  .el-form-item.is-success .el-textarea__inner:focus {
+.filterForm .wathet-style .el-form-item.is-success .el-input__inner, .wathet-style .el-form-item.is-success .el-input__inner:focus, .wathet-style .el-form-item.is-success .el-textarea__inner, .wathet-style  .el-form-item.is-success .el-textarea__inner:focus {
     border-color: #13B5BC;
   }
-
+.phone-style-class .el-form-item__content{
+    flex: 1;
+  }
+.phone-style-class .el-button--mini, .el-button--mini.is-round {
+    padding: 8px 15px;
+    width: 100%;
+  }
 </style>

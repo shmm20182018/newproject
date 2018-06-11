@@ -10,7 +10,8 @@
                 </el-dropdown-menu>
             </el-dropdown>
         </div>
-       <v-table id="serverTable"
+       <v-table v-if="interTableInfo.tableType*1==0?true:isShow"
+              id="serverTable"
               class="wathet-style"
               is-vertical-resize
               :vertical-resize-offset='60'
@@ -43,7 +44,7 @@
                                    :total="interTableInfo.total" 
                                    :page-size="interTableInfo.pageSize" 
                                    :page-index="pageIndex"
-                                   :layout="['total', 'prev', 'pager', 'next', 'sizer', 'jumper']"></v-pagination>
+                                   :layout="layoutArray"></v-pagination>
        </div>
   </div>
 </template>
@@ -52,13 +53,14 @@ import 'vue-easytable/libs/themes-base/index.css'
 import {VTable,VPagination} from 'vue-easytable'
 import XLSX from '../../utils/xlsx.js'
 
+
 export default {
-    props:['tableInfo','queryParams','id','engine'],
+    props:['tableInfo','queryParams','id','engine','phoneFlag'],
     data(){
         return {  
-            //本地缓存表格数据
+            isShow:true,//分组表表格数据更新后重新渲染(合并单元格)
             pageIndex:1,
-            interTableData:[],
+            interTableData:[],//本地缓存表格数据
             interTableInfo:{},
             sortMapArray:[],//合并单元格rowspan-count
             allArray:[],//存储所有和并列的数据用于复原表格
@@ -79,12 +81,21 @@ export default {
                 condition:this.queryParams,
                 pageSize: this.interTableInfo.pageSize
             }
+        },
+        layoutArray(){
+            if(this.phoneFlag){
+                return ['total', 'prev', 'next', 'sizer', 'jumper']
+            }else{
+                return ['total', 'prev', 'pager', 'next', 'sizer', 'jumper']
+            }
         }
     },
     watch:{
         'tableInfo':{
-            handler: function (newVal) {
+            handler: function (newVal) { 
+                this.isShow = false
                 this.interTableInfo = Object.assign({},this.interTableInfo,newVal);
+                this.dataHandle(true)
             },
             deep: false
         },
@@ -96,6 +107,10 @@ export default {
         }
     },
     methods:{
+        clearTable(){
+            this.$set(this.interTableInfo,'tableData',[]); 
+            return  Promise.resolve()  
+        },
         dataHandle(isPage){
             this.countSumCol(this.interTableInfo.columns).then(()=>{
                 if(this.interTableInfo.colSumFlag){ //列数据汇总
@@ -105,11 +120,12 @@ export default {
                     this.rowSum();
                 } 
                 if(this.interTableInfo.columns[0]['groupby']){ //合并单元格计算
-                    this.mergeCells()   
+                    this.mergeCells()      
                }
                if(this.formatColumns.length>0 && isPage){//单元格数据保留小数位数
                     this.cellFormatter() 
                 }
+                this.isShow = true
             });
         },
         pageChange(pageIndex){
@@ -120,9 +136,10 @@ export default {
             }
             this.$Http('post',"api/report/nextPage",this.requestParams).then((res)=>{
                 this.interTableData[pageIndex] = res.data;
-                this.$set(this.interTableInfo,'tableData',res.data); 
-                this.dataHandle(false)                        
-             });
+                this.isShow = false
+                this.$set(this.interTableInfo,'tableData',res.data)
+                this.dataHandle(false)                                  
+            });
         },
         pageSizeChange(pageSize){ 
             this.interTableData.length = 0;
@@ -256,25 +273,24 @@ export default {
             return columnfields        
         },
         cellMerge(rowIndex,rowData,field){
-            var spanColumns =this.spanColumns;
-            //console.log(spanColumns)
             for (var j  in this.sortMapArray) {
                 var startIndex = 0;
-                var sortMap = this.sortMapArray[j]
                 var colorIndex = true
-                for (var prop in sortMap) {
-                    var count = sortMap[prop] * 1;  
-                    if(rowIndex == startIndex && field == spanColumns[j]){
-                        //this.startIndex +=count
-                        return {
-                            colSpan: 1,
-                            rowSpan: count,
-                            content: `<div class="${colorIndex?'span-cell-div-odd':'span-cell-div-even'}"><span style="padding:0 4px">${prop}</span></div>` 
+                for(var sortMap of this.sortMapArray[j]){
+                    for (var prop in sortMap) {
+                        var count = sortMap[prop] * 1;  
+                        if(rowIndex == startIndex && field == this.spanColumns[j]){
+                            //this.startIndex +=count         
+                            return {
+                                colSpan: 1,
+                                rowSpan: count,
+                                content: `<div class="${colorIndex?'span-cell-div-odd':'span-cell-div-even'}"><span style="padding:0 4px">${prop}</span></div>` 
+                            }
                         }
+                        startIndex += count;
+                        colorIndex = !colorIndex
+                        //console.log(startIndex)
                     }
-                    startIndex += count;
-                    colorIndex = !colorIndex
-                    //console.log(startIndex)
                 }                   
             }
         },
@@ -319,21 +335,16 @@ export default {
             //this.sortMap=sortMap;
             this.allArray = allArray 
         },
-        mergeCells() {
+        mergeCell(rowIndex,startIndex,endIndex){
             //声明一个map计算相同属性值在data对象出现的次数和
-           // console.log(this.spanColumns)
-            var spanColumns =this.spanColumns;
-            var data = this.interTableInfo.tableData;
-            var startIndex = 0;
-            var endIndex = data.length;
+           // var data = this.interTableInfo.tableData;
             var sortMapArray =[];
-            for (var j=0; j<spanColumns.length; j++) {
-                var fieldName = spanColumns[j];
+              var fieldName = this.spanColumns[rowIndex];
                 var sortMap ={}
-                for (var i =0; i < this.interTableInfo.pageSize; i++) {
-                    for (var prop in data[i]) {
+                for (var i =startIndex; i < endIndex; i++) {
+                    for (var prop in this.interTableInfo.tableData[i]) {
                         if (prop == fieldName) {
-                            var key = data[i][prop]
+                            var key = this.interTableInfo.tableData[i][prop]
                             if (sortMap.hasOwnProperty(key)) {
                                 sortMap[key] = sortMap[key] * 1 + 1;
                             } else {
@@ -343,9 +354,29 @@ export default {
                         }
                     }
                 }
-                sortMapArray.push(sortMap)
+                //console.log(sortMap)
+                for (var prop in sortMap) {
+                    this.sortMapArray[rowIndex].push(sortMap)
+                    var count = sortMap[prop] * 1;
+                    if (rowIndex < this.spanColumns.length - 1)
+                        this.mergeCell(rowIndex + 1, startIndex, startIndex + count)
+                    startIndex += count;
+                }
+        },
+        mergeCells() {
+            for(let i in this.spanColumns){
+                this.sortMapArray[i] =[]
+            }    
+            this.mergeCell(0, 0, this.interTableInfo.tableData.length)   
+            //console.log(this.sortMapArray)
+            for(let arr of this.sortMapArray){//去掉重复对象
+                for(let i=0;i<arr.length;i++){
+                    var num = Object.getOwnPropertyNames(arr[i]).length - 1;
+                    //console.log(arr[i],Object.getOwnPropertyNames(arr[i]).length,num)
+                    arr.splice(i+1,num)
+                }
             }
-            this.sortMapArray = sortMapArray
+            //console.log(this.sortMapArray)
         },
         cellFormatter(){ //小数位数
             var columns = this.formatColumns
@@ -353,7 +384,7 @@ export default {
                 var n = parseInt(columns[i].formatterContent)
                 if(columns[i].formatterType == 'N' && n>=0 && n<20){
                    this.$set(columns[i],"formatter",(() => {
-                       var num = n //不能直接用n！
+                        var num = n //不能直接用n！
                         return (rowData,rowIndex,pagingIndex,field) => {     				
                             var number=rowData[field] * 1;
                             return  number.toFixed(num);
@@ -443,13 +474,10 @@ export default {
     mounted(){
         //this.$on('changeData',this.dataHandle)   
     },
-    updated(){
-        // console.log(this.interTableInfo.pageSize)
-    },
     components: {
         VTable,
         VPagination
-  }
+    }
 }  
 </script>
 <style>
@@ -468,7 +496,7 @@ export default {
         text-align: center;
         color: #666;
     }
-    .exportbtn {
+    .table-wrapper .exportbtn {
         position: absolute;
         right: 5px;
         bottom: 0px;
@@ -577,22 +605,22 @@ export default {
     .v-table-footer-class {
         height: 40px !important
     }
-    .table-wrapper ::-webkit-scrollbar{  
+    .pc-style-class .table-wrapper ::-webkit-scrollbar{  
         width:12px;  
         height:12px;  
     }  
-    .table-wrapper ::-webkit-scrollbar-track{  
+    .pc-style-class .table-wrapper ::-webkit-scrollbar-track{  
         background: #f6f6f6;  
         border-radius:6px;  
     }  
-    .table-wrapper ::-webkit-scrollbar-thumb{  
+    .pc-style-class .table-wrapper ::-webkit-scrollbar-thumb{  
         background: #aaa;  
         border-radius:6px;  
     }  
-    .table-wrapper ::-webkit-scrollbar-thumb:hover{  
+    .pc-style-class .table-wrapper ::-webkit-scrollbar-thumb:hover{  
         background: #747474;  
     }  
-    .table-wrapper ::-webkit-scrollbar-corner{  
+    .pc-style-class .table-wrapper ::-webkit-scrollbar-corner{  
         background: #f6f6f6;  
     }  
     .span-cell-div-even{

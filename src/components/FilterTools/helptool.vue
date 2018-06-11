@@ -13,7 +13,7 @@
             ></el-input>
             </div>
         </el-tooltip> 
-         <i class="el-icon-search" @click="openHelp"></i>
+        <i class="el-icon-search" @click="openHelp"></i>
         <div v-if="helpShowFlag" class="help-wrapper" id="drag" :style="helpStyle">
             <el-card class="box-card">
                 <div slot="header" class="clearfix">
@@ -36,12 +36,16 @@
                         row-hover-color="#eee"
                         row-click-color="#edf7ff"
                         :row-dblclick="rowDoubleClick"
-                        even-bg-color="#f2f2f2"
+                        :row-click="rowClick"
+                        table-bg-color="phoneFlag?'transparent':''"	
+                        title-bg-color="phoneFlag?'transparent':''"	
+                        odd-bg-color="phoneFlag?'transparent':''"	
+                        even-bg-color="phoneFlag?'transparent':''"
                         :columns="tableInfo.columns"
                         :table-data="tableInfo.tableData"
                         :paging-index="(pageIndex-1)*tableInfo.pageSize"
-                        :title-row-height="22"
-                        :row-height="24"
+                        :title-row-height="26"
+                        :row-height="28"
                         >
                     </v-table>
                     <div class="footer-wapper clear">
@@ -68,7 +72,7 @@
 import 'vue-easytable/libs/themes-base/index.css'
 import {VTable,VPagination} from 'vue-easytable'
 export default {
-    props:['param','toolSize','ruleFormValue'],
+    props:['param','toolSize','ruleFormValue','phoneFlag'],
     data () {
         return {
             internalValue : this.param.defaultValue,
@@ -175,6 +179,14 @@ export default {
             this.helpShowFlag = false;
             this.inputShowText =  this.helpMcValue;
         },
+        rowClick(rowIndex, rowData, column){
+            if(!this.phoneFlag){
+                return ;
+            }
+            this.setHelpValue(rowData['F_NM'],rowData['F_BH'],rowData['F_MC']);
+            this.helpShowFlag = false;
+            this.inputShowText =  this.helpMcValue;
+        },
         pageChange(pageIndex){ 
             this.pageIndex = pageIndex;
 
@@ -196,7 +208,12 @@ export default {
             this.pageChange(1);
         },
     },
-   components: {
+    created(){
+        if(this.phoneFlag){
+            this.helpStyle = {}
+        }
+    },
+    components: {
      VTable,
      VPagination
   }
@@ -328,22 +345,80 @@ body .el-tooltip__popper[x-placement^=bottom] .popper__arrow::after {
 .help-tool .v-table-views{
     height: 350px !important
 }
-.help-wrapper ::-webkit-scrollbar{  
+.pc-style-class .help-wrapper ::-webkit-scrollbar{  
     width:8px;  
     height:8px;  
 }  
-.help-wrapper ::-webkit-scrollbar-track{  
+.pc-style-class .help-wrapper ::-webkit-scrollbar-track{  
     background: #f6f6f6;  
     border-radius:4px;  
 }  
-.help-wrapper ::-webkit-scrollbar-thumb{  
+.pc-style-class .help-wrapper ::-webkit-scrollbar-thumb{  
     background: #aaa;  
     border-radius:4px;  
 }  
-.help-wrapper ::-webkit-scrollbar-thumb:hover{  
+.pc-style-class .help-wrapper ::-webkit-scrollbar-thumb:hover{  
     background: #747474;  
 }  
-.help-wrapper ::-webkit-scrollbar-corner{  
+.pc-style-class .help-wrapper ::-webkit-scrollbar-corner{  
     background: #f6f6f6;  
-}     
+}
+.phone-style-class .help-wrapper{
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    border: 1px solid #DFE0E4;
+    z-index: 1000;
+    background: rgba(7,17,27,0.8);
+	backdrop-filter: blur(10px);
+    border-radius: 4px;
+    box-shadow:none
+}
+.phone-style-class .help-wrapper .el-card{
+    height: 100%;
+}
+.phone-style-class .help-wrapper .el-card__body{
+    height: calc(100% - 29px);
+}
+.phone-style-class .help-wrapper .content-wapper{
+    height: 100%;
+}
+.phone-style-class  .help-wrapper .v-table-views {
+    height: 85% !important;
+}
+.phone-style-class  .help-wrapper tr td:first-child>div{
+    width: 100px !important; 
+}
+.phone-style-class  .help-wrapper tr td:nth-child(2)>div{
+    width: 320px !important; 
+}
+.phone-style-class  .help-wrapper .search-form {
+    float: left;
+    width: 100%;
+}
+.phone-style-class  .help-wrapper .el-form-item__content{
+    display: flex;
+}
+.phone-style-class  .help-wrapper .search-input{
+    flex: 1;
+}
+.phone-style-class  .help-wrapper button{
+    flex: 0 0 58px;
+    width: 58px;
+    margin-left: 10px;
+}
+.phone-style-class .help-wrapper .el-card,
+.phone-style-class .help-wrapper .el-card__header,
+.phone-style-class .help-wrapper .v-table-views,
+.phone-style-class .help-wrapper .v-table-views,
+.phone-style-class .help-wrapper .v-table-views,
+.phone-style-class .help-wrapper .v-table-views,
+ {
+    background-color: transparent;
+}
+
 </style>

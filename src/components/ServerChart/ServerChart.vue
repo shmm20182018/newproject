@@ -1,5 +1,5 @@
 <template>
-<chart :options="chartInfo" theme="light" ></chart>
+  <chart :options="chartInfo" theme="light" ></chart>
 </template>
 
 <script>
