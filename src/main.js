@@ -17,6 +17,7 @@ Vue.prototype.$Clone = deepCloneArray
 
 Vue.directive('drag',//自定义指令                                 
         {bind:function (el, binding) {
+          if(document.body.clientWidth < 1200){ return false;}
                 let oDiv = el;   //当前元素
                 let self = this;  //上下文
                 oDiv.onmousedown = function (e) {

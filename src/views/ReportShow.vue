@@ -10,6 +10,7 @@
                      :phoneFlag="phoneFlag"></filter-form>
       </transition>
     </div>
+    <p></p>
     <div class="table-wrapper" v-if="reportInfo.tableInfo.columns" v-show="reportInfo.tableInfo.columns.length>0">
       <i :class="iconArrowTable" class="icon-toggle" @click="showToggle('table')"></i>
       <transition name="fade" >

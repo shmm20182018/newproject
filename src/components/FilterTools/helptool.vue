@@ -14,7 +14,8 @@
             </div>
         </el-tooltip> 
         <i class="el-icon-search" @click="openHelp"></i>
-        <div v-if="helpShowFlag" class="help-wrapper" id="drag" :style="helpStyle">
+        <transition name="help-slide">
+        <div v-if="helpShowFlag" v-drag="greet" class="help-wrapper" id="drag" :style="helpStyle">
             <el-card class="box-card">
                 <div slot="header" class="clearfix">
                     <span class="card-title">{{tableInfo.title}}</span>
@@ -44,16 +45,18 @@
                         :columns="tableInfo.columns"
                         :table-data="tableInfo.tableData"
                         :paging-index="(pageIndex-1)*tableInfo.pageSize"
-                        :title-row-height="26"
-                        :row-height="28"
+                        :title-row-height="32"
+                        :row-height="34"
                         >
                     </v-table>
                     <div class="footer-wapper clear">
-                        <div  class="mt20 mb20 bold page-wrapper">
+                        <div  class="page-wrapper">
                             <v-pagination size="small" @page-change="pageChange" :page-index="pageIndex" :total="tableInfo.total" :page-size="tableInfo.pageSize" :layout="['total', 'prev', 'next', 'jumper']"></v-pagination>
                             <span class="page-total">{{pageCount}}</span>
+                            <el-input v-if="phoneFlag" v-model="searchText" class="search-input-phone" placeholder="请输入关键词" width="150px"></el-input>
                         </div> 
-                        <el-form :inline="true"  class="search-form" size="mini">
+                        <div class="btn-wrapper" v-if="phoneFlag"><el-button type="primary" class="search-btn-phone" @click="onSubmit">查询</el-button></div>
+                        <el-form v-if="!phoneFlag" :inline="true"  class="search-form" size="mini">
                             <el-form-item label="">
                                 <el-input v-model="searchText" class="search-input" placeholder="请输入关键词" width="150px"></el-input>
                                 <el-button type="primary" @click="onSubmit">查询</el-button>
@@ -63,6 +66,7 @@
                 </div>
             </el-card>
         </div>
+        </transition>
       </el-form-item>
     </div>
   </el-col>    
@@ -207,6 +211,9 @@ export default {
             this.interTableData.length = 0;
             this.pageChange(1);
         },
+        greet(){
+
+        }
     },
     created(){
         if(this.phoneFlag){
@@ -242,27 +249,27 @@ export default {
 .help-wrapper .icon-close{
     float: right; 
     width: 24px;
-    height: 24px;
-    line-height: 24px;
+    height: 28px;
+    line-height: 28px;
     cursor: pointer;
 }
-body .el-form-item__content{
-    position: relative;
+.help-wrapper .v-table-header-inner{
+    background-color: #13B5BC;
+    border-bottom: 1px solid rgb(221,221,221)
 }
-body .el-icon-search{
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    font-size: 18px;
-    color: #C3C5C8;
+.help-wrapper .v-table-header-inner tbody td:last-child>div{ 
+    border-right: #13B5BC;
 }
-body .el-icon-search:hover{
-    color: #02AFEE;
-    cursor: pointer;
-} 
+.help-wrapper .v-table-header-inner tbody td>div{
+    border-bottom:none;
+}
+.help-wrapper .v-table-body table{
+   width: 100%;
+}
 body .el-card__header{
-    padding: 0px 10px;
-    background-color: #F3F7FB;   
+    padding: 4px 10px;
+    background-color: rgba(241,251,252,0.8);
+    font-weight: 700;   
 } 
 body .card-title{
     color: #808080;
@@ -286,7 +293,7 @@ body .card-title{
 .help-tool .page-wrapper .page-total {
     display: inline-block;
     vertical-align: top;
-    width: 50px;
+    width: 5%;
     height: 24px;
     line-height: 24px;
     margin: 4px 0;
@@ -363,61 +370,146 @@ body .el-tooltip__popper[x-placement^=bottom] .popper__arrow::after {
 .pc-style-class .help-wrapper ::-webkit-scrollbar-corner{  
     background: #f6f6f6;  
 }
-.phone-style-class .help-wrapper{
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    width: 100%;
-    height: 100%;
-    margin: 0 auto;
-    border: 1px solid #DFE0E4;
-    z-index: 1000;
-    background: rgba(7,17,27,0.8);
-    border-radius: 4px;
-    box-shadow:none
+@media screen and (max-width: 1119px){
+    .help-slide-enter-active {
+        transition: all .3s ease;
+    }
+    .help-slide-leave-active {
+        transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+    }
+    .help-slide-enter, .help-slide-leave-to{
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    .help-wrapper{
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        right: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        margin:0;
+        background: rgba(7,17,27,0.8);
+        box-shadow:none;
+        border:none;
+    }
+    .help-wrapper .el-card{
+        height: 100%;
+    }
+    .help-wrapper .el-card__body{
+        height: calc(100% - 44px);
+    }
+    .help-wrapper .content-wapper{
+        height: 100%;
+    }
+    .help-wrapper .v-table-views {
+        position: static;
+        height: auto !important;
+        min-height: 300px !important;
+        max-height:calc(100% - 120px) !important;
+        overflow: scroll;
+        border: none;
+    }
+    .help-wrapper .v-table-header{
+        width: 319px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 1999;
+    }
+    .help-wrapper .content-wapper{
+        position: relative;
+    }
+    .help-wrapper tr td:first-child>div{
+        width: 100px !important; 
+    }
+    .help-wrapper tr td:nth-child(2)>div{
+        width: 320px !important; 
+    }
+    .help-wrapper .search-form {
+        float: left;
+        width: 100%;
+        padding: 0 5px;
+    }
+    .help-wrapper .el-form-item__content{
+        display: flex;
+    }
+     .help-wrapper .search-input{
+        flex: 1;
+    }
+    .help-wrapper button{
+        flex: 0 0 58px;
+        width: 58px;
+        margin-left: 10px;
+    }
+    .help-wrapper .el-input--mini .el-input__inner {
+        height: 28px;
+        line-height: 28px;
+    }
+    .help-wrapper .el-button--mini, .el-button--mini.is-round {
+        padding: 7px 15px;
+    }
+    .help-wrapper .page-wrapper{
+        position: relative;
+        height: 34px;
+        width: 100%;
+    }
+    .help-wrapper .v-page-ul{
+        position: relative;
+        width: 95%;
+        height: 28px;
+        line-height: 28px;
+    }
+    .help-wrapper .v-page-goto{
+        position:absolute;
+        top: 0;
+        right: 0;
+    }
+    .help-wrapper .page-total{
+        position:absolute;
+        right: 0;
+        top: 0;
+        width: 5%;
+        height: 34px;
+    }
+    .help-wrapper .el-card {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border: none;
+        border-radius: 0;
+    }
+    .help-wrapper .el-card__header{
+        padding: 8px 10px;  
+    } 
+    .help-wrapper .search-input-phone{
+        position: absolute;
+        left: 115px;
+        top: 2px;
+        width: 33%;
+    }  
+    .help-wrapper .btn-wrapper{
+        text-align: center;
+        margin-top: 20px;
+    }
+    .help-wrapper .search-btn-phone{
+        width: 95%;
+        margin-left:0;
+        padding: 11px 15px;
+    }
+    .help-tool .page-wrapper {
+        float: none;
+        margin-top:5px;
+    }
+    .help-wrapper .v-table-body{
+        height: auto !important;
+        margin-top: 33px;
+    }
+    .help-wrapper .v-table-rightview {
+        position: static;
+    }
 }
-.phone-style-class .help-wrapper .el-card{
-    height: 100%;
-}
-.phone-style-class .help-wrapper .el-card__body{
-    height: calc(100% - 29px);
-}
-.phone-style-class .help-wrapper .content-wapper{
-    height: 100%;
-}
-.phone-style-class  .help-wrapper .v-table-views {
-    height: 85% !important;
-}
-.phone-style-class  .help-wrapper tr td:first-child>div{
-    width: 100px !important; 
-}
-.phone-style-class  .help-wrapper tr td:nth-child(2)>div{
-    width: 320px !important; 
-}
-.phone-style-class  .help-wrapper .search-form {
-    float: left;
-    width: 100%;
-}
-.phone-style-class  .help-wrapper .el-form-item__content{
-    display: flex;
-}
-.phone-style-class  .help-wrapper .search-input{
-    flex: 1;
-}
-.phone-style-class  .help-wrapper button{
-    flex: 0 0 58px;
-    width: 58px;
-    margin-left: 10px;
-}
-.phone-style-class .help-wrapper .el-card,
-.phone-style-class .help-wrapper .el-card__header,
-.phone-style-class .help-wrapper .v-table-views,
-.phone-style-class .help-wrapper .v-table-views,
-.phone-style-class .help-wrapper .v-table-views,
-.phone-style-class .help-wrapper .v-table-views,
- {
-    background-color: transparent;
-}
-
 </style>

@@ -40,4 +40,10 @@ export default {
   width: 80%;
   height: 400px;
 }
+@media screen and (max-width: 1119px) {
+  .echarts{
+    width:100%;
+  }
+}
+
 </style>

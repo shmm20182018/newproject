@@ -31,13 +31,13 @@
               row-click-color="#edf7ff"
               @sort-change="sortChange"
               :paging-index="(pageIndex-1)*interTableInfo.pageSize"
-              :title-row-height="22"
-              :row-height="24"
+              :title-row-height="phoneFlag?26:22"
+              :row-height="phoneFlag?28:24"
               :page-size="interTableInfo.pageSize" 
               :cell-merge="cellMerge"
               >
       </v-table>
-       <div v-if="interTableInfo.tableData && interTableInfo.tableData.length>0" class="mt20 mb20 bold table-pagination">
+       <div v-if="interTableInfo.tableData && interTableInfo.tableData.length>0" class="table-pagination">
         <v-pagination size="small" @page-change="pageChange" 
                                    @page-size-change="pageSizeChange"  
                                    :pageSizeOption=[10,30,50,70,100]  
@@ -45,6 +45,7 @@
                                    :page-size="interTableInfo.pageSize" 
                                    :page-index="pageIndex"
                                    :layout="layoutArray"></v-pagination>
+        <span v-if="phoneFlag" class="page-count">{{pageCount}}</span>                           
        </div>
   </div>
 </template>
@@ -88,7 +89,10 @@ export default {
             }else{
                 return ['total', 'prev', 'pager', 'next', 'sizer', 'jumper']
             }
-        }
+        },
+        pageCount(){
+            return  parseInt((this.interTableInfo.total  +  this.interTableInfo.pageSize  - 1) / this.interTableInfo.pageSize);  
+        },
     },
     watch:{
         'tableInfo':{
@@ -472,7 +476,6 @@ export default {
     .title-wrapper {
         position: relative;
         margin: 10px;
-
     }
     .title-wrapper p {
         height: 25px;
@@ -511,16 +514,16 @@ export default {
         white-space: nowrap;
         overflow: hidden;
     } 
-     .green-style .v-table-body-class tr:nth-child(even){
+    .green-style .v-table-body-class tr:nth-child(even){
         background-color:rgba(77, 147, 117, 0.05)!important
     }  
     .green-style .v-table-body-class tr:nth-child(odd){
         background-color: #D7EAE2   !important;
     }
-     .green-style .v-table-body-class tr:hover{
+    .green-style .v-table-body-class tr:hover{
         background-color:rgba(77, 147, 117, 0.05) !important;
     }
-     .green-style .v-page-li-active {
+    .green-style .v-page-li-active {
         border-color: #2db7f5;
         background-color: #2db7f5;
     }
@@ -539,7 +542,7 @@ export default {
         background-color: #f60;
         color:#fff;
     }
-     .blue-style .v-table-title-class td{
+    .blue-style .v-table-title-class td{
         background-color: #0A5EAD;
         font-weight: bold;
         color: #fff;
@@ -582,7 +585,19 @@ export default {
         border-color: #2db7f5;
         background-color: #2db7f5;
     }
-
+    .wathet-style .v-table-header-inner{
+        background-color: #13B5BC;
+        border-bottom: 1px solid rgb(221,221,221)
+    }
+    .wathet-style .v-table-header-inner tbody td:last-child>div{ 
+        border-right: #13B5BC;
+    }
+    .wathet-style .v-table-header-inner tbody tr:last-child td>div{
+        border-bottom:none;
+    }
+    .wathet-style .v-table-body table{
+        width: 100%;
+    }
     .footer-cell-class-name-title {
         background-color: #f60;
         color: #fff;
@@ -636,5 +651,38 @@ export default {
     .btn{
         font-size:25px;
     }
-
+    .table-wrapper .v-page--small .v-page-goto .v-page-goto-input {
+        outline: none;
+    }
+    @media screen and (max-width: 1119px) {
+        .table-wrapper .table-pagination .page-count{
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 12px;
+            vertical-align: top;
+            height: 24px;
+            line-height: 24px;
+            width: 5%
+        }
+        .table-wrapper .table-pagination{
+            position: relative;
+        }
+        .table-wrapper .table-pagination .v-page-ul{
+            display: flex;
+            position: relative;
+            width: 95%
+        }
+        .table-wrapper .table-pagination .v-page-goto{
+            position: absolute;
+            right: 0;
+            top: 0; 
+        }
+    }
+    @media screen and (max-width:320px){
+        .v-page--small .v-page-goto .v-page-goto-input {
+            width: 30px;
+            padding: 0 1px;
+        }
+    }
 </style>
