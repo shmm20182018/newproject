@@ -14,9 +14,14 @@ export default {
 html{
   width: 100%;
   overflow-x: hidden;
+  height: 100%;
 }
 body{
-  margin-top: 0
+  margin:0;
+  height: 100%;
+}
+#app{
+  height: 100%;
 }
 i{
   font-style: normal;
@@ -27,7 +32,14 @@ i{
 }
 .clear::after{
   content:'';
-  display: 'block';
+  display: block;
   clear: both;
+}
+ul{
+  margin: 0;
+  padding:0;
+}
+li{
+  list-style: none;
 }
 </style>

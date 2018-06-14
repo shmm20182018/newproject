@@ -1,5 +1,5 @@
 <template>
-  <div :class="phoneClass">
+  <div :class="phoneClass" class="report-show-wrapper">
     <div class="filter-tools">
       <i :class="iconArrowFilter" class="icon-toggle" @click="showToggle('filter')"></i>
       <transition name="slide-fade">
@@ -10,8 +10,8 @@
                      :phoneFlag="phoneFlag"></filter-form>
       </transition>
     </div>
-    <p></p>
-    <div class="table-wrapper" v-if="reportInfo.tableInfo.columns" v-show="reportInfo.tableInfo.columns.length>0">
+    <p class="report-title" v-if="phoneFlag">{{reportInfo.title}}</p>
+    <div class="report-table-wrapper" v-if="reportInfo.tableInfo.columns" v-show="reportInfo.tableInfo.columns.length>0">
       <i :class="iconArrowTable" class="icon-toggle" @click="showToggle('table')"></i>
       <transition name="fade" >
         <server-table  v-show="showTableFlag"
@@ -20,6 +20,7 @@
                       :id ="reportInfo.id"
                       :engine ="$route.params.engine"
                       :phoneFlag="phoneFlag"
+                      :showChartFlag="showChartFlag"
                       ref="stable">
         </server-table>
       </transition>              
@@ -135,6 +136,11 @@ export default {
         // console.log(this.reportInfo)
         if(res.data.tableInfo){
           this.reportInfo.tableInfo = Object.assign({},this.reportInfo.tableInfo,res.data.tableInfo); 
+          if(this.phoneFlag){
+            for(let i in this.reportInfo.tableInfo.columns){
+              this.$set(this.reportInfo.tableInfo.columns[i],'isFrozen',false)
+            }
+          }
           this.showTableFlag =true; 
         }
         if(res.data.chartInfo.dataset){
@@ -156,6 +162,10 @@ export default {
 
 </script>
 <style>
+.report-show-wrapper{
+  padding:0 8px;
+  box-sizing: border-box;
+}
 .chart-wrapper{
   width: 100%;
   display: flex;
@@ -189,5 +199,22 @@ export default {
 }
 .fade-enter, .fade-leave-to{
   opacity: 0;
+}
+.report-table-wrapper{
+  position: relative;
+  padding-top: 18px;
+}
+.report-title{
+  height: 18px;
+  line-height: 18px;
+  padding-left: 4px;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+  color: #666;
+}
+.phone-style-class .filter-tools{
+  margin-bottom: 20px;
 }
 </style>

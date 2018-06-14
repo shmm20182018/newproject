@@ -370,6 +370,9 @@ body .el-tooltip__popper[x-placement^=bottom] .popper__arrow::after {
 .pc-style-class .help-wrapper ::-webkit-scrollbar-corner{  
     background: #f6f6f6;  
 }
+.pc-style-class .help-wrapper .v-table-empty-scroll{
+    height: 310px !important;
+}
 @media screen and (max-width: 1119px){
     .help-slide-enter-active {
         transition: all .3s ease;
@@ -421,12 +424,7 @@ body .el-tooltip__popper[x-placement^=bottom] .popper__arrow::after {
     .help-wrapper .content-wapper{
         position: relative;
     }
-    .help-wrapper tr td:first-child>div{
-        width: 100px !important; 
-    }
-    .help-wrapper tr td:nth-child(2)>div{
-        width: 320px !important; 
-    }
+ 
     .help-wrapper .search-form {
         float: left;
         width: 100%;

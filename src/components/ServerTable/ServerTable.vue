@@ -1,9 +1,9 @@
 <template>
     <div class="table-wrapper">
         <div class="title-wrapper" >     
-            <p>{{interTableInfo.title}}</p>
-            <el-dropdown  class="exportbtn">
-                  <i class="btn el-icon-document"></i>
+            <p v-if="!phoneFlag">{{interTableInfo.title}}</p>
+            <el-dropdown v-if="!phoneFlag"  class="exportbtn">
+                <i class="btn el-icon-document"></i>
                 <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item  @click.native="exportExcel" >导出当前页</el-dropdown-item>
                     <el-dropdown-item>导出全部</el-dropdown-item>
@@ -17,7 +17,7 @@
               :vertical-resize-offset='60'
               is-horizontal-resize
               column-width-drag
-              style="width:100%"
+              :style="resizeWidth"
               :error-content-height = '200'
               :multiple-sort = "false"
               even-bg-color="#f2f2f2"
@@ -56,9 +56,9 @@ import XLSX from '../../utils/xlsx.js'
 
 
 export default {
-    props:['tableInfo','queryParams','id','engine','phoneFlag'],
+    props:['tableInfo','queryParams','id','engine','phoneFlag','showChartFlag'],
     data(){
-        return {  
+        return { 
             isShow:true,//分组表表格数据更新后重新渲染(合并单元格)
             pageIndex:1,
             interTableData:[],//本地缓存表格数据
@@ -93,6 +93,14 @@ export default {
         pageCount(){
             return  parseInt((this.interTableInfo.total  +  this.interTableInfo.pageSize  - 1) / this.interTableInfo.pageSize);  
         },
+        resizeWidth(){
+            if(this.showChartFlag){
+                return {width: '100%'}
+            }else{
+                var innerWidth = window.innerHeight - 16
+                return {width: innerWidth}
+            }  
+        }
     },
     watch:{
         'tableInfo':{
@@ -116,6 +124,7 @@ export default {
             return  Promise.resolve()  
         },
         dataHandle(isPage){
+           // if(this.phoneFlag){  this.isShow = true; return ;}
             this.countSumCol(this.interTableInfo.columns).then(()=>{
                 if(this.interTableInfo.colSumFlag){ //列数据汇总
                     this.setFooterData(this.interTableData);
@@ -267,6 +276,7 @@ export default {
             return columnfields        
         },
         cellMerge(rowIndex,rowData,field){
+            //if(this.phoneFlag){return ;}
             for (var j  in this.sortMapArray) {
                 var startIndex = 0;
                 var colorIndex = true
@@ -461,10 +471,10 @@ export default {
         }
     },
     created(){
-        this.interTableInfo = Object.assign({},this.interTableInfo,this.tableInfo); 
+        this.interTableInfo = Object.assign({},this.interTableInfo,this.tableInfo);
     },
     mounted(){
-        //this.$on('changeData',this.dataHandle)   
+        //this.$on('changeData',this.dataHandle) 
     },
     components: {
         VTable,
@@ -626,6 +636,9 @@ export default {
     .pc-style-class .table-wrapper ::-webkit-scrollbar-corner{  
         background: #f6f6f6;  
     }  
+    .pc-style-class .table-wrapper .v-table-rightview{
+      
+    }
     .span-cell-div-even{
         position:absolute;
         left: 0;
@@ -646,7 +659,7 @@ export default {
         background-color: #CCF1F2;
     }
     .v-table-body-class td {
-       position: relative;
+        position: relative;
     } 
     .btn{
         font-size:25px;
@@ -655,6 +668,12 @@ export default {
         outline: none;
     }
     @media screen and (max-width: 1119px) {
+        .table-wrapper{
+            padding-top: 0;
+        }
+        .title-wrapper{
+            margin: 0;
+        }
         .table-wrapper .table-pagination .page-count{
             position: absolute;
             top: 0;

@@ -7,6 +7,10 @@ export default new Router({
     {
       path: '/:engine/:id',
       component: resolve => require(['../views/ReportShow.vue'], resolve)
+    },
+    {
+      path: '/define',
+      component: resolve => require(['../define/DataDefine.vue'], resolve)
     }
   ]
 })
