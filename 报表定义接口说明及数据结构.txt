@@ -9,7 +9,7 @@
 
 接口名称：api/reportDefine/getDataSourceDataFromSenma
 作用：放置语义对象时，根据语义对象ID，获取数据源字段信息
-调用方式：Post
+调用方式：Get
 参数 ： id 
 返回 :  ReportDataSourceFieldsViewModel数组
 
