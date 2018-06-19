@@ -1,0 +1,92 @@
+接口说明
+
+接口名称：api/reportDefine/getSenmaList
+作用：获取语义对象列表，进入报表定义界面时调用
+调用方式：Get
+参数 ：无
+返回 : element树控件data对象
+
+
+接口名称：api/reportDefine/getDataSourceDataFromSenma
+作用：放置语义对象时，根据语义对象ID，获取数据源字段信息
+调用方式：Get
+参数 ： id 
+返回 :  ReportDataSourceFieldsViewModel数组
+
+
+
+
+数据结构
+/// 报表对象 reportInfo
+public class ReportDefineViewModel
+{
+	public string id { get; set; }
+	public string code { get; set; }
+	public string name { get; set; }
+	/// <summary>
+	/// 备注
+	/// </summary>
+	public string describe { get; set; }
+	public string type { get; set; }
+	/// <summary>
+	/// 自动查询
+	/// </summary>
+	public string queryImmediately { get; set; }
+
+	public string saveFlag { get; set; }
+	public string saveTableName { get; set; }
+	public string saveTableAliasName { get; set; }
+	public string delFlag { get; set; }
+	public string delCondition { get; set; }
+	public string outputFlag { get; set; }
+	public string outputLocation { get; set; }
+	public List<ReportSteps> steps { get; set; } = new List<ReportSteps>();
+}
+	
+/// 步骤
+public class ReportSteps
+{
+	public List<ReportDataSourceViewModel> dataSource { get; set; } = new List<ReportDataSourceViewModel>();
+	public ReportOperationViewModel operation { get; set; } = new ReportOperationViewModel();
+	public ReportResultViewModel result { get; set; } = new ReportResultViewModel();
+}
+
+
+/// 数据源
+public class ReportDataSourceViewModel
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public SenmaViewModel senmaInfo { get; set; }
+	public string filter { get; set; }
+	/// <summary>
+	///  数据源类型 0,语义对象 1,中间结果
+	/// </summary>
+	public string type { get; set; }
+	public List<ReportDataSourceFieldsViewModel> fields { get; set; } = new List<ReportDataSourceFieldsViewModel>();
+
+}
+
+///数据源字段明细
+public class ReportDataSourceFieldsViewModel
+{
+	public string id { get; set; }
+	/// <summary>
+	/// 语义对象明细id
+	/// </summary>
+	public string fieldId { get; set; }
+	[JsonProperty("label")]
+	public string fieldName { get; set; }
+	public string field { get; set; }
+	public string useFlag { get; set; }
+	/// <summary>
+	/// 语义对象名称
+	/// </summary>
+	public string senName { get; set; }
+	public string isKeyCol { get; set; }
+	public string isUnoCol { get; set; }
+	public string isDateCol { get; set; }
+	public string dataColType { get; set; }
+	public bool hasChild { get; set; }
+	public List<ReportDataSourceFieldsViewModel> children { get; set; }
+}
