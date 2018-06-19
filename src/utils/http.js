@@ -1,7 +1,7 @@
-
 import axios from 'axios'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
+var Promise = require('bluebird');
 
 export default function(_method,_url,_data){
     var vm = this;
