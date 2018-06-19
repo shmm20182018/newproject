@@ -9,6 +9,7 @@ import http from './utils/http.js'
 // import $ from 'jquery'
 import App from './App'
 
+
 Vue.use(ElementUI);
 Vue.config.productionTip = false
 Vue.prototype.$Http= http
