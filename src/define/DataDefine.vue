@@ -13,7 +13,7 @@
                     <el-input v-model="filterText"  placeholder="搜索"></el-input>
                 </el-form-item>
                 <el-form-item label="">
-                    <el-select v-model="form.region" placeholder="请选择模块" @change.native="moduleChange">
+                    <el-select v-model="filterSelect" placeholder="请选择模块" @change.native="moduleChange">
                         <el-option v-for="item in treeData.moduleList" :label="item.Value" :value="item.Key" :key="item.Key"></el-option>
                     </el-select>
                 </el-form-item>    
@@ -54,7 +54,7 @@
                         <i class="el-icon-setting"></i>
                         <span>参数设置</span>
                     </li>
-                    <li @click="insertDefine">
+                    <li @click="insertStep">
                         <i class="el-icon-circle-plus"></i>
                         <span>下一步</span>
                     </li>
@@ -70,6 +70,7 @@
                         <p class="object-title"><i class="el-icon-menu"></i>数据集</p>
                         <p class="relation-title"><i class="el-icon-menu"></i>关系</p>
                         <p class="result-title"><i class="el-icon-menu"></i>结果</p>
+                        <p class="operate-title"><i class="el-icon-menu"></i>操作</p>
                     </div>
                     <div class="right-middle-data">
                         <div class="right-middle-data-item" v-for="(data,index) in dataDefineArray" :index="index" :key="data.index">
@@ -83,8 +84,8 @@
                                     @close="handleClose(index2,index)">
                                     >
                                    <span class="tag-content"> 
-                                       <i class="tag-text">{{tag.name}}</i>
-                                       <i class="el-icon-setting"  @click.prevent.stop="openConfig(index,index2,tag)"></i>
+                                       <i class="tag-text">{{tag.senmaName}}</i>
+                                       <i class="el-icon-setting"  @click.prevent.stop="openConfig(index,index2)"></i>
                                     </span>
                                 </el-tag>
                                 </draggable>
@@ -121,88 +122,22 @@
                                     <span class="default-text" v-if="!data.result || data.result == null">暂无结果</span>
                                 </div>
                             </div> 
-                            <div class="right-propterty-config"  v-drag :style="configStyle" v-if="showIndex==index && configShowFlag" >
+                            <div class="right-operate">
+                                <el-button type="primary" size="mini" @click="deleteStep(index*1)">删除</el-button>
+                            </div>
+                            <div class="right-propterty-config"  v-drag="dragConfig" :style="configStyle" v-if="showIndex==index && configShowFlag" >
                                 <div class="config-container">
                                     <p class="config-title">
                                         <i class="el-icon-menu"></i>
                                         <span>{{'属性设置'}}</span>
                                         <i class="el-icon-close close-config" @click="closeConfig"></i>
                                     </p>
-                                    <div class="config-content">
-                                        <el-tabs v-model="activeNameCon"  @tab-click="handleClick">
-                                            <el-tab-pane label="对象属性" name="first">
-                                                <div class="obj-config-wrapper">
-                                                    <div class="left-obj-config">
-                                                        <el-form ref="form" :model="objCon" label-width="80px" size="small">
-                                                            <el-form-item label="对象列表">
-                                                                <el-select v-model="objCon.id"  @change='treeObjectChange(index,objCon.id)' placeholder="">
-                                                                    <el-option v-for="(obj,treeIndex) in data.object" :treeIndex="treeIndex" :key="obj.treeIndex" :label="obj.name" :value="obj.id">
-                                                                    </el-option>
-                                                                </el-select>
-                                                            </el-form-item>    
-                                                        </el-form> 
-                                                         <el-tree
-                                                            :data="treeConData"
-                                                            show-checkbox
-                                                            node-key="id"  
-                                                            >
-                                                        </el-tree>                                                         
-                                                    </div>
-                                                    <div class="right-obj-config">
-                                                        <el-collapse v-model="activeNames" >
-                                                            <el-form ref="form" :model="form" label-width="100px" size="small" label-position="left">
-                                                            <el-collapse-item title="对象" name="1">
-                                                                    <el-form-item label="语义对象名称" >
-                                                                        <el-input v-model="form.name" :disabled="true"></el-input>
-                                                                    </el-form-item> 
-                                                                    <el-form-item label="数据结构">
-                                                                        <el-input v-model="form.name" :disabled="true"></el-input>
-                                                                    </el-form-item>  
-                                                            </el-collapse-item>
-                                                            <el-collapse-item title="参数配置" name="2" @click.stop>
-                                                                <el-form-item v-show="false" label="对应参数"  class="obj-config-can">
-                                                                    <el-input v-model="form.name"></el-input>
-                                                                    <i class="el-icon-setting" @click="openCan"></i>
-                                                                </el-form-item> 
-                                                            </el-collapse-item>
-                                                            <el-collapse-item title="权限配置" name="3" class="obj-config-quan">
-                                                                <el-form-item label="对应权限">
-                                                                    <el-input v-model="form.name"></el-input>
-                                                                    <i class="el-icon-setting" @click="openQuan"></i>
-                                                                </el-form-item> 
-                                                            </el-collapse-item>
-                                                            <el-collapse-item title="列属性" name="4">
-                                                                 <el-form-item label="是否分组主列">
-                                                                    <el-switch v-model="form.delivery"></el-switch>
-                                                                </el-form-item>
-                                                                <el-form-item label="是否数据列">
-                                                                    <el-switch v-model="form.delivery"></el-switch>
-                                                                </el-form-item>
-                                                                <el-form-item label="是否日期列">
-                                                                    <el-switch v-model="form.delivery"></el-switch>
-                                                                </el-form-item>
-                                                                <el-form-item label="日期类型列">
-                                                                    <el-radio-group v-model="form.resource">
-                                                                        <el-radio label="日期"></el-radio>
-                                                                        <el-radio label="月份"></el-radio>
-                                                                    </el-radio-group>
-                                                                </el-form-item>
-                                                            </el-collapse-item>
-                                                            </el-form>  
-                                                        </el-collapse>
-                                                    </div>
-                                                </div>
-                                            </el-tab-pane>
-                                            <el-tab-pane label="操作属性" name="second">
-                                                <div class="rel-config-wrapper">
-                                                </div>
-                                            </el-tab-pane>
-                                            <el-tab-pane label="结果属性" name="third">
-                                                <div class="res-config-wrapper">
-                                                </div>
-                                            </el-tab-pane>
-                                        </el-tabs>
-                                    </div>
+                                    <property-config :data="data" 
+                                    :index="index" 
+                                    :conTreeIndex="conTreeIndex"
+                                    :objId="objConId"
+                                    :dataDefineArray="dataDefineArray">
+                                    </property-config>
                                 </div>
                             </div>  
                         </div>
@@ -332,36 +267,26 @@
 
 <script>
 import draggable from 'vuedraggable'
+import PropertyConfig from './PropertyConfig.vue'
 export default {
     data() {
-      return {
-        treeIndex:-1,//语义对象下标
-        objCon:'',//语义对象
+      return {  
+        objConId:'',//语义对象     
         configData:{},//每一步对象
         filterText:'',
+        filterSelect:'',
+        conTreeIndex:-1,
         treeData:{},
-        treeConData:[],
         showIndex:-1,//属性配置显示第几步
         configShowFlag:false,//属性配置
-        paramShowFlag:false,//参数配置
-        authShowFlag:false,//权限配置
         relation:[
             {id:1,name:'合并操作'},
             {id:2,name:'关联操作'},
             {id:3,name:'对比操作'}
         ],
-        dataObjInit:{
-            id:'',
-            name:'',
-            senmaInfo:'',
-            linkInfo:'',
-            filter:'',
-            type:0,
-            fields:{}
-        },
         dataDefineArray:[
-            {object:[{id:'1234',senmaInfo:'SYS_CX',name:'SDH-销售纯销'},{id:'12346',senmaInfo:'SDHGS0005-SYS_SYJXC',name:'SDH-商业进销存'}],relation:{id:2,name:'关联操作'},result:{}},
-            {object:[{id:'12345',senmaInfo:'SDHGS0005-SYS_SYJXC',name:'SDH-商业进销存'}],relation:{id:1,name:'合并操作'},result:{}}
+            {object:[{id:'1234',senmaId:'SYS_CX',senmaName:'SDH-销售纯销' },{id:'12346',senmaId:'SDHGS0005-SYS_SYJXC',senmaName:'SDH-商业进销存'}],relation:{id:2,name:'关联操作'},result:{}},
+            {object:[{id:'12345',senmaId:'SDHGS0005-SYS_SYJXC',senmaName:'SDH-商业进销存'}],relation:{id:1,name:'合并操作'},result:{}}
         ],
         reportInfo:{
             id:455,
@@ -384,7 +309,7 @@ export default {
         transferObject:{}, 
         configStyle: {
             position:'fixed',
-            left: 'clac(50% - 450px)',
+            left: 'calc(50% - 450px)',
             top: '20px',
             width:'900px',
             height: '600px',
@@ -393,7 +318,6 @@ export default {
         },
         activeNames:1,
         activeName2: 'first0',
-        activeNameCon:'first',
         form:{
             name: 123
         }
@@ -401,6 +325,9 @@ export default {
     },
     watch: {
       filterText(val) {
+        this.$refs.tree2.filter(val);
+      },
+      filterSelect(val) {
         this.$refs.tree2.filter(val);
       }
     },
@@ -413,33 +340,23 @@ export default {
                 console.log(this.treeData)
             })
         },
-        openConfig(index,index2,objCon){
-            this.objCon = objCon;
-            this.treeConData = [{
-                id:objCon.senmaId,
-                label:objCon.senmaName,
-                children:objCon.fields
-            }]
+        openConfig(index,index2){
+            var obj= this.dataDefineArray[index]['object'][index2];
+            this.objConId=obj.id
+            this.conTreeIndex = index2;
             this.showIndex = index
             this.configShowFlag = true;
-            
         },
         closeConfig(){
             this.configShowFlag = false;
             this.showIndex =-1;
         },
-        openCan(){
-            this.paramShowFlag = true;
-        },
-        openQuan(){
-            this.authShowFlag = true;
-        },
-        filterNode(value, data) {
+        filterNode(value, data, node) {//tree过滤
             if (!value) return true;
             return data.label.indexOf(value) !== -1;
         },
-        handleClick(tab, event) {
-           // console.log(tab, event);
+        handleClose(index2,index) {//删除tag标签
+            this.dataDefineArray[index]['object'].splice(index2, 1);
         },
         cogTabClick(tab, event){
            // console.log(tab, event);
@@ -451,41 +368,38 @@ export default {
             event.preventDefault();
             var data = event.dataTransfer.getData("Text").split(',');
             var id = this.guid()
-            console.log(id)
             var object={
-                id:id,
+                id:this.guid(),
                 name:data[1],
                 senmaId:data[0],
                 senmaName:data[1],
                 senmaTableName:data[2],
+                checkedKeys:[],
+                treeConData:[
+                    {
+                        id:data[0],
+                        label:data[1],
+                        name:data[1],
+                        tableName:data[2],
+                        children:[] 
+                    }
+                ],
                 filter:'',
                 type:0,
                 fields:{}
             }
-
+             
             if(data[3]!=='objType'){return false;} 
-            this.objCon = object;
-            this.treeConData = [{
-                id:object.senmaId,
-                label:object.senmaName,
-                children:[]
-            }]
+           
             const treeDataUrl = 'api/reportDefine/getDataSourceDataFromSenma?id='+object.senmaId
             this.$Http('get',treeDataUrl).then((res)=>{
-                object.fields = res.data
-                this.dataDefineArray[index]['object'].push(object);
-                var children = []
-                for(let o of res.data){
-                    var childNode = {}
-                    childNode.id = o.id
-                    childNode.label = o.label
-                    children.push(childNode)
-                }
-                console.log(res.data)
-              this.treeConData[0]['children'] = res.data;
-                
-            })
+                object.fields = res.data     
+                object['treeConData'][0]['children'] = res.data
 
+                this.dataDefineArray[index]['object'].push(object);
+                console.log(object)
+                //console.log(this.dataDefineArray[index]['object'][0]['treeConData'])
+             })
         },
         dropRelation:function(event,index){
             event.preventDefault();
@@ -507,8 +421,11 @@ export default {
         allowDrop(draggingNode, dropNode, type) {
             return false;
         },
-        insertDefine(){
+        insertStep(){
             this.dataDefineArray.push({object:[],relation:0,result:{}})
+        },
+        deleteStep(index){
+            this.dataDefineArray.splice(index,1)
         },
         guid() {
             function S4() {
@@ -516,33 +433,17 @@ export default {
             }
             return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
         },
-        handleClose(index2,index) {//删除tag标签
-            
-            this.dataDefineArray[index]['object'].splice(index2, 1);
-        },
-        treeObjectChange(index,objId){
-            console.log(objId)
-            var object = this.dataDefineArray[index]['object'];
-            console.log(object)
-            for(let o of object){
-                if(o.id == objId){
-                    this.objCon = o
-                    console.log(o)
-                    this.treeConData[0]['id']=o.senmaId
-                    this.treeConData[0]['label']=o.senmaName
-                    this.treeConData[0]['children']=o.fields
-                    console.log(o.id,this.treeConData[0])
-                    break;
-                } 
-            }
-    
+        dragConfig(){
+
         }
+       
     },
     created(){
         this.getTreeData();
     },
     components:{
-        draggable
+        draggable,
+        PropertyConfig:PropertyConfig
     }
 }
 
@@ -569,7 +470,8 @@ export default {
     margin-right: 4px;
     border: 1px solid #D6DBDB;
     background: #fff;
-    overflow:auto;
+    height: 100%;
+    box-sizing: border-box;
 }
 .left-top-relation{
     margin: 2px 8px;
@@ -580,17 +482,28 @@ export default {
 }
 .left-top-relation .el-tag{
     padding: 0 6px;
+    border: none;
+    color: #aaa;
 }
 .left-search-form{
     padding: 8px;
     padding-top:4px;
-    overflow: auto;
+    
 }
 .left-search-form .el-form-item--mini.el-form-item, .left-search-form  .el-form-item--small.el-form-item {
     margin-bottom: 10px;
 }
 .left-search-form .el-select {
     width: 100%;
+}
+.left-search-form .el-select-dropdown__item{
+    height: 28px;
+    line-height: 28px;
+    font-size: 12px;
+}
+.left-wrapper .el-tree{
+    overflow: auto;
+    height: calc(100% - 126px);
 }
 .left-wrapper .el-tree-node__label {
     font-size: 12px;
@@ -674,17 +587,26 @@ export default {
     width: 150px;
     border-left: 1px solid rgb(161, 212, 230);
 }
-.object-title,.relation-title,.result-title{
-    background-color: rgba(161, 212, 230, 0.3);
+.operate-title{
+    flex: 0 0 80px;
+    width: 80px;
+    border-left: 1px solid rgb(161, 212, 230);
 }
-.right-object-property{
-  
+.object-title,.relation-title,.result-title,.operate-title{
+    background-color: rgba(161, 212, 230, 0.3);
 }
 .right-relation-property{
     text-align: center;
 }
 .right-result-property{
     text-align: center;
+}
+.right-operate{
+    width: 81px;
+    text-align: center;
+    border-left: 1px solid rgb(161, 212, 230);
+    padding: 5px;
+    box-sizing: border-box;
 }
 .right-middle-data-item .el-tag{
     cursor: pointer;
@@ -740,7 +662,7 @@ export default {
 }
 .right-propterty-config{
     position:fixed;
-    left:clac(50% - 450px);
+    left:calc(50% - 450px);
     top: 20px;
     width:900px;
     height: 600px;
@@ -748,76 +670,5 @@ export default {
     background: #fff;
     z-index: 3000;
 }
-.right-propterty-config .config-title{
-    position: relative;
-    width: 100%;
-    height: 25px;
-    line-height: 25px;
-    font-size: 12px;
-    font-weight: normal;
-    color:#808080;
-}
-.right-propterty-config .config-title .el-icon-menu{
-    font-size: 16px;
-    width: 25px;
-    height: 25px;
-    text-align: center;
-    color: #1A8BE6;
-}
-.right-propterty-config .config-title i.close-config{
-    position: absolute;
-    top: 0;
-    right: 10px;
-    font-size: 16px;
-    width: 25px;
-    height: 25px;
-    line-height: 25px;
-    text-align: center;
-    color: #808080;
-    z-index: 10;
-}
-.right-propterty-config .el-tabs__item {
-    width: 300px;
-    text-align: center;
-}
-.obj-config-wrapper{
-    width: 100%;
-    display:flex;
-}
-.obj-config-wrapper .left-obj-config{
-    flex:0 0 500px;
-    width: 500px;
-    height: 520px;
-    overflow-y:auto;
-}
-.obj-config-wrapper .right-obj-config{
-    flex: 1;
-    border-left: 1px solid #E6E7EB;
-    padding: 0 10px;
-}
-.obj-config-wrapper .el-collapse-item__content {
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-.obj-config-wrapper .el-form-item--mini.el-form-item, .obj-config-wrapper .el-form-item--small.el-form-item {
-    margin-bottom: 5px;
-}
-.obj-config-quan,.obj-config-can{
-    position: relative;
-}
-.obj-config-quan .el-icon-setting,.obj-config-can .el-icon-setting{
-    position: absolute;
-    right: 5px;
-    top: 0;
-    font-size: 16px;
-    color: #C3C5C8;
-    height: 32px;
-    line-height: 32px;
-    width: 24px;
-    text-align: center;
-    cursor: pointer;
-}
-.obj-config-quan .el-icon-setting:hover,.obj-config-can .el-icon-setting:hover{
-    color: #109EFF;
-}
+
 </style>
