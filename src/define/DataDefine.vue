@@ -1,10 +1,10 @@
 <template>
   <div class="data-define">
         <div class="left-wrapper">
-            <el-row class="left-top-relation">
-                <el-col :span="8" v-for="item in relation" :key="item.id">
+            <el-row class="left-top-operate">
+                <el-col :span="8" v-for="item in operate" :key="item.id">
                     <div class="grid-content">
-                        <el-tag size="medium"  draggable="true"  @dragstart.native="redrag($event,item)">{{item.name}}</el-tag>
+                        <el-tag  type="info" size="medium"  draggable="true"  @dragstart.native="redrag($event,item)">{{item.name}}</el-tag>
                     </div>  
                 </el-col>
             </el-row>  
@@ -76,16 +76,15 @@
                         <div class="right-middle-data-item" v-for="(data,index) in dataDefineArray" :index="index" :key="data.index">
                             <div class="right-object-property"  @drop='dropObject($event,index)'  @dragover.prevent>
                                 <draggable v-model="data.object" :options="{group:'people'}" @start="drag=true" @end="drag=false">
-                                <el-tag class="objectTag"
+                                <el-tag type="info" class="objectTag"
                                     v-for="(tag,index2) in data.object"
                                     :key="index2"
                                     closable
                                     :id="tag.id"
-                                    @close="handleClose(index2,index)">
-                                    >
+                                    @close="tagClose(index2,index)">
                                    <span class="tag-content"> 
                                        <i class="tag-text">{{tag.senmaName}}</i>
-                                       <i class="el-icon-setting"  @click.prevent.stop="openConfig(index,index2)"></i>
+                                       <i class="el-icon-setting"  @click.prevent.stop="openConfig(index,index2,'object')"></i>
                                     </span>
                                 </el-tag>
                                 </draggable>
@@ -93,29 +92,29 @@
                                     <span class="default-text" v-if="!data.object || !data.object.length">请拖入左边字段</span>
                                 </div>
                             </div>
-                            <div class="right-relation-property"  @drop='dropRelation($event,index)'  @dragover.prevent>
-                                <el-tag class="relationTag" v-if="data.relation.id"
+                            <div class="right-operate-property"  @drop='dropOperate($event,index)'  @dragover.prevent>
+                                <el-tag class="operateTag" type="success" v-if="data.operate.type"
                                     closable
-                                    :id="data.relation.id"
+                                    :id="data.operate.type"
                                     @click="configShow(data)"
                                    >
                                    <span class="tag-content">  
-                                       <i class="tag-text">{{data.relation.name}}</i>
-                                       <i class="el-icon-setting"></i>
+                                       <i class="tag-text">{{data.operate.name}}</i>
+                                       <i class="el-icon-setting" @click.prevent.stop="openConfig(index,0,'operate')"></i>
                                     </span>
                                 </el-tag>
-                                <div class="relation-content" >
-                                    <span class="default-text" v-if="!data.relation.id">请拖入左边字段</span>
+                                <div class="operate-content" >
+                                    <span class="default-text" v-if="!data.operate.type">请拖入左上方操作</span>
                                 </div>
                             </div>
                             <div class="right-result-property">
-                                <el-tag class="relationTag" v-if="data.result"
+                                <el-tag class="resultTag" type="" v-if="data.result"
                                     closable
                                     @click="configShow(data)"
                                    >
                                    <span class="tag-content"> 
                                        <i class="tag-text">结果属性</i>
-                                       <i class="el-icon-setting"></i>
+                                       <i class="el-icon-setting" @click.prevent.stop="openConfig(index,0,'result')"></i>
                                     </span>
                                 </el-tag>
                                 <div class="result-content">
@@ -136,6 +135,7 @@
                                     :index="index" 
                                     :conTreeIndex="conTreeIndex"
                                     :objId="objConId"
+                                    :activeNameCon="activeNameCon"
                                     :dataDefineArray="dataDefineArray">
                                     </property-config>
                                 </div>
@@ -279,14 +279,14 @@ export default {
         treeData:{},
         showIndex:-1,//属性配置显示第几步
         configShowFlag:false,//属性配置
-        relation:[
-            {id:1,name:'合并操作'},
-            {id:2,name:'关联操作'},
-            {id:3,name:'对比操作'}
+        operate:[
+            {type:1,name:'合并操作'},
+            {type:2,name:'关联操作'},
+            {type:3,name:'对比操作'}
         ],
         dataDefineArray:[
-            {object:[{id:'1234',senmaId:'SYS_CX',senmaName:'SDH-销售纯销' },{id:'12346',senmaId:'SDHGS0005-SYS_SYJXC',senmaName:'SDH-商业进销存'}],relation:{id:2,name:'关联操作'},result:{}},
-            {object:[{id:'12345',senmaId:'SDHGS0005-SYS_SYJXC',senmaName:'SDH-商业进销存'}],relation:{id:1,name:'合并操作'},result:{}}
+            {object:[{id:'1234',senmaId:'SYS_CX',senmaName:'SDH-销售纯销' },{id:'12346',senmaId:'SDHGS0005-SYS_SYJXC',senmaName:'SDH-商业进销存'}],operate:{id:'099876',type:2,name:'关联操作'},result:{}},
+            {object:[{id:'12345',senmaId:'SDHGS0005-SYS_SYJXC',senmaName:'SDH-商业进销存'}],operate:{id:'798989',type:1,name:'合并操作'},result:{}}
         ],
         reportInfo:{
             id:455,
@@ -318,6 +318,7 @@ export default {
         },
         activeNames:1,
         activeName2: 'first0',
+        activeNameCon:'object',
         form:{
             name: 123
         }
@@ -332,6 +333,14 @@ export default {
       }
     },
     methods: {
+        openMessage(msg){
+            this.$message({
+                showClose: true,
+                message: msg,
+                type: 'warning',
+                duration:'1000'
+            })
+        },
         getTreeData(){
             const treeDataUrl = 'api/reportDefine/getSenmaList'
             this.$Http('get',treeDataUrl).then((res)=>{
@@ -340,12 +349,17 @@ export default {
                 console.log(this.treeData)
             })
         },
-        openConfig(index,index2){
+        openConfig(index,index2,type){
             var obj= this.dataDefineArray[index]['object'][index2];
-            this.objConId=obj.id
-            this.conTreeIndex = index2;
-            this.showIndex = index
-            this.configShowFlag = true;
+            if(this.dataDefineArray[index]['object'].length){
+                this.objConId=obj.id
+                this.conTreeIndex = index2;
+                this.activeNameCon = type;
+                this.showIndex = index
+                this.configShowFlag = true;
+            }else{
+                this.openMessage('数据集不能为空');
+            }
         },
         closeConfig(){
             this.configShowFlag = false;
@@ -355,14 +369,14 @@ export default {
             if (!value) return true;
             return data.label.indexOf(value) !== -1;
         },
-        handleClose(index2,index) {//删除tag标签
+        tagClose(index2,index) {//删除tag标签
             this.dataDefineArray[index]['object'].splice(index2, 1);
         },
         cogTabClick(tab, event){
            // console.log(tab, event);
         },
-        redrag:function(event,relation){
-            event.dataTransfer.setData("Text",relation.id+','+relation.name+',relType');
+        redrag:function(event,operate){
+            event.dataTransfer.setData("Text",operate.type+','+operate.name+',relType');
         },
         dropObject:function(event,index){
             event.preventDefault();
@@ -375,6 +389,8 @@ export default {
                 senmaName:data[1],
                 senmaTableName:data[2],
                 checkedKeys:[],
+                checkedKeyCols:[],
+                checkedUnoCols:[],
                 treeConData:[
                     {
                         id:data[0],
@@ -401,14 +417,15 @@ export default {
                 //console.log(this.dataDefineArray[index]['object'][0]['treeConData'])
              })
         },
-        dropRelation:function(event,index){
+        dropOperate:function(event,index){
             event.preventDefault();
             var data = event.dataTransfer.getData("Text").split(',');
             var object = {};
-            object.id = data[0];
+            object.type = data[0];
             object.name = data[1];
+            object.id = this.guid();
             if(data[2]!=='relType'){return false;} 
-            this.$set(this.dataDefineArray[index],'relation',object);
+            this.$set(this.dataDefineArray[index],'operate',object);
         },
         handleDragStart(node, ev) {
             event.dataTransfer.setData("Text",node.data.id+','+node.data.label+','+node.data.tableName+',objType');
@@ -422,7 +439,7 @@ export default {
             return false;
         },
         insertStep(){
-            this.dataDefineArray.push({object:[],relation:0,result:{}})
+            this.dataDefineArray.push({object:[],operate:0,result:{}})
         },
         deleteStep(index){
             this.dataDefineArray.splice(index,1)
@@ -473,17 +490,15 @@ export default {
     height: 100%;
     box-sizing: border-box;
 }
-.left-top-relation{
+.left-top-operate{
     margin: 2px 8px;
 }
-.left-top-relation .grid-content{
+.left-top-operate .grid-content{
     text-align: center;
     cursor: pointer;
 }
-.left-top-relation .el-tag{
+.left-top-operate .el-tag{
     padding: 0 6px;
-    border: none;
-    color: #aaa;
 }
 .left-search-form{
     padding: 8px;
@@ -496,7 +511,7 @@ export default {
 .left-search-form .el-select {
     width: 100%;
 }
-.left-search-form .el-select-dropdown__item{
+.el-select-dropdown__item{
     height: 28px;
     line-height: 28px;
     font-size: 12px;
@@ -561,28 +576,38 @@ export default {
     text-align: center;
     color: #1A8BE6;
 }
-.right-middle-data{
-    
-  
-}
 .right-middle-data-item{
     display: flex;
-    height: 100px;
+    min-height: 38px;
     border-top: 1px solid rgb(161, 212, 230);
 }
 .right-middle-data-item span.default-text{
     display: inline-block;
     width: 100%;
     color: #999;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: normal;
+    vertical-align: top; 
     text-align: center;
 
 }
 .object-title,.right-object-property{
     flex: 1;
 }
-.relation-title,.result-title,.right-relation-property,.right-result-property{
+.right-object-property .object-content{
+    height: 100%;
+}
+.right-object-property .object-content span{
+    height: 20px;
+    margin-top: 42px;
+}
+.right-middle-data-item .el-icon-setting:hover{
+    color: #67c23a;
+}
+.right-middle-data-item .el-icon-setting{
+    color: #4A6B72;
+}
+.relation-title,.result-title,.right-operate-property,.right-result-property{
     flex: 0 0 150px;
     width: 150px;
     border-left: 1px solid rgb(161, 212, 230);
@@ -595,26 +620,38 @@ export default {
 .object-title,.relation-title,.result-title,.operate-title{
     background-color: rgba(161, 212, 230, 0.3);
 }
-.right-relation-property{
-    text-align: center;
+.right-operate-property,.right-result-property,.right-operate{
+   position: relative;
+ 
 }
-.right-result-property{
-    text-align: center;
+.right-operate-property .el-tag,.right-result-property .el-tag,.right-operate .el-button{
+   position: absolute;
+    left: 0;
+    right: 0;
+   top: 0;
+   bottom: 0;
+   margin:auto;
 }
 .right-operate{
     width: 81px;
-    text-align: center;
     border-left: 1px solid rgb(161, 212, 230);
-    padding: 5px;
     box-sizing: border-box;
+}
+.right-operate .el-button--mini, .el-button--mini.is-round{
+    padding: 7px 13px;
 }
 .right-middle-data-item .el-tag{
     cursor: pointer;
     padding: 0 6px;
     height: 28px;
-    line-height: 26px;
+    line-height: 26px; 
+}
+.right-object-property .el-tag{
     margin-left: 5px;
     margin-top: 5px;
+}
+.right-object-property{
+    padding-bottom: 5px;
 }
 .right-middle-data-item .tag-text{
     padding-right: 20px;
@@ -670,5 +707,29 @@ export default {
     background: #fff;
     z-index: 3000;
 }
+
+
+.data-define ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.data-define ::-webkit-scrollbar-track-piece {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.data-define ::-webkit-scrollbar-thumb:vertical {
+    height: 8px;
+    background-color: rgba(125, 125, 125, 0.7);
+    border-radius: 8px;
+}
+
+.data-define ::-webkit-scrollbar-thumb:horizontal {
+    width: 8px;
+    background-color: rgba(125, 125, 125, 0.7);
+    border-radius: 8px;
+}
+
 
 </style>
