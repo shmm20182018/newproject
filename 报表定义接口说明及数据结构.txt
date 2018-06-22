@@ -41,8 +41,29 @@ public class ReportDefineViewModel
 	public string outputFlag { get; set; }
 	public string outputLocation { get; set; }
 	public List<ReportSteps> steps { get; set; } = new List<ReportSteps>();
+  public List<ReportParam> params { get; set; } = new List<ReportParam>();
 }
-	
+
+///参数
+ public class ReportParam
+{
+    public string id { get; set; }
+    public string code { get; set; }
+    public string name { get; set; }
+    public int sort { get; set; }
+    /// <summary>
+    /// 1,字符串;2,数值;3,日期;4,年月;5,年
+    /// </summary>
+    public string paramType { get; set; }
+    public string helpId { get; set; }
+    public string helpBH { get; set; }
+    public string helpTJ { get; set; }
+    public string defaultValue { get; set; }
+    public string list { get; set; }
+    public string readonly { get; set; }
+    public string canEmpyt { get; set; }
+}
+
 /// 步骤
 public class ReportSteps
 {
@@ -55,16 +76,21 @@ public class ReportSteps
 /// 数据源
 public class ReportDataSourceViewModel
 {
-	public string id { get; set; }
-	public string name { get; set; }
-	public SenmaViewModel senmaInfo { get; set; }
-	public string filter { get; set; }
-	/// <summary>
-	///  数据源类型 0,语义对象 1,中间结果
-	/// </summary>
-	public string type { get; set; }
-	public List<ReportDataSourceFieldsViewModel> fields { get; set; } = new List<ReportDataSourceFieldsViewModel>();
-
+    public string id { get; set; }
+    public string name { get; set; }
+    public string senmaID { get; set; }
+    public string senmaName { get; set; }
+    public string senmaTableName { get; set; }
+    public string paramMatchText { get; set; }
+    public string paramMatchCode { get; set; }
+    public string rightMatchText { get; set; }
+    public string rightMatchCode { get; set; }
+    public string filter { get; set; }
+    /// <summary>
+    ///  数据源类型 0,语义对象 1,中间结果
+    /// </summary>
+    public string type { get; set; }
+    public List<ReportDataSourceFieldsViewModel> fields { get; set; } = new List<ReportDataSourceFieldsViewModel>();
 }
 
 ///数据源字段明细
@@ -89,4 +115,86 @@ public class ReportDataSourceFieldsViewModel
 	public string dataColType { get; set; }
 	public bool hasChild { get; set; }
 	public List<ReportDataSourceFieldsViewModel> children { get; set; }
+}
+
+///操作
+public class ReportOperationViewModel
+{
+    public string id { get; set; }
+    public string name { get; set; }
+    /// <summary>
+    /// 操作类型  1，合并；2，关联；3，对比
+    /// </summary>
+    public string type { get; set; }
+    /// <summary>
+    /// 数据源id数组，用于下拉
+    /// </summary>
+    public Array dataSoruceIdList { get; set; }
+
+
+    /// <summary> 以下字段只有对比操作有效
+    /// 分组主列数组
+    /// </summary>
+    public Array mainColList { get; set; }
+    /// <summary>
+    /// 数据列数组
+    /// </summary>
+    public Array dataColList { get; set; }
+    /// <summary>
+    /// 对比计算内容 ，根据同期、上期....计算
+    /// </summary>
+    public string compText { get; set; }
+
+
+    /// <summary>
+    /// 关联操作中对象关联关系显示内容
+    /// </summary>
+    public string mapColText { get; set; }
+    /// <summary>
+    /// 关联操作中对象列名匹配公式内容
+    /// </summary>
+    public string mapColFormula { get; set; }
+}
+
+///结果
+public class ReportResultViewModel
+{
+    public string id { get; set; }
+    public string name { get; set; }
+    /// <summary>
+    /// 是否最终结果
+    /// </summary>
+    public string isEndResult { get; set; }
+    public List<ReportResultRowsViewModel> rows { get; set; } = new List<ReportResultRowsViewModel>();
+}
+
+///结果明细
+public class ReportResultRowsViewModel
+{
+    public string id { get; set; }
+    public int sort { get; set; }
+    public string fieldId { get; set; }
+    public string fieldName { get; set; }
+    public string field { get; set; }
+    public string fieldFormula { get; set; }
+    public string colTitle { get; set; }
+    public string resCol { get; set; }
+    /// <summary>
+    /// 字段类型 C字符串 F数值
+    /// </summary>
+    public string fieldType { get; set; }
+    public int fieldWidth { get; set; }
+    /// <summary>
+    /// 是否主列 Y是 N否
+    /// </summary>
+    public string isMainCol { get; set; }
+    /// <summary>
+    /// 内容对齐方式 C L R
+    /// </summary>
+    public string alignType { get; set; }
+    public int colWidth { get; set; }
+    /// <summary>
+    /// 显示位置 0，行标题区 1，列标题区 2，数据区
+    /// </summary>
+    public string showArea { get; set; }
 }
