@@ -76,7 +76,7 @@
                     </div>
                 </div>
             </el-tab-pane>
-            <el-tab-pane label="操作属性" name="relation">
+            <el-tab-pane label="操作属性" name="operate">
                 <div class="ope-config-wrapper">
                     <div v-if="data.operate.type == 1" class="hebing-operate-wrapper">
                         合并操作
@@ -161,22 +161,22 @@ export default {
   data () {
     return {
         checkedNodes:[],
-      treeChangeFlag:true,
-      treeIndex:this.conTreeIndex,//语义对象下标
-      compSelIndex:0,
-      objConId:this.objId,
-      objCompareId:this.data.object[0]['id'],//比较操作
-      objCompareKey:'',//比较操作
-      objCompareUno:'',//比较操作
-      currentNode:{colInfo:{}},
-      paramShowFlag:false,//参数配置
-      authShowFlag:false,//权限配置
-      activeNames:'1',
-      activeNameTag:this.activeNameCon,
-      treeConData:this.data['object'][this.conTreeIndex]['treeConData'],
-      form:{
-          name: 123
-      }
+        treeChangeFlag:true,
+        treeIndex:this.conTreeIndex,//语义对象下标
+        compSelIndex:0,
+        objConId:this.objId,
+        objCompareId:this.data.object[0]['id'],//比较操作
+        objCompareKey:'',//比较操作
+        objCompareUno:'',//比较操作
+        currentNode:{colInfo:{}},
+        paramShowFlag:false,//参数配置
+        authShowFlag:false,//权限配置
+        activeNames:'1',
+        activeNameTag:this.activeNameCon,
+        treeConData:this.data['object'][this.conTreeIndex]['treeConData'],
+        form:{
+            name: 123
+        }
     };
   },
   watch:{
@@ -231,11 +231,11 @@ export default {
         } 
       }
     },
-    opeSelChange(index){
+    opeSelChange(index,objCompareId){
         var object = this.dataDefineArray[index]['object'];
         for(let i in object){
             var o = object[i]
-            if(o.id == objId){
+            if(o.id == objCompareId){
                 this.compSelIndex = i;
                 break;
             } 
@@ -243,7 +243,8 @@ export default {
     }
   },
   created(){
-    console.log(this.dataDefineArray[this.index]['object'][0]['checkedKeyCols'])
+    //console.log(this.dataDefineArray[this.index]['object'][0]['checkedKeyCols'])
+    //console.log(this.activeNameTag)
   }
 }
 

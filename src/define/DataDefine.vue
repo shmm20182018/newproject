@@ -583,7 +583,15 @@ export default {
 }
 .right-middle-data-item span.default-text{
     display: inline-block;
-    width: 100%;
+    position:absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    width: 120px;
+    height: 20px;
+    line-height: 20px;
     color: #999;
     font-size: 12px;
     font-weight: normal;
@@ -591,16 +599,16 @@ export default {
     text-align: center;
 
 }
+.right-object-property{
+    position: relative;
+}
 .object-title,.right-object-property{
     flex: 1;
 }
 .right-object-property .object-content{
     height: 100%;
 }
-.right-object-property .object-content span{
-    height: 20px;
-    margin-top: 42px;
-}
+
 .right-middle-data-item .el-icon-setting:hover{
     color: #67c23a;
 }
@@ -625,12 +633,15 @@ export default {
  
 }
 .right-operate-property .el-tag,.right-result-property .el-tag,.right-operate .el-button{
-   position: absolute;
+    position: absolute;
     left: 0;
     right: 0;
-   top: 0;
-   bottom: 0;
-   margin:auto;
+    top: 0;
+    bottom: 0;
+    margin:auto;
+}
+.right-operate-property .el-tag,.right-result-property .el-tag{
+    width: 120px;
 }
 .right-operate{
     width: 81px;
@@ -639,16 +650,19 @@ export default {
 }
 .right-operate .el-button--mini, .el-button--mini.is-round{
     padding: 7px 13px;
+    width: 52px;
+    height: 28px;
 }
 .right-middle-data-item .el-tag{
     cursor: pointer;
     padding: 0 6px;
     height: 28px;
-    line-height: 26px; 
+    line-height: 26px;
 }
 .right-object-property .el-tag{
     margin-left: 5px;
     margin-top: 5px;
+    
 }
 .right-object-property{
     padding-bottom: 5px;
