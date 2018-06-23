@@ -37,14 +37,11 @@ export default {
   computed:{
     //过滤组件占得格数
     toolColSize:function(){
-      var screenWidth = document.body.clientWidth * 1//窗口的大小
-      if(screenWidth < 1200 && screenWidth > 768){
-          return 12
-      }else if(screenWidth <= 768){
+      if(this.$route.params.pc  ==='isPC'){
+          return 6
+      }else{
           return 24
       }
-      else
-        return 6;
     },
     filtertoolbtn(){
       if(this.paramsInfo.length%4 == 0 ){
@@ -138,24 +135,22 @@ export default {
  .filterForm   .wathet-style .el-form-item.is-success .el-input__inner, .wathet-style .el-form-item.is-success .el-input__inner:focus, .wathet-style .el-form-item.is-success .el-textarea__inner, .wathet-style  .el-form-item.is-success .el-textarea__inner:focus {
     border-color: #13B5BC;
   }
-@media screen and (max-width: 1119px){
-  .filterForm .el-form-item__content{
+  .phone-style-class .filterForm .el-form-item__content{
     flex: 1;
   }
-  .filterForm .filtertool-btn{
+  .phone-style-class  .filterForm .filtertool-btn{
     padding-left: 0;
   }  
-  .filterForm .el-button--mini, .el-button--mini.is-round {
+  .phone-style-class  .filterForm .el-button--mini, .el-button--mini.is-round {
     padding: 11px 15px;
     width: 100%;
   }
-  .filterForm .el-input--mini .el-input__inner {
+ .phone-style-class   .filterForm .el-input--mini .el-input__inner {
     height: 36px;
     line-height: 36px;
   }
-  .filterForm .el-icon-search{
+  .phone-style-class  .filterForm .el-icon-search{
     top: 8px;
-  }
-}  
+  } 
 </style>
 }

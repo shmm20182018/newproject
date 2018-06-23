@@ -286,6 +286,7 @@ body .card-title{
 }
 .help-tool .page-wrapper{
     float: left;
+    width: 300px;
 }
 .help-tool .page-wrapper .v-page-ul {
     margin: 4px 0;
@@ -301,6 +302,8 @@ body .card-title{
 }
 .help-tool .search-form{
     float: right;
+    width: 200px;
+    margin-top: 3px;
 }
 .help-tool .search-input{
     width: 67%
@@ -373,18 +376,17 @@ body .el-tooltip__popper[x-placement^=bottom] .popper__arrow::after {
 .pc-style-class .help-wrapper .v-table-empty-scroll{
     height: 310px !important;
 }
-@media screen and (max-width: 1119px){
-    .help-slide-enter-active {
+.phone-style-class     .help-slide-enter-active {
         transition: all .3s ease;
     }
-    .help-slide-leave-active {
+.phone-style-class     .help-slide-leave-active {
         transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
     }
-    .help-slide-enter, .help-slide-leave-to{
+.phone-style-class     .help-slide-enter, .help-slide-leave-to{
         transform: translateX(-100%);
         opacity: 0;
     }
-    .help-wrapper{
+.phone-style-class     .help-wrapper{
         position: fixed;
         top: 0px;
         left: 0px;
@@ -397,16 +399,16 @@ body .el-tooltip__popper[x-placement^=bottom] .popper__arrow::after {
         box-shadow:none;
         border:none;
     }
-    .help-wrapper .el-card{
+.phone-style-class     .help-wrapper .el-card{
         height: 100%;
     }
-    .help-wrapper .el-card__body{
+ .phone-style-class    .help-wrapper .el-card__body{
         height: calc(100% - 44px);
     }
-    .help-wrapper .content-wapper{
+ .phone-style-class    .help-wrapper .content-wapper{
         height: 100%;
     }
-    .help-wrapper .v-table-views {
+ .phone-style-class    .help-wrapper .v-table-views {
         position: static;
         height: auto !important;
         min-height: 300px !important;
@@ -414,64 +416,64 @@ body .el-tooltip__popper[x-placement^=bottom] .popper__arrow::after {
         overflow: scroll;
         border: none;
     }
-    .help-wrapper .v-table-header{
+ .phone-style-class    .help-wrapper .v-table-header{
         width: 319px;
         position: absolute;
         left: 0;
         top: 0;
         z-index: 1999;
     }
-    .help-wrapper .content-wapper{
+  .phone-style-class   .help-wrapper .content-wapper{
         position: relative;
     }
  
-    .help-wrapper .search-form {
+ .phone-style-class    .help-wrapper .search-form {
         float: left;
         width: 100%;
         padding: 0 5px;
     }
-    .help-wrapper .el-form-item__content{
+.phone-style-class   .help-wrapper .el-form-item__content{
         display: flex;
     }
-     .help-wrapper .search-input{
+.phone-style-class     .help-wrapper .search-input{
         flex: 1;
     }
-    .help-wrapper button{
+ .phone-style-class    .help-wrapper button{
         flex: 0 0 58px;
         width: 58px;
         margin-left: 10px;
     }
-    .help-wrapper .el-input--mini .el-input__inner {
+ .phone-style-class    .help-wrapper .el-input--mini .el-input__inner {
         height: 28px;
         line-height: 28px;
     }
-    .help-wrapper .el-button--mini, .el-button--mini.is-round {
+ .phone-style-class    .help-wrapper .el-button--mini, .el-button--mini.is-round {
         padding: 7px 15px;
     }
-    .help-wrapper .page-wrapper{
+ .phone-style-class    .help-wrapper .page-wrapper{
         position: relative;
         height: 34px;
         width: 100%;
     }
-    .help-wrapper .v-page-ul{
+ .phone-style-class    .help-wrapper .v-page-ul{
         position: relative;
         width: 95%;
         height: 28px;
         line-height: 28px;
     }
-    .help-wrapper .v-page-goto{
+ .phone-style-class    .help-wrapper .v-page-goto{
         position:absolute;
         top: 0;
         right: 0;
     }
-    .help-wrapper .page-total{
+  .phone-style-class   .help-wrapper .page-total{
         position:absolute;
         right: 0;
         top: 0;
         width: 5%;
         height: 34px;
     }
-    .help-wrapper .el-card {
+ .phone-style-class    .help-wrapper .el-card {
         position: absolute;
         top: 0;
         left: 0;
@@ -480,34 +482,33 @@ body .el-tooltip__popper[x-placement^=bottom] .popper__arrow::after {
         border: none;
         border-radius: 0;
     }
-    .help-wrapper .el-card__header{
+ .phone-style-class    .help-wrapper .el-card__header{
         padding: 8px 10px;  
     } 
-    .help-wrapper .search-input-phone{
+ .phone-style-class    .help-wrapper .search-input-phone{
         position: absolute;
         left: 115px;
         top: 2px;
         width: 33%;
     }  
-    .help-wrapper .btn-wrapper{
+ .phone-style-class    .help-wrapper .btn-wrapper{
         text-align: center;
         margin-top: 20px;
     }
-    .help-wrapper .search-btn-phone{
+ .phone-style-class    .help-wrapper .search-btn-phone{
         width: 95%;
         margin-left:0;
         padding: 11px 15px;
     }
-    .help-tool .page-wrapper {
+ .phone-style-class    .help-tool .page-wrapper {
         float: none;
         margin-top:5px;
     }
-    .help-wrapper .v-table-body{
+ .phone-style-class    .help-wrapper .v-table-body{
         height: auto !important;
         margin-top: 33px;
     }
-    .help-wrapper .v-table-rightview {
+ .phone-style-class    .help-wrapper .v-table-rightview {
         position: static;
     }
-}
 </style>

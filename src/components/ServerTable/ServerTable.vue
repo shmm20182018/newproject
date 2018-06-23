@@ -10,7 +10,7 @@
                 </el-dropdown-menu>
             </el-dropdown>
         </div>
-       <v-table v-if="interTableInfo.tableType*1==0?true:isShow"
+       <v-table v-if="isShow"
               id="serverTable"
               class="wathet-style"
               is-vertical-resize
@@ -636,9 +636,6 @@ export default {
     .pc-style-class .table-wrapper ::-webkit-scrollbar-corner{  
         background: #f6f6f6;  
     }  
-    .pc-style-class .table-wrapper .v-table-rightview{
-      
-    }
     .span-cell-div-even{
         position:absolute;
         left: 0;

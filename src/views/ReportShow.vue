@@ -58,8 +58,9 @@ export default {
   },
   computed:{
     phoneClass(){
-      var screenWidth = document.body.clientWidth * 1//窗口的大小
-      if(screenWidth >= 1200){
+      //var screenWidth = document.body.clientWidth * 1//窗口的大小
+      if(this.$route.params.pc  ==='isPC'){
+         //console.log(this.$route.params.pc)
         return 'pc-style-class'
       }else{
         this.phoneFlag = true
@@ -102,6 +103,7 @@ export default {
     getReportInfo(){
       this.$Http('get',this.initApiUrl).then((res)=>{
           this.reportInfo = {...this.reportInfo,...res.data };
+          console.log(this.reportInfo)
           if(this.reportInfo.paramsInfo.length>0){
             this.showFilterFlag =true;        
           }

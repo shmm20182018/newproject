@@ -29,8 +29,11 @@
                         <el-collapse v-model="activeNames" >
                             <el-form ref="form" :model="data.object[treeIndex]" label-width="100px" size="small" label-position="left">
                             <el-collapse-item title="对象" name="1">
-                                    <el-form-item label="语义对象名称" >
+                                    <el-form-item label="数据源名称" >
                                         <el-input v-model="data.object[treeIndex].name"></el-input>
+                                    </el-form-item> 
+                                    <el-form-item label="语义对象名称" >
+                                        <el-input v-model="data.object[treeIndex].senmaName" :disabled="true"></el-input>
                                     </el-form-item> 
                                     <el-form-item label="明细字段ID">
                                         <el-input v-if="treeChangeFlag" v-model="data.object[treeIndex].senmaName" :disabled="true"></el-input>
@@ -42,30 +45,30 @@
                                         <el-input v-if="!treeChangeFlag && currentNode.tableName" v-model="currentNode.tableName" :disabled="true"></el-input> 
                                     </el-form-item>  
                             </el-collapse-item>
-                            <el-collapse-item title="参数配置" name="2">
+                            <el-collapse-item title="参数配置" name="2" v-show="treeChangeFlag||currentNode.tableName">
                                 <el-form-item label="对应参数"  class="obj-config-can">
                                     <el-input ></el-input>
                                     <i class="el-icon-setting" @click="openCan"></i>
                                 </el-form-item> 
                             </el-collapse-item>
-                            <el-collapse-item title="权限配置" name="3" class="obj-config-quan">
+                            <el-collapse-item title="权限配置" name="3" v-show="treeChangeFlag||currentNode.tableName" class="obj-config-quan">
                                 <el-form-item label="对应权限">
                                     <el-input ></el-input>
                                     <i class="el-icon-setting" @click="openQuan"></i>
                                 </el-form-item> 
                             </el-collapse-item>
-                            <el-collapse-item title="列属性" name="4" v-if="currentNode.colInfo" >
+                            <el-collapse-item title="列属性" name="4" v-if="data.operate.type==3 && currentNode" >
                                     <el-form-item label="是否分组主列">
-                                    <el-switch v-model="currentNode.colInfo.isKeyCol"></el-switch>
+                                    <el-switch v-model="currentNode.isKeyCol"></el-switch>
                                     </el-form-item>
                                     <el-form-item label="是否数据列">
-                                        <el-switch v-model="currentNode.colInfo.isUnoCol"></el-switch>
+                                        <el-switch v-model="currentNode.isUnoCol"></el-switch>
                                     </el-form-item>
                                     <el-form-item label="是否日期列">
-                                        <el-switch v-model="currentNode.colInfo.isDateCol"></el-switch>
+                                        <el-switch v-model="currentNode.isDateCol"></el-switch>
                                     </el-form-item>
                                     <el-form-item label="日期类型列">
-                                        <el-radio-group v-model="currentNode.colInfo.dateColType">
+                                        <el-radio-group v-model="currentNode.dateColType">
                                             <el-radio label="日期"></el-radio>
                                             <el-radio label="月份"></el-radio>
                                         </el-radio-group>
@@ -171,7 +174,7 @@ export default {
         currentNode:{colInfo:{}},
         paramShowFlag:false,//参数配置
         authShowFlag:false,//权限配置
-        activeNames:'1',
+        activeNames:['1','2','3','4'],
         activeNameTag:this.activeNameCon,
         treeConData:this.data['object'][this.conTreeIndex]['treeConData'],
         form:{
@@ -186,6 +189,7 @@ export default {
   },
   methods: {
     nodeClick(currentNode){
+        this.treeChangeFlag = false
         this.currentNode=currentNode
     },
     checkChange(currentNode,isChecked,isHasChecked){
@@ -195,9 +199,12 @@ export default {
             this.$set(this.dataDefineArray[this.index]['object'][this.treeIndex],'checkedKeys',this.$refs.conTree.getCheckedKeys())
             this.checkedNodes = this.$refs.conTree.getCheckedNodes()
         }else{
-            this.$set(this.currentNode,'colInfo',{})
+            this.$set(this.currentNode,'isDateCol',0)
+            this.$set(this.currentNode,'isUnoCol',0)
+            this.$set(this.currentNode,'isKeyCol',0)
+            this.$set(this.currentNode,'dataColType','')
         }
-            //console.log(isChecked,this.currentNode)
+            console.log(isChecked,this.currentNode)
     },
     tabClick(tab,event){
         console.log(this.checkedNodes)
@@ -205,10 +212,10 @@ export default {
             return false;
         }else{
             for(let node of this.checkedNodes){
-                if(node.colInfo.isKeyCol){
+                if(node.isKeyCol){
                     this.dataDefineArray[this.index]['object'][this.treeIndex]['checkedKeyCols'].push(node)
                 }
-                if(node.colInfo.isUnoCol){
+                if(node.isUnoCol){
                     this.dataDefineArray[this.index]['object'][this.treeIndex]['checkedUnoCols'].push(node)
                 }
             }

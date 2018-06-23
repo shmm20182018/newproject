@@ -7,6 +7,7 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import deepCloneArray from './utils/deepClone.js'
 import http from './utils/http.js'
+import guid from './utils/guid.js'
 // import $ from 'jquery'
 import App from './App'
 
@@ -14,6 +15,7 @@ import App from './App'
 Vue.use(ElementUI);
 Vue.config.productionTip = false
 Vue.prototype.$Http= http
+Vue.prototype.guid= guid
 Vue.prototype.$Clone = deepCloneArray
 // Vue.prototype.$Extend =$.extend
 

@@ -14,6 +14,7 @@ function resolve (dir) {
 module.exports = {
   context: path.resolve(__dirname, '../'),
   entry: {
+    // balel:'babel-polyfill',
     app: './src/main.js'
   },
   output: {

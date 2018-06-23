@@ -5,7 +5,7 @@ Vue.use(Router)
 export default new Router({
   routes: [
     {
-      path: '/:engine/:id',
+      path: '/:pc/:engine/:id',
       component: resolve => require(['../views/ReportShow.vue'], resolve)
     },
     {

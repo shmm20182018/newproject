@@ -1,13 +1,6 @@
 <template>
   <div class="data-define">
-        <div class="left-wrapper">
-            <el-row class="left-top-operate">
-                <el-col :span="8" v-for="item in operate" :key="item.id">
-                    <div class="grid-content">
-                        <el-tag  type="info" size="medium"  draggable="true"  @dragstart.native="redrag($event,item)">{{item.name}}</el-tag>
-                    </div>  
-                </el-col>
-            </el-row>  
+        <div class="left-wrapper">  
             <el-form  class="left-search-form" ref="form" :model="form" size="mini">
                 <el-form-item label="">
                     <el-input v-model="filterText"  placeholder="搜索"></el-input>
@@ -50,7 +43,7 @@
                         <i class="el-icon-view"></i>
                         <span>预览</span>
                     </li> 
-                    <li>
+                    <li @click="openFilterConfig">
                         <i class="el-icon-setting"></i>
                         <span>参数设置</span>
                     </li>
@@ -67,7 +60,7 @@
             <div class="right-middle-wrapper">
                 <div class="right-middle-content">
                     <div class="right-middle-title">
-                        <p class="object-title"><i class="el-icon-menu"></i>数据集</p>
+                        <p class="object-title"><i class="el-icon-menu"></i>数据源</p>
                         <p class="relation-title"><i class="el-icon-menu"></i>关系</p>
                         <p class="result-title"><i class="el-icon-menu"></i>结果</p>
                         <p class="operate-title"><i class="el-icon-menu"></i>操作</p>
@@ -83,35 +76,27 @@
                                     :id="tag.id"
                                     @close="tagClose(index2,index)">
                                    <span class="tag-content"> 
-                                       <i class="tag-text">{{tag.senmaName}}</i>
+                                       <i class="tag-text">{{tag.name}}</i>
                                        <i class="el-icon-setting"  @click.prevent.stop="openConfig(index,index2,'object')"></i>
                                     </span>
                                 </el-tag>
                                 </draggable>
                                 <div class="object-content">
-                                    <span class="default-text" v-if="!data.object || !data.object.length">请拖入左边字段</span>
+                                    <span class="default-text" v-if="!data.object || !data.object.length">请拖入左边数据源</span>
                                 </div>
                             </div>
-                            <div class="right-operate-property"  @drop='dropOperate($event,index)'  @dragover.prevent>
-                                <el-tag class="operateTag" type="success" v-if="data.operate.type"
-                                    closable
-                                    :id="data.operate.type"
-                                    @click="configShow(data)"
-                                   >
-                                   <span class="tag-content">  
-                                       <i class="tag-text">{{data.operate.name}}</i>
-                                       <i class="el-icon-setting" @click.prevent.stop="openConfig(index,0,'operate')"></i>
-                                    </span>
-                                </el-tag>
-                                <div class="operate-content" >
-                                    <span class="default-text" v-if="!data.operate.type">请拖入左上方操作</span>
-                                </div>
+                            <div class="right-operate-property">
+                                <el-form class="operate-select" size="small" >     
+                                    <el-form-item>
+                                        <el-select v-model="data.operate.type">
+                                            <el-option v-for="(ope,index) in operate" :key="ope.id" :index="index" :label="ope.name" :value="ope.type"></el-option>
+                                        </el-select>
+                                        <i class="el-icon-setting" @click.prevent.stop="openConfig(index,0,'operate')"></i>
+                                    </el-form-item>
+                                </el-form>
                             </div>
                             <div class="right-result-property">
-                                <el-tag class="resultTag" type="" v-if="data.result"
-                                    closable
-                                    @click="configShow(data)"
-                                   >
+                                <el-tag class="resultTag" v-if="data.result" type="success" draggable="true"  @dragstart.native="resultdrag($event,index)">
                                    <span class="tag-content"> 
                                        <i class="tag-text">结果属性</i>
                                        <i class="el-icon-setting" @click.prevent.stop="openConfig(index,0,'result')"></i>
@@ -131,12 +116,13 @@
                                         <span>{{'属性设置'}}</span>
                                         <i class="el-icon-close close-config" @click="closeConfig"></i>
                                     </p>
-                                    <property-config :data="data" 
-                                    :index="index" 
-                                    :conTreeIndex="conTreeIndex"
-                                    :objId="objConId"
-                                    :activeNameCon="activeNameCon"
-                                    :dataDefineArray="dataDefineArray">
+                                    <property-config 
+                                        :data="data" 
+                                        :index="index" 
+                                        :conTreeIndex="conTreeIndex"
+                                        :objId="objConId"
+                                        :activeNameCon="activeNameCon"
+                                        :dataDefineArray="dataDefineArray">
                                     </property-config>
                                 </div>
                             </div>  
@@ -147,28 +133,32 @@
             <div class="right-bottom-wrapper">
                 <el-tabs v-model="activeName2" type="card" @tab-click="cogTabClick">
                     <el-tab-pane label="报表配置" name="first0" class="collapse0">
-                        <el-form ref="form" :inline="true" :model="reportInfo" label-width="80px" size="mini">
+                        <el-form ref="defineRuleForm" :show-message="false" :rules="reportRules" :model="reportInfo" label-width="80px" size="mini" :inline="true">
                             <el-row>
                                 <el-col :span="8">
                                     <div class="grid-content">      
-                                        <el-form-item label="报表编号">
+                                        <el-form-item label="报表编号" prop="code">
                                             <el-input v-model="reportInfo.code"></el-input>
                                         </el-form-item>
                                     </div>
                                 </el-col>
                                 <el-col :span="8">
                                     <div class="grid-content">
-                                        <el-form-item label="报表名称">
+                                        <el-form-item label="报表名称" prop="name">
                                             <el-input v-model="reportInfo.name"></el-input>
                                         </el-form-item> 
                                     </div> 
                                 </el-col>
-                            </el-row>
-                        </el-form> 
-                    </el-tab-pane>
-                    <el-tab-pane label="报表备注" name="first" class="collapse1">
-                        <el-form ref="form" :inline="true" :model="reportInfo" label-width="80px" size="mini">
-                            <el-row>
+                                <el-col :span="8">
+                                    <div class="grid-content">
+                                        <el-form-item label="类型">
+                                            <el-select v-model="reportInfo.type" placeholder="请选择类型">
+                                                <el-option label="用户类型" value="U"></el-option>
+                                                <el-option label="系统类型" value="S"></el-option>
+                                            </el-select>
+                                        </el-form-item>
+                                    </div>
+                                </el-col>
                                 <el-col :span="8">
                                     <div class="grid-content">
                                         <el-form-item label="报表备注">
@@ -176,18 +166,8 @@
                                         </el-form-item> 
                                     </div>
                                 </el-col>
-                                <el-col :span="8">
-                                        <div class="grid-content">
-                                            <el-form-item label="类型">
-                                                <el-select v-model="reportInfo.type" placeholder="请选择类型">
-                                                    <el-option label="用户类型" value="U"></el-option>
-                                                    <el-option label="系统类型" value="S"></el-option>
-                                                </el-select>
-                                            </el-form-item>
-                                        </div>
-                                    </el-col>
                             </el-row>
-                        </el-form>    
+                        </el-form> 
                     </el-tab-pane>
                     <el-tab-pane label="结果保存设置" name="second" class="collapse2">
                         <el-form :inline="true" :model="reportInfo" label-width="80px" size="mini">
@@ -262,12 +242,21 @@
                 </el-tabs>
             </div>
         </div>
+        <div class="filter-config-wrapper" v-if="filterConfigShow" v-drag="dragFilter">
+            <p class="config-title">
+                <i class="el-icon-menu"></i>
+                <span>{{'参数设置'}}</span>
+                <i class="el-icon-close close-config" @click="closeFilterConfig"></i>
+            </p>
+            <filter-config :filterConfig="filterConfig"></filter-config>
+        </div>
     </div>
 </template>
 
 <script>
 import draggable from 'vuedraggable'
 import PropertyConfig from './PropertyConfig.vue'
+import FilterConfig from './FilterConfig.vue'
 export default {
     data() {
       return {  
@@ -278,15 +267,32 @@ export default {
         conTreeIndex:-1,
         treeData:{},
         showIndex:-1,//属性配置显示第几步
-        configShowFlag:false,//属性配置
+        filterConfig:[{ //参数配置
+            id:this.guid(),
+            code:'1',
+            name:'',
+            sort:'',
+            paramType:'',
+            helpId:'',
+            helpBH:'',
+            helpTJ:'',
+            defaultValue:'',
+            readonly:0,
+            canEmpty:1
+        }],
+        filterConfigShow:false,//参数配置显示
+        configShowFlag:false,//属性配置显示
         operate:[
             {type:1,name:'合并操作'},
             {type:2,name:'关联操作'},
             {type:3,name:'对比操作'}
         ],
-        dataDefineArray:[
-            {object:[{id:'1234',senmaId:'SYS_CX',senmaName:'SDH-销售纯销' },{id:'12346',senmaId:'SDHGS0005-SYS_SYJXC',senmaName:'SDH-商业进销存'}],operate:{id:'099876',type:2,name:'关联操作'},result:{}},
-            {object:[{id:'12345',senmaId:'SDHGS0005-SYS_SYJXC',senmaName:'SDH-商业进销存'}],operate:{id:'798989',type:1,name:'合并操作'},result:{}}
+        dataDefineArray:[//steps
+            {
+                object:[],
+                operate:{id:'099876',type:1,name:'合并操作'},
+                result:{}
+            }
         ],
         reportInfo:{
             id:455,
@@ -304,6 +310,10 @@ export default {
             outputLocation:'chunchuweizhi',
             steps:[],
 
+        },
+        reportRules:{
+            code:[{required:true,trigger: 'blur'}],
+            name:[{required:true,trigger: 'blur'}]
         },
         transferRelaion:{},
         transferObject:{}, 
@@ -349,6 +359,12 @@ export default {
                 console.log(this.treeData)
             })
         },
+        openFilterConfig(){
+            this.filterConfigShow = true;
+        },
+        closeFilterConfig(){
+            this.filterConfigShow = false;
+        },
         openConfig(index,index2,type){
             var obj= this.dataDefineArray[index]['object'][index2];
             if(this.dataDefineArray[index]['object'].length){
@@ -375,13 +391,18 @@ export default {
         cogTabClick(tab, event){
            // console.log(tab, event);
         },
-        redrag:function(event,operate){
-            event.dataTransfer.setData("Text",operate.type+','+operate.name+',relType');
+        resultdrag:function(event,fromIndex){
+            event.dataTransfer.setData("Text",fromIndex+',resType');
         },
         dropObject:function(event,index){
             event.preventDefault();
             var data = event.dataTransfer.getData("Text").split(',');
-            var id = this.guid()
+            if(data[3] !=='objType'){
+                if(data[1] =='resType'){
+                    this.dataDefineArray[index]['object'].push(this.dataDefineArray[data[0]]['result']);
+                }
+                return false;
+            } 
             var object={
                 id:this.guid(),
                 name:data[1],
@@ -404,8 +425,6 @@ export default {
                 type:0,
                 fields:{}
             }
-             
-            if(data[3]!=='objType'){return false;} 
            
             const treeDataUrl = 'api/reportDefine/getDataSourceDataFromSenma?id='+object.senmaId
             this.$Http('get',treeDataUrl).then((res)=>{
@@ -416,16 +435,6 @@ export default {
                 console.log(object)
                 //console.log(this.dataDefineArray[index]['object'][0]['treeConData'])
              })
-        },
-        dropOperate:function(event,index){
-            event.preventDefault();
-            var data = event.dataTransfer.getData("Text").split(',');
-            var object = {};
-            object.type = data[0];
-            object.name = data[1];
-            object.id = this.guid();
-            if(data[2]!=='relType'){return false;} 
-            this.$set(this.dataDefineArray[index],'operate',object);
         },
         handleDragStart(node, ev) {
             event.dataTransfer.setData("Text",node.data.id+','+node.data.label+','+node.data.tableName+',objType');
@@ -439,19 +448,20 @@ export default {
             return false;
         },
         insertStep(){
-            this.dataDefineArray.push({object:[],operate:0,result:{}})
+            this.dataDefineArray.push({
+                object:[],
+                operate:{id:this.guid(),type:1,name:"合并操作"},
+                result:{}
+            })
         },
         deleteStep(index){
             this.dataDefineArray.splice(index,1)
         },
-        guid() {
-            function S4() {
-            return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-            }
-            return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
-        },
         dragConfig(){
 
+        },
+        dragFilter(){
+            
         }
        
     },
@@ -460,7 +470,8 @@ export default {
     },
     components:{
         draggable,
-        PropertyConfig:PropertyConfig
+        PropertyConfig:PropertyConfig,
+        FilterConfig:FilterConfig
     }
 }
 
@@ -489,16 +500,6 @@ export default {
     background: #fff;
     height: 100%;
     box-sizing: border-box;
-}
-.left-top-operate{
-    margin: 2px 8px;
-}
-.left-top-operate .grid-content{
-    text-align: center;
-    cursor: pointer;
-}
-.left-top-operate .el-tag{
-    padding: 0 6px;
 }
 .left-search-form{
     padding: 8px;
@@ -578,8 +579,8 @@ export default {
 }
 .right-middle-data-item{
     display: flex;
-    min-height: 38px;
-    border-top: 1px solid rgb(161, 212, 230);
+    min-height: 48px;
+    border-top: 1px solid #E6e7e8;
 }
 .right-middle-data-item span.default-text{
     display: inline-block;
@@ -610,7 +611,7 @@ export default {
 }
 
 .right-middle-data-item .el-icon-setting:hover{
-    color: #67c23a;
+    color: #409eff;
 }
 .right-middle-data-item .el-icon-setting{
     color: #4A6B72;
@@ -643,6 +644,56 @@ export default {
 .right-operate-property .el-tag,.right-result-property .el-tag{
     width: 120px;
 }
+.right-operate-property .operate-select{
+    width: 120px;
+    height: 28px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin:auto;
+    font-size: 12px;
+}
+.operate-select .el-input--small .el-input__inner {
+    height: 28px;
+    line-height: 28px;
+    font-size: 12px;
+    background-color: rgba(64,158,255,.1);
+    border-color: rgba(64,158,255,.2);
+    color: #409eff;
+    padding-left: 5px;
+    padding-right: 25px;
+}
+.operate-select .el-select .el-input.is-focus .el-input__inner {
+    border-color: rgba(64,158,255,.2);
+}
+.operate-select .el-select:hover .el-input__inner {
+    border-color:rgba(64,158,255,.2);
+}
+.operate-select .el-select .el-input__inner:focus {
+     border-color:rgba(64,158,255,.2);
+}
+body .el-select-dropdown__item.selected {
+    color: #409eff;
+}
+.operate-select .el-form-item--small .el-form-item__content,.operate-select .el-form-item--small .el-form-item__label {
+    line-height: 26px;
+}
+.operate-select .el-icon-setting{
+    position: absolute;
+    top: 0;
+    right: 25px;
+    width: 14px;
+    height: 28px;
+    line-height: 28px;
+    font-size: 12px;
+}
+.operate-select .el-select .el-input .el-select__caret{
+    width: 18px;
+    font-size: 12px;
+    color: #409eff;
+}
 .right-operate{
     width: 81px;
     border-left: 1px solid rgb(161, 212, 230);
@@ -665,10 +716,14 @@ export default {
     
 }
 .right-object-property{
-    padding-bottom: 5px;
+    padding-top: 5px;
+    padding-bottom: 10px;
 }
 .right-middle-data-item .tag-text{
     padding-right: 20px;
+}
+.right-result-property .tag-text{
+    padding-right: 30px;
 }
 .right-bottom-wrapper{
     position:  absolute;
@@ -744,6 +799,44 @@ export default {
     background-color: rgba(125, 125, 125, 0.7);
     border-radius: 8px;
 }
-
-
+.filter-config-wrapper{
+    position:fixed;
+    left:calc(50% - 450px);
+    top: 20px;
+    width:900px;
+    height: 600px;
+    border: 1px solid #ccc;
+    background: #fff;
+    z-index: 3001;
+}
+.filter-config-wrapper .config-title{
+    position: relative;
+    width: 100%;
+    height: 25px;
+    line-height: 25px;
+    font-size: 12px;
+    font-weight: normal;
+    color:#808080;
+}
+.filter-config-wrapper .config-title .el-icon-menu{
+    font-size: 16px;
+    width: 25px;
+    height: 25px;
+    line-height: 25px;
+    text-align: center;
+    color: #1A8BE6;
+    vertical-align: top;
+}
+.filter-config-wrapper .config-title i.close-config{
+    position: absolute;
+    top: 0;
+    right: 10px;
+    font-size: 16px;
+    width: 25px;
+    height: 25px;
+    line-height: 25px;
+    text-align: center;
+    color: #808080;
+    z-index: 10;
+}
 </style>
