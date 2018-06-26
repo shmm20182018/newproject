@@ -37,10 +37,10 @@ export default {
   computed:{
     //过滤组件占得格数
     toolColSize:function(){
-      if(this.$route.params.pc  ==='isPC'){
-          return 6
-      }else{
+      if(this.$route.params.pc == 'isPhone'){
           return 24
+      }else{
+          return 6
       }
     },
     filtertoolbtn(){

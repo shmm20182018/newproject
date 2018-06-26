@@ -8,7 +8,7 @@
                         <el-form class="object-list" ref="form"  label-width="80px" size="small">
                             <el-form-item label="对象列表">
                                 <el-select v-model="objConId"  @change='treeObjectChange(index,objConId)' placeholder="">
-                                    <el-option v-for="(obj,selIndex) in data.object" :selIndex="selIndex" :key="obj.selIndex" :label="obj.senmaName" :value="obj.id">
+                                    <el-option v-for="(obj,selIndex) in data.dataSource" :selIndex="selIndex" :key="obj.selIndex" :label="obj.senmaName" :value="obj.id">
                                     </el-option>
                                 </el-select>
                             </el-form-item>    
@@ -22,25 +22,25 @@
                             @node-click="nodeClick"
                             @check-change="checkChange"
                             ref="conTree" 
-                            :default-checked-keys="data['object'][treeIndex]['checkedKeys']" >
+                            :default-checked-keys="data['dataSource'][treeIndex]['checkedKeys']" >
                         </el-tree>                                                         
                     </div>
                     <div class="right-obj-config">
                         <el-collapse v-model="activeNames" >
-                            <el-form ref="form" :model="data.object[treeIndex]" label-width="100px" size="small" label-position="left">
+                            <el-form ref="form" :model="data.dataSource[treeIndex]" label-width="100px" size="small" label-position="left">
                             <el-collapse-item title="对象" name="1">
                                     <el-form-item label="数据源名称" >
-                                        <el-input v-model="data.object[treeIndex].name"></el-input>
+                                        <el-input v-model="data.dataSource[treeIndex].name"></el-input>
                                     </el-form-item> 
                                     <el-form-item label="语义对象名称" >
-                                        <el-input v-model="data.object[treeIndex].senmaName" :disabled="true"></el-input>
+                                        <el-input v-model="data.dataSource[treeIndex].senmaName" :disabled="true"></el-input>
                                     </el-form-item> 
                                     <el-form-item label="明细字段ID">
-                                        <el-input v-if="treeChangeFlag" v-model="data.object[treeIndex].senmaName" :disabled="true"></el-input>
+                                        <el-input v-if="treeChangeFlag" v-model="data.dataSource[treeIndex].senmaName" :disabled="true"></el-input>
                                         <el-input v-if="!treeChangeFlag" v-model="currentNode.label" :disabled="true"></el-input>
                                     </el-form-item>
                                     <el-form-item label="数据结构">
-                                        <el-input v-if="treeChangeFlag" v-model="data.object[treeIndex].senmaTableName" :disabled="true"></el-input>
+                                        <el-input v-if="treeChangeFlag" v-model="data.dataSource[treeIndex].senmaTableName" :disabled="true"></el-input>
                                         <el-input v-if="!treeChangeFlag && currentNode.field" v-model="currentNode.field" :disabled="true"></el-input> 
                                         <el-input v-if="!treeChangeFlag && currentNode.tableName" v-model="currentNode.tableName" :disabled="true"></el-input> 
                                     </el-form-item>  
@@ -57,7 +57,7 @@
                                     <i class="el-icon-setting" @click="openQuan"></i>
                                 </el-form-item> 
                             </el-collapse-item>
-                            <el-collapse-item title="列属性" name="4" v-if="data.operate.type==3 && currentNode" >
+                            <el-collapse-item title="列属性" name="4" v-if="data.operation.type==3 && currentNode" >
                                     <el-form-item label="是否分组主列">
                                     <el-switch v-model="currentNode.isKeyCol"></el-switch>
                                     </el-form-item>
@@ -79,26 +79,26 @@
                     </div>
                 </div>
             </el-tab-pane>
-            <el-tab-pane label="操作属性" name="operate">
+            <el-tab-pane label="操作属性" name="operation">
                 <div class="ope-config-wrapper">
-                    <div v-if="data.operate.type == 1" class="hebing-operate-wrapper">
+                    <div v-if="data.operation.type == 1" class="hebing-operate-wrapper">
                         合并操作
                     </div>
-                    <div v-if="data.operate.type == 2" class="guanlian-operate-wrapper">
+                    <div v-if="data.operation.type == 2" class="guanlian-operate-wrapper">
                         关联操作
                     </div>
-                    <div v-if="data.operate.type == 3" class="duibi-operate-wrapper">
+                    <div v-if="data.operation.type == 3" class="duibi-operate-wrapper">
                         <el-form class="duibi-operate-form" :model="form" label-width="100px" size="small" label-position="left" >
                             <div class="duibi-form-left">
                                 <el-form-item label="操作编号">
-                                    <el-input v-model="data.operate.id" :disabled="true"></el-input>
+                                    <el-input v-model="data.operation.id" :disabled="true"></el-input>
                                 </el-form-item>
                                 <el-form-item label="操作名称">
-                                    <el-input v-model="data.operate.name" :disabled="true"></el-input>
+                                    <el-input v-model="data.operation.name" :disabled="true"></el-input>
                                 </el-form-item>
                                 <el-form-item label="操作对象列表">
                                     <el-select v-model="objCompareId"  @change='opeSelChange(index,objCompareId)' placeholder="">
-                                        <el-option v-for="(obj,selIndex) in data.object" 
+                                        <el-option v-for="(obj,selIndex) in data.dataSource" 
                                             :selIndex="selIndex" 
                                             :key="obj.selIndex"
                                             :label="obj.senmaName" 
@@ -109,7 +109,7 @@
                                 <el-form-item label="已选主列列表">
                                     <el-select v-model="objCompareKey" placeholder="请选择主列">
                                         <el-option
-                                            v-for="(obj,selIndex) in data.object[compSelIndex].checkedKeyCols" 
+                                            v-for="(obj,selIndex) in data.dataSource[compSelIndex].checkedKeyCols" 
                                             :selIndex="selIndex" 
                                             :key="obj.selIndex"
                                             :label="obj.label" 
@@ -120,7 +120,7 @@
                                 <el-form-item label="已选数据列列表">
                                     <el-select v-model="objCompareUno" placeholder="请选择数据列">
                                         <el-option 
-                                            v-for="(obj,selIndex) in data.object[compSelIndex].checkedUnoCols" 
+                                            v-for="(obj,selIndex) in data.dataSource[compSelIndex].checkedUnoCols" 
                                             :selIndex="selIndex" 
                                             :key="obj.selIndex"
                                             :label="obj.label" 
@@ -155,6 +155,89 @@
                 </div>
             </el-tab-pane>
         </el-tabs>
+        <div v-if="paramShowFlag" v-drag="canDrag" :style="canStyle" class="canshu-config-wrapper">
+             <p class="config-title">
+                <i class="el-icon-menu"></i>
+                <span>{{'参数设置'}}</span>
+                <i class="el-icon-close close-config" @click="closeCan"></i>
+            </p>
+            <div class="canshu-config-menu">
+                <ul>
+                    <li @click="addParam">新增</li>
+                    <li @click="delParam">删除</li>
+                    <li @click="delParam">保存</li>
+                    <li @click="delParam">公式处理</li>
+                </ul>
+            </div>
+            <div class="canshu-config-content">
+                <div class="canshu-list-title">
+                    <div class="canshu-source">括号</div>
+                    <div class="canshu-source">操作对象</div>
+                    <div class="filter-name">对象字段</div>
+                    <div class="filter-name">公式处理结果</div>
+                    <div class="filter-name">权限类型</div>
+                </div>
+                <div v-for="(filter,index) in paramMatchArray" :key="index" @click="changeIndex(index)" class="filter-list-item">
+                    <div class="filter-source">
+                        <el-form-item label="">
+                            <el-select v-model="paramMatch" placeholder="">
+                                <el-option v-for="(obj,index) in data.dataSource" :key="index" :label="obj.name" value="obj.id"></el-option>
+                            </el-select>
+                        </el-form-item>
+                    </div>
+                    <div class="filter-name"></div>
+                    <div class="filter-name"></div>
+                </div>
+            </div>
+        </div>
+        <div v-if="authShowFlag" v-drag="quanDrag" :style="quanStyle" class="quanxian-config-wrapper">
+            <p class="config-title">
+                <i class="el-icon-menu"></i>
+                <span>{{'权限设置'}}</span>
+                <i class="el-icon-close close-config" @click="closeQuan"></i>
+            </p>
+            <div class="quanxian-config-menu">
+                <ul>
+                    <li @click="addAuth">新增</li>
+                    <li @click="delAuth">删除</li>
+                    <li @click="authCompelete">设置完毕</li>
+                </ul>
+            </div>
+            <div class="quanxian-config-content">
+                <div class="quanxian-list-table">
+                    <div class="quanxian-list-title">
+                    <div class="quanxian-source">操作对象</div>
+                    <div class="quanxian-field">操作字段</div>
+                    <div class="quanxian-type">权限类型</div>
+                    </div>
+                    <el-form>
+                    <div v-for="(rightMatch,index) in rightMatchArray" :key="index" @click="changeSourceIndex(index)" class="quanxian-list-item">
+                        <div class="quanxian-source">
+                            <el-form-item label="">
+                                <el-select v-model="rightMatch.dataSource" placeholder="">
+                                    <el-option v-for="(obj,index) in data.dataSource" :key="index" :label="obj.name" :value="obj.id"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                        <div class="quanxian-field">
+                            <el-form-item label="">
+                                <el-select v-model="rightMatch.field" placeholder="">
+                                    <el-option v-for="(obj,index) in data.dataSource[sourceIndex].fields" :key="index" :label="obj.label" :value="obj.id"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                        <div class="quanxian-type">
+                            <el-form-item label="">
+                                <el-select v-model="rightMatch.type" placeholder="">
+                                    <el-option v-for="(authItem,index) in  authList" :key="index" :label="authItem.name" :value="authItem.value"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                    </div> 
+                    </el-form> 
+                </div>  
+            </div>
+        </div>
     </div>                         
 </template>
 
@@ -166,9 +249,10 @@ export default {
         checkedNodes:[],
         treeChangeFlag:true,
         treeIndex:this.conTreeIndex,//语义对象下标
+        sourceIndex:0,
         compSelIndex:0,
         objConId:this.objId,
-        objCompareId:this.data.object[0]['id'],//比较操作
+        objCompareId:this.data.dataSource[0]['id'],//比较操作
         objCompareKey:'',//比较操作
         objCompareUno:'',//比较操作
         currentNode:{colInfo:{}},
@@ -176,7 +260,40 @@ export default {
         authShowFlag:false,//权限配置
         activeNames:['1','2','3','4'],
         activeNameTag:this.activeNameCon,
-        treeConData:this.data['object'][this.conTreeIndex]['treeConData'],
+        treeConData:this.data['dataSource'][this.conTreeIndex]['treeConData'],
+        authList:[
+            {name:'部门权限',value:'1'},
+            {name:'地区权限',value:'2'},
+            {name:'事业部权限',value:'3'},
+            {name:'大区权限',value:'4'},
+            {name:'人员权限',value:'5'}
+        ],
+        rightMatchArray:[{
+            dataSource:'',
+            field:'',
+            type:''
+        }],
+        paramMatchArray:[{
+
+        }],
+        canStyle:{
+            position:'fixed',
+            left: 'calc(50% - 350px)',
+            top: '50px',
+            width:'700px',
+            height: '500px',
+            border: '1px solid #ccc',
+            background: '#fff',
+        },
+        quanStyle:{
+            position:'fixed',
+            left: 'calc(50% - 350px)',
+            top: '50px',
+            width:'700px',
+            height: '500px',
+            border: '1px solid #ccc',
+            background: '#fff',
+        },
         form:{
             name: 123
         }
@@ -184,7 +301,7 @@ export default {
   },
   watch:{
     treeIndex(val){
-      this.treeConData = this.data['object'][this.treeIndex]['treeConData']
+      this.treeConData = this.data['dataSource'][this.treeIndex]['treeConData']
     }
   },
   methods: {
@@ -196,7 +313,7 @@ export default {
         this.currentNode=currentNode
         if(isChecked){
             this.treeChangeFlag=false;
-            this.$set(this.dataDefineArray[this.index]['object'][this.treeIndex],'checkedKeys',this.$refs.conTree.getCheckedKeys())
+            this.$set(this.dataDefineArray[this.index]['dataSource'][this.treeIndex],'checkedKeys',this.$refs.conTree.getCheckedKeys())
             this.checkedNodes = this.$refs.conTree.getCheckedNodes()
         }else{
             this.$set(this.currentNode,'isDateCol',0)
@@ -213,10 +330,10 @@ export default {
         }else{
             for(let node of this.checkedNodes){
                 if(node.isKeyCol){
-                    this.dataDefineArray[this.index]['object'][this.treeIndex]['checkedKeyCols'].push(node)
+                    this.dataDefineArray[this.index]['dataSource'][this.treeIndex]['checkedKeyCols'].push(node)
                 }
                 if(node.isUnoCol){
-                    this.dataDefineArray[this.index]['object'][this.treeIndex]['checkedUnoCols'].push(node)
+                    this.dataDefineArray[this.index]['dataSource'][this.treeIndex]['checkedUnoCols'].push(node)
                 }
             }
         }
@@ -227,11 +344,17 @@ export default {
     openQuan(){
         this.authShowFlag = true;
     },
+    closeCan(){
+        this.paramShowFlag = false;
+    },
+    closeQuan(){
+        this.authShowFlag = false;
+    },
     treeObjectChange(index,objId){
       this.treeChangeFlag=true;
-      var object = this.dataDefineArray[index]['object'];
-      for(let i in object){
-        var o = object[i]
+      var dataSource = this.dataDefineArray[index]['dataSource'];
+      for(let i in dataSource){
+        var o = dataSource[i]
         if(o.id == objId){
           this.treeIndex = i;
           break;
@@ -239,20 +362,51 @@ export default {
       }
     },
     opeSelChange(index,objCompareId){
-        var object = this.dataDefineArray[index]['object'];
-        for(let i in object){
-            var o = object[i]
+        var dataSource = this.dataDefineArray[index]['dataSource'];
+        for(let i in dataSource){
+            var o = dataSource[i]
             if(o.id == objCompareId){
                 this.compSelIndex = i;
                 break;
             } 
         }
-    }
+    },
+    addParam(){
+
+    },
+    delParam(){
+
+    },
+    addAuth(){
+        this.sourceIndex++;
+        this.rightMatchArray.push({
+            dataSource:'',
+            field:'',
+            type:''
+        });
+    },
+    delAuth(){
+        if(this.rightMatchArray.length){
+            this.filterConfig.splice(this.filterIndex,1);
+        }
+        if(this.sourceIndex){
+            this.sourceIndex--;
+        }  
+    },
+    changeSourceIndex(index){
+        this.sourceIndex = index;
+    },
+    authCompelete(){
+
+    },
+    canDrag(){},
+    quanDrag(){}
   },
   created(){
-    //console.log(this.dataDefineArray[this.index]['object'][0]['checkedKeyCols'])
+    //console.log(this.dataDefineArray[this.index]['dataSource'][0]['checkedKeyCols'])
     //console.log(this.activeNameTag)
   }
+  
 }
 
 </script>
@@ -401,5 +555,119 @@ export default {
     padding: 10px 20px;
     border-top: 1px solid #E6E7EB;
     height: 100%;
+}
+.canshu-config-wrapper .quanxian-config-wrapper{
+    position:fixed;
+    left:calc(50% - 350px);
+    top: 50px;
+    width:700px;
+    height: 500px;
+    border: 1px solid #ccc;
+    background: #fff;
+    z-index: 3010;
+}
+.canshu-config-menu{
+  height: 40px;
+  line-height: 40px;
+  border: 1px solid #E6E7EB;
+  font-size: 12px;
+  font-weight: normal;
+}
+.canshu-config-menu li{
+  display: inline-block;
+  width: 60px;
+  height: 28px;
+  line-height: 28px;
+  border: 1px solid #E6E7EB;
+  text-align: center;
+  margin-left: 5px;
+}
+.canshu-config-menu li:hover{
+  background: #109EFF;
+  color: #fff;
+  cursor: pointer;
+}
+.canshu-config-content{
+  width: 100%;
+}
+.quanxian-config-menu{
+  height: 40px;
+  line-height: 40px;
+  border: 1px solid #E6E7EB;
+  font-size: 12px;
+  font-weight: normal;
+}
+.quanxian-config-menu li{
+  display: inline-block;
+  width: 60px;
+  height: 28px;
+  line-height: 28px;
+  border: 1px solid #E6E7EB;
+  text-align: center;
+  margin-left: 5px;
+}
+.quanxian-config-menu li:hover{
+  background: #109EFF;
+  color: #fff;
+  cursor: pointer;
+}
+.quanxian-config-content{
+  width: 100%;
+  padding:10px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+.quanxian-list-table{
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #E6E7EB;
+}
+.quanxian-list-title,.quanxian-list-item{
+    display: flex;
+  height: 32px;
+  line-height: 32px;
+
+}
+.quanxian-list-title .quanxian-source,
+.quanxian-list-title .quanxian-field,
+.quanxian-list-title .quanxian-type{
+  font-size: 12px;
+  padding-left: 5px;
+ box-sizing: border-box;
+}
+.quanxian-list-item{
+  font-size: 12px;
+  font-weight: normal;
+    border-top: 1px solid #E6E7EB; 
+}
+.quanxian-list-title:hover,.quanxian-list-item:hover{
+  background-color: #f5f7fa;
+}
+.quanxian-source{
+  flex:0.5;
+}
+.quanxian-field{
+  flex:0.5;
+  border-left: 1px solid #E6E7EB;
+}
+.quanxian-type{
+   flex: 0 0 200px;
+  border-left: 1px solid #E6E7EB;
+  box-sizing: border-box;
+}
+.quanxian-list-item .el-form-item {
+  margin-bottom: 0;
+}
+.quanxian-list-item .el-form-item__content{
+    line-height: 32px;
+}
+.quanxian-list-item .el-select{
+    width: 100%;
+}
+.quanxian-list-item .el-input__inner{
+    height: 32px;
+    line-height: 32px;
+    border: none;
+    padding-left: 5px;
 }
 </style>

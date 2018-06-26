@@ -66,11 +66,11 @@
                         <p class="operate-title"><i class="el-icon-menu"></i>操作</p>
                     </div>
                     <div class="right-middle-data">
-                        <div class="right-middle-data-item" v-for="(data,index) in dataDefineArray" :index="index" :key="data.index">
+                        <div class="right-middle-data-item" v-for="(data,index) in reportInfo.steps" :index="index" :key="data.index">
                             <div class="right-object-property"  @drop='dropObject($event,index)'  @dragover.prevent>
-                                <draggable v-model="data.object" :options="{group:'people'}" @start="drag=true" @end="drag=false">
+                                <draggable v-model="data.dataSource" :options="{group:'people'}" @start="drag=true" @end="drag=false">
                                 <el-tag type="info" class="objectTag"
-                                    v-for="(tag,index2) in data.object"
+                                    v-for="(tag,index2) in data.dataSource"
                                     :key="index2"
                                     closable
                                     :id="tag.id"
@@ -82,16 +82,16 @@
                                 </el-tag>
                                 </draggable>
                                 <div class="object-content">
-                                    <span class="default-text" v-if="!data.object || !data.object.length">请拖入左边数据源</span>
+                                    <span class="default-text" v-if="!data.dataSource || !data.dataSource.length">请拖入左边数据源</span>
                                 </div>
                             </div>
                             <div class="right-operate-property">
                                 <el-form class="operate-select" size="small" >     
                                     <el-form-item>
-                                        <el-select v-model="data.operate.type">
-                                            <el-option v-for="(ope,index) in operate" :key="ope.id" :index="index" :label="ope.name" :value="ope.type"></el-option>
+                                        <el-select v-model="data.operation.type">
+                                            <el-option v-for="(ope,index) in operation" :key="ope.id" :index="index" :label="ope.name" :value="ope.type"></el-option>
                                         </el-select>
-                                        <i class="el-icon-setting" @click.prevent.stop="openConfig(index,0,'operate')"></i>
+                                        <i class="el-icon-setting" @click.prevent.stop="openConfig(index,0,'operation')"></i>
                                     </el-form-item>
                                 </el-form>
                             </div>
@@ -122,7 +122,7 @@
                                         :conTreeIndex="conTreeIndex"
                                         :objId="objConId"
                                         :activeNameCon="activeNameCon"
-                                        :dataDefineArray="dataDefineArray">
+                                        :dataDefineArray="reportInfo.steps">
                                     </property-config>
                                 </div>
                             </div>  
@@ -248,7 +248,7 @@
                 <span>{{'参数设置'}}</span>
                 <i class="el-icon-close close-config" @click="closeFilterConfig"></i>
             </p>
-            <filter-config :filterConfig="filterConfig"></filter-config>
+            <filter-config ref="paramsConfig" @on-filter-Close-Valid="filterCloseValid" :filterConfig="this.reportInfo.params"></filter-config>
         </div>
     </div>
 </template>
@@ -267,32 +267,12 @@ export default {
         conTreeIndex:-1,
         treeData:{},
         showIndex:-1,//属性配置显示第几步
-        filterConfig:[{ //参数配置
-            id:this.guid(),
-            code:'1',
-            name:'',
-            sort:'',
-            paramType:'',
-            helpId:'',
-            helpBH:'',
-            helpTJ:'',
-            defaultValue:'',
-            readonly:0,
-            canEmpty:1
-        }],
         filterConfigShow:false,//参数配置显示
         configShowFlag:false,//属性配置显示
-        operate:[
+        operation:[
             {type:1,name:'合并操作'},
             {type:2,name:'关联操作'},
             {type:3,name:'对比操作'}
-        ],
-        dataDefineArray:[//steps
-            {
-                object:[],
-                operate:{id:'099876',type:1,name:'合并操作'},
-                result:{}
-            }
         ],
         reportInfo:{
             id:455,
@@ -308,7 +288,12 @@ export default {
             delCondition:'这是删除条件',
             outputFlag:'1',
             outputLocation:'chunchuweizhi',
-            steps:[],
+            steps:[ {
+                dataSource:[],
+                operation:{id:'099876',type:1,name:'合并操作'},
+                result:{}
+            }],
+            params :[]
 
         },
         reportRules:{
@@ -360,14 +345,36 @@ export default {
             })
         },
         openFilterConfig(){
+            if(!this.reportInfo.params.length){
+                this.reportInfo.params.push({ //参数配置
+                    id:this.guid(),
+                    code:'',
+                    name:'',
+                    sort:'',
+                    paramType:'',
+                    helpId:'',
+                    helpBH:'',
+                    helpTJ:'',
+                    defaultValue:'',
+                    readonly:'0',
+                    canEmpty:'1'
+                })
+            }
             this.filterConfigShow = true;
         },
         closeFilterConfig(){
-            this.filterConfigShow = false;
+            this.$refs.paramsConfig.validateFilter();  
+        },
+        filterCloseValid(valid){
+            if(valid){
+                this.filterConfigShow = false;  
+            }else{
+                this.openMessage('*必填项不能为空!，若放弃保存请点击删除!')
+            }
         },
         openConfig(index,index2,type){
-            var obj= this.dataDefineArray[index]['object'][index2];
-            if(this.dataDefineArray[index]['object'].length){
+            var obj= this.reportInfo.steps[index]['dataSource'][index2];
+            if(this.reportInfo.steps[index]['dataSource'].length){
                 this.objConId=obj.id
                 this.conTreeIndex = index2;
                 this.activeNameCon = type;
@@ -386,7 +393,7 @@ export default {
             return data.label.indexOf(value) !== -1;
         },
         tagClose(index2,index) {//删除tag标签
-            this.dataDefineArray[index]['object'].splice(index2, 1);
+            this.reportInfo.steps[index]['dataSource'].splice(index2, 1);
         },
         cogTabClick(tab, event){
            // console.log(tab, event);
@@ -399,11 +406,11 @@ export default {
             var data = event.dataTransfer.getData("Text").split(',');
             if(data[3] !=='objType'){
                 if(data[1] =='resType'){
-                    this.dataDefineArray[index]['object'].push(this.dataDefineArray[data[0]]['result']);
+                    this.reportInfo.steps[index]['dataSource'].push(this.reportInfo.steps[data[0]]['result']);
                 }
                 return false;
             } 
-            var object={
+            var dataSource={
                 id:this.guid(),
                 name:data[1],
                 senmaId:data[0],
@@ -412,6 +419,10 @@ export default {
                 checkedKeys:[],
                 checkedKeyCols:[],
                 checkedUnoCols:[],
+                paramMatchText:'',
+                paramMatchCode:'',
+                rightMatchText:'',
+                rightMatchCode:'',
                 treeConData:[
                     {
                         id:data[0],
@@ -426,14 +437,14 @@ export default {
                 fields:{}
             }
            
-            const treeDataUrl = 'api/reportDefine/getDataSourceDataFromSenma?id='+object.senmaId
+            const treeDataUrl = 'api/reportDefine/getDataSourceDataFromSenma?id='+dataSource.senmaId
             this.$Http('get',treeDataUrl).then((res)=>{
-                object.fields = res.data     
-                object['treeConData'][0]['children'] = res.data
+                dataSource.fields = res.data     
+                dataSource['treeConData'][0]['children'] = res.data
 
-                this.dataDefineArray[index]['object'].push(object);
-                console.log(object)
-                //console.log(this.dataDefineArray[index]['object'][0]['treeConData'])
+                this.reportInfo.steps[index]['dataSource'].push(dataSource);
+                console.log(dataSource)
+                //console.log(this.reportInfo.steps[index]['dataSource'][0]['treeConData'])
              })
         },
         handleDragStart(node, ev) {
@@ -448,14 +459,14 @@ export default {
             return false;
         },
         insertStep(){
-            this.dataDefineArray.push({
-                object:[],
-                operate:{id:this.guid(),type:1,name:"合并操作"},
+            this.reportInfo.steps.push({
+                dataSource:[],
+                operation:{id:this.guid(),type:1,name:"合并操作"},
                 result:{}
             })
         },
         deleteStep(index){
-            this.dataDefineArray.splice(index,1)
+            this.reportInfo.steps.splice(index,1)
         },
         dragConfig(){
 
@@ -767,17 +778,8 @@ body .el-select-dropdown__item.selected {
     margin-bottom: 5px;
 }
 .right-propterty-config{
-    position:fixed;
-    left:calc(50% - 450px);
-    top: 20px;
-    width:900px;
-    height: 600px;
-    border: 1px solid #ccc;
-    background: #fff;
-    z-index: 3000;
+    z-index: 1001;
 }
-
-
 .data-define ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -807,7 +809,7 @@ body .el-select-dropdown__item.selected {
     height: 600px;
     border: 1px solid #ccc;
     background: #fff;
-    z-index: 3001;
+    z-index: 1002;
 }
 .filter-config-wrapper .config-title{
     position: relative;
