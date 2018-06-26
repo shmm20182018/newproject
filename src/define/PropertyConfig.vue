@@ -74,7 +74,7 @@
                     </div>
                 </div>
             </el-tab-pane>
-            <el-tab-pane label="操作属性" name="operate">
+            <el-tab-pane label="操作属性" name="operation">
                 <div class="ope-config-wrapper">
                     <div v-if="step.operate.type == 1" class="hebing-operate-wrapper">
                         合并操作
@@ -150,6 +150,96 @@
                 </div>
             </el-tab-pane>
         </el-tabs>
+        <div v-if="paramShowFlag" v-drag="canDrag" :style="canStyle" class="canshu-config-wrapper">
+             <p class="config-title">
+                <i class="el-icon-menu"></i>
+                <span>{{'参数设置'}}</span>
+                <i class="el-icon-close close-config" @click="closeCan"></i>
+            </p>
+            <div class="canshu-config-menu">
+                <ul>
+                    <li @click="addParam">新增</li>
+                    <li @click="delParam">删除</li>
+                    <li @click="delParam">保存</li>
+                    <li @click="delParam">公式处理</li>
+                </ul>
+            </div>
+            <div class="canshu-config-content">
+                <div class="canshu-list-title">
+                    <div class="canshu-source">括号</div>
+                    <div class="canshu-source">操作对象</div>
+                    <div class="filter-name">对象字段</div>
+                    <div class="filter-name">公式处理结果</div>
+                    <div class="filter-name">权限类型</div>
+                </div>
+                <div v-for="(filter,index) in paramMatchArray" :key="index" @click="changeIndex(index)" class="filter-list-item">
+                    <div class="filter-source">
+                        <el-form-item label="">
+                            <el-select v-model="paramMatch" placeholder="">
+                                <el-option v-for="(obj,index) in data.dataSource" :key="index" :label="obj.name" value="obj.id"></el-option>
+                            </el-select>
+                        </el-form-item>
+                    </div>
+                    <div class="filter-name"></div>
+                    <div class="filter-name"></div>
+                </div>
+            </div>
+        </div>
+        <div v-if="authShowFlag" v-drag="quanDrag" :style="quanStyle" class="quanxian-config-wrapper">
+            <p class="config-title">
+                <i class="el-icon-menu"></i>
+                <span>{{'权限设置'}}</span>
+                <i class="el-icon-close close-config" @click="closeQuan"></i>
+            </p>
+            <div class="quanxian-config-menu">
+                <ul>
+                    <li @click="addAuth">新增</li>
+                    <li @click="delAuth">删除</li>
+                    <li @click="authCompelete">设置完毕</li>
+                </ul>
+            </div>
+            <div class="quanxian-config-content">
+                <div class="quanxian-list-table">
+                    <div class="quanxian-list-title">
+                        <div class="quanxian-select"></div>
+                        <div class="quanxian-source">操作对象</div>
+                        <div class="quanxian-field">操作字段</div>
+                        <div class="quanxian-type">权限类型</div>
+                    </div>
+                    <el-form>
+                    <div class="quanxian-list-item"
+                        v-for="(rightMatch,index) in rightMatchArray" 
+                        :key="index"
+                        >
+                        <div class="quanxian-select" @click="changerightMatchIndex(index)">
+                            <i v-show="rightMatchIndex==index" class="el-icon-check"></i>
+                        </div>  
+                        <div class="quanxian-source">
+                            <el-form-item>
+                                <el-select v-model="rightMatch.dataSource" @change="changeSourceIndex(rightMatch.dataSource,index)" placeholder="">
+                                    <el-option v-for="(obj,index) in data.dataSource" :key="index" :label="obj.name" :value="obj.id"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                        <div class="quanxian-field">
+                            <el-form-item>
+                                <el-select v-model="rightMatch.field" placeholder="" @change="changerightMatchIndex(index)">
+                                    <el-option v-for="(obj,index) in data.dataSource[rightMatch.sourceIndex].fields" :key="index" :label="obj.label" :value="obj.id"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                        <div class="quanxian-type">
+                            <el-form-item>
+                                <el-select v-model="rightMatch.type" placeholder="" @change="changerightMatchIndex(index)">
+                                    <el-option v-for="(authItem,index) in  authList" :key="index" :label="authItem.name" :value="authItem.value"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                    </div> 
+                    </el-form> 
+                </div>  
+            </div>
+        </div>
     </div>                         
 </template>
 
@@ -229,11 +319,68 @@ export default {
                 break;
             } 
         }
-    }
+    },
+    addParam(){
+
+    },
+    delParam(){
+
+    },
+    addAuth(){
+        if(this.rightMatchArray.length){
+            this.rightMatchIndex++;
+        }
+        this.rightMatchArray.push({
+            dataSource:'',
+            field:'',
+            type:'',
+            sourceIndex:'0'
+        });
+        console.log(this.rightMatchIndex)
+    },
+    delAuth(){
+        if(this.rightMatchArray.length){
+            this.rightMatchArray.splice(this.rightMatchIndex,1);
+        }
+        if(this.rightMatchIndex){
+            this.rightMatchIndex--;
+        }  
+        console.log(this.rightMatchIndex)
+    },
+    changerightMatchIndex(index){
+        if(this.rightMatchIndex == index){
+            return false;
+        }else{
+            this.rightMatchIndex = index;
+        }
+       
+        console.log(this.rightMatchIndex)
+    },
+    changeSourceIndex(id,index){
+        this.$set(this.rightMatchArray[index],'field','')
+        var source = this.data['dataSource']
+        for(var i in source){
+            if(id == source[i]['id']){
+                this.rightMatchArray[index]['sourceIndex'] = i;
+                break;
+            }
+        }
+        if(this.rightMatchIndex == index){
+            return false;
+        }else{
+            this.rightMatchIndex = index;
+        }
+    },
+    authCompelete(){
+
+    },
+    canDrag(){},
+    quanDrag(){}
   },
   created(){    
      this.currentDataSourceTreeNode = this.selectDsTreeData[0];
   }
+  
 }
 
 </script>
@@ -382,5 +529,131 @@ export default {
     padding: 10px 20px;
     border-top: 1px solid #E6E7EB;
     height: 100%;
+}
+.canshu-config-wrapper,.quanxian-config-wrapper{
+    position:fixed;
+    left:calc(50% - 350px);
+    top: 50px;
+    width:700px;
+    height: 500px;
+    border: 1px solid #ccc;
+    background: #fff;
+    z-index: 3010;
+}
+.canshu-config-menu{
+  height: 40px;
+  line-height: 40px;
+  border: 1px solid #E6E7EB;
+  font-size: 12px;
+  font-weight: normal;
+}
+.canshu-config-menu li{
+  display: inline-block;
+  width: 60px;
+  height: 28px;
+  line-height: 28px;
+  border: 1px solid #E6E7EB;
+  text-align: center;
+  margin-left: 5px;
+}
+.canshu-config-menu li:hover{
+  background: #109EFF;
+  color: #fff;
+  cursor: pointer;
+}
+.canshu-config-content{
+  width: 100%;
+}
+.quanxian-config-menu{
+  height: 40px;
+  line-height: 40px;
+  border: 1px solid #E6E7EB;
+  font-size: 12px;
+  font-weight: normal;
+}
+.quanxian-config-menu li{
+  display: inline-block;
+  width: 60px;
+  height: 28px;
+  line-height: 28px;
+  border: 1px solid #E6E7EB;
+  text-align: center;
+  margin-left: 5px;
+}
+.quanxian-config-menu li:hover{
+  background: #109EFF;
+  color: #fff;
+  cursor: pointer;
+}
+.quanxian-config-content{
+  width: 100%;
+  padding:10px 5px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+.quanxian-list-table{
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #E6E7EB;
+}
+.quanxian-list-title,.quanxian-list-item{
+    display: flex;
+  height: 32px;
+  line-height: 32px;
+
+}
+.quanxian-list-title .quanxian-source,
+.quanxian-list-title .quanxian-field,
+.quanxian-list-title .quanxian-type{
+  font-size: 12px;
+  padding-left: 5px;
+  box-sizing: border-box;
+}
+.quanxian-list-item{
+  font-size: 12px;
+  font-weight: normal;
+    border-top: 1px solid #E6E7EB; 
+}
+.quanxian-list-title:hover,.quanxian-list-item:hover{
+  background-color: #f5f7fa;
+}
+.quanxian-select{
+    flex: 0 0 32px;
+    width: 32px;
+    text-align: center;
+    font-size: 14px;
+    color: #109EFF
+}
+.quanxian-source,.quanxian-field,.quanxian-type{
+    border-left: 1px solid #E6E7EB;
+}
+.quanxian-source{
+  flex:0.5;
+}
+.quanxian-field{
+  flex:0.5;
+}
+.quanxian-type{
+   flex: 0 0 150px;
+   width: 150px;
+  box-sizing: border-box;
+}
+.quanxian-list-item .el-form-item {
+  margin-bottom: 0;
+}
+.quanxian-list-item .el-form-item__content{
+    line-height: 30px;
+}
+.quanxian-list-item .el-select{
+    width: 100%;
+}
+.quanxian-list-item .el-input{
+    font-size: 12px;
+}
+.quanxian-list-item .el-input__inner{
+    height: 32px;
+    line-height: 32px;
+    border: none;
+    padding-left: 5px;
 }
 </style>

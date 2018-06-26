@@ -3,7 +3,6 @@
     <div class="filter-config-menu">
       <ul>
         <li @click="addFilter">新增</li>
-        <li @click="saveFilter">保存</li>
         <li @click="delFilter">删除</li>
       </ul>
     </div>
@@ -19,25 +18,25 @@
         </div>
       </div>
       <div class="filter-config-right">
-        <el-collapse v-model="activeNameFilter" >
-          <el-form ref="form" :model="filterConfig[filterIndex]" label-width="100px" size="small" label-position="left">
+        <el-collapse  v-if="filterConfig.length" v-model="activeNameFilter">
+          <el-form ref="filterConForm" :show-message="false"  :rules="filterRules" :model="filterConfig[filterIndex]" label-width="100px" size="small" label-position="left">
           <el-collapse-item title="参数" name="filter">
-            <el-form-item label="参数编号" >
+            <el-form-item label="参数编号" prop="code">
               <el-input v-model="filterConfig[filterIndex].code"></el-input>
             </el-form-item> 
-            <el-form-item label="参数名称" >
+            <el-form-item label="参数名称" prop="name">
               <el-input v-model="filterConfig[filterIndex].name"></el-input>
             </el-form-item > 
-            <el-form-item label="参数类型" >
+            <el-form-item label="参数类型"  prop="paramType">
               <el-select v-model="filterConfig[filterIndex].paramType" placeholder="">
-                <el-option label="字符串" value=1></el-option>
-                <el-option label="数值" value=2></el-option>
-                <el-option label="日期" value=3></el-option>
-                <el-option label="年月" value=4></el-option>
-                <el-option label="年" value=5></el-option>
+                <el-option label="字符串" value="1"></el-option>
+                <el-option label="数值" value="2"></el-option>
+                <el-option label="日期" value="3"></el-option>
+                <el-option label="年月" value="4"></el-option>
+                <el-option label="年" value="5"></el-option>
               </el-select> 
             </el-form-item >
-            <el-form-item label="排序" >
+            <el-form-item label="排序" prop="sort">
               <el-input v-model="filterConfig[filterIndex].sort"></el-input>
             </el-form-item>       
           </el-collapse-item>
@@ -57,21 +56,24 @@
             <el-form-item label="下拉框信息">
               <el-input v-model="filterConfig[filterIndex].list"></el-input>
             </el-form-item> 
-            <el-form-item label="是否只读">
+            <el-form-item label="是否只读" prop="readonly">
               <el-select v-model="filterConfig[filterIndex].readonly" placeholder="">
-                <el-option label="否" value=0></el-option>
-                <el-option label="是" value=1></el-option>
+                <el-option label="否" value="0"></el-option>
+                <el-option label="是" value="1"></el-option>
               </el-select> 
             </el-form-item> 
-            <el-form-item label="非必填">
+            <el-form-item label="非必填" prop="canEmpty">
               <el-select v-model="filterConfig[filterIndex].canEmpty" placeholder="">
-                <el-option label="否" value=0></el-option>
-                <el-option label="是" value=1></el-option>
+                <el-option label="否" value="0"></el-option>
+                <el-option label="是" value="1"></el-option>
               </el-select> 
             </el-form-item> 
           </el-collapse-item>
           </el-form>
         </el-collapse>
+        <div class="right-message" v-if="!filterConfig.length">
+          请单击左上方‘新增’按钮
+        </div>
       </div>
     </div> 
   </div>
@@ -83,37 +85,92 @@ export default {
   data () {
     return {
       filterIndex:0,
-      activeNameFilter:['filter','help']
+      activeNameFilter:['filter','help'],
+      filterRules:{
+        code:[{required:true,trigger: 'blur'}],
+        name:[{required:true,trigger: 'blur'}],
+        sort:[{required:true,trigger: 'blur'}],
+        paramType:[{required:true,trigger: 'change'}],
+        readonly:[{required:true,trigger: 'change'}],
+        canEmpty:[{required:true,trigger: 'change'}]
+      }
     };
   },
   methods:{
+    openMessage(msg){
+      this.$message({
+        showClose: true,
+        message: msg,
+        type: 'warning',
+        duration:'1000'
+      })
+    },
     addFilter(){
+      var that = this;
       var filterConfig ={
-        id:this.guid(),
-        code:'',
-        name:'',
-        sort:'',
-        paramType:'',
-        helpId:'',
-        helpBH:'',
-        helpTJ:'',
-        defaultValue:'',
-        readonly:0,
-        canEmpty:1
+            id:this.guid(),
+            code:'',
+            name:'',
+            sort:'',
+            paramType:'',
+            helpId:'',
+            helpBH:'',
+            helpTJ:'',
+            defaultValue:'',
+            readonly:'0',
+            canEmpty:'1'
+          }
+      if(this.filterConfig.length){
+        this.filterIndex = this.filterConfig.length - 1; 
+        this.$refs.filterConForm.validate((valid)=>{
+          if (valid) {  
+            this.filterIndex++;
+            this.filterConfig.push(filterConfig)
+            this.$refs.filterConForm.clearValidate()      
+          } else {
+            that.openMessage('*必填项不能为空!，若放弃保存请点击删除!');
+            return false;
+          }
+        })
+      }else{
+        this.filterConfig.push(filterConfig)
+        if(this.filterIndex){this.filterIndex++};
       }
-      this.filterIndex++;
-      this.filterConfig.push(filterConfig)
-     
     },
     delFilter(){
-      this.filterConfig.splice(this.filterIndex,1);
-      this.filterIndex--;
+      if(this.filterConfig.length){
+        this.filterConfig.splice(this.filterIndex,1);
+      }
+      if(this.filterIndex){
+        this.filterIndex--;
+         this.$refs.filterConForm.clearValidate() 
+      }  
     },
-    saveFilter(){
-
+    validateFilter(){
+      var that = this;
+      if(this.filterConfig.length){
+        this.$refs.filterConForm.validate((valid)=>{
+          if (valid) {  
+            that.$emit('on-filter-Close-Valid',true)         
+          } else {
+            that.$emit('on-filter-Close-Valid',false)  
+          }
+        })
+      }else{
+        that.$emit('on-filter-Close-Valid',true)  
+      }   
     },
     changeIndex(index){
-      this.filterIndex = index;
+      var that = this;
+      this.$refs.filterConForm.validate((valid)=>{
+        if (valid) {  
+          this.filterIndex = index;
+          this.$refs.filterConForm.clearValidate()   
+        } else { 
+          that.$message.warning('*必填项不能为空!，若放弃保存请点击删除!');
+          return false;
+        }
+      })
     }
   }
 
@@ -168,6 +225,9 @@ export default {
   font-size: 12px;
   font-weight: normal;
 }
+.filter-list-title:hover,.filter-list-item:hover{
+  background-color: #f5f7fa;
+}
 .filter-config-left .filter-code{
   flex: 0 0 100px;
   width: 100px;
@@ -182,7 +242,6 @@ export default {
   flex: 0 0 450px;
   width: 450px;
   height: 515px;
-  overflow: hidden;
   margin:10px 10px 10px 0;
   padding: 0 10px;
   box-sizing: border-box;
@@ -208,5 +267,12 @@ export default {
 }
 .filter-config-right .left-obj-config .el-form-item__label{
   color: #999;
+}
+.filter-config-right .el-select{
+  width: 100%;
+}
+.filter-config-right .right-message{
+  margin-top: 20px;
+  margin-left: 20px;
 }
 </style>

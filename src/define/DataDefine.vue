@@ -88,10 +88,10 @@
                             <div class="right-operate-property">
                                 <el-form class="operate-select" size="small" >     
                                     <el-form-item>
-                                        <el-select v-model="data.operate.type">
-                                            <el-option v-for="(ope,index) in operate" :key="ope.id" :index="index" :label="ope.name" :value="ope.type"></el-option>
+                                        <el-select v-model="data.operation.type">
+                                            <el-option v-for="(ope,index) in operation" :key="ope.id" :index="index" :label="ope.name" :value="ope.type"></el-option>
                                         </el-select>
-                                        <i class="el-icon-setting" @click.prevent.stop="openConfig(index,0,'operate')"></i>
+                                        <i class="el-icon-setting" @click.prevent.stop="openConfig(index,0,'operation')"></i>
                                     </el-form-item>
                                 </el-form>
                             </div>
@@ -256,7 +256,10 @@
                 <span>{{'参数设置'}}</span>
                 <i class="el-icon-close close-config" @click="closeFilterConfig"></i>
             </p>
-            <filter-config :filterConfig="filterConfig"></filter-config>
+            <filter-config ref="paramsConfig" 
+            @on-filter-Close-Valid="filterCloseValid"
+             :filterConfig="reportInfo.params">
+             </filter-config>
         </div>
     </div>
 </template>
@@ -298,22 +301,8 @@ export default {
         filterSelect:'',
         treeData:{},
         showIndex:-1,//属性配置显示第几步
-        filterConfig:[{ //参数配置
-            id:this.guid(),
-            code:'1',
-            name:'',
-            sort:'',
-            paramType:'',
-            helpId:'',
-            helpBH:'',
-            helpTJ:'',
-            defaultValue:'',
-            readonly:0,
-            canEmpty:1
-        }],
         filterConfigShow:false,//参数配置显示
         configShowFlag:false,//属性配置显示
-
         reportRules:{
             code:[{required:true,trigger: 'blur'}],
             name:[{required:true,trigger: 'blur'}]
@@ -405,10 +394,32 @@ export default {
             })
         },
         openFilterConfig(){
+            if(!this.reportInfo.params.length){
+                this.reportInfo.params.push({ //参数配置
+                    id:this.guid(),
+                    code:'',
+                    name:'',
+                    sort:'',
+                    paramType:'',
+                    helpId:'',
+                    helpBH:'',
+                    helpTJ:'',
+                    defaultValue:'',
+                    readonly:'0',
+                    canEmpty:'1'
+                })
+            }
             this.filterConfigShow = true;
         },
         closeFilterConfig(){
-            this.filterConfigShow = false;
+            this.$refs.paramsConfig.validateFilter();  
+        },
+        filterCloseValid(valid){
+            if(valid){
+                this.filterConfigShow = false;  
+            }else{
+                this.openMessage('*必填项不能为空!，若放弃保存请点击删除!')
+            }
         },
         openConfig(rowIndex,dataSourceIndex,type){
             if(type!='dataSoruce' && this.reportInfo.steps[rowIndex].dataSource.length ==0)
@@ -786,17 +797,8 @@ body .el-select-dropdown__item.selected {
     margin-bottom: 5px;
 }
 .right-propterty-config{
-    position:fixed;
-    left:calc(50% - 450px);
-    top: 20px;
-    width:900px;
-    height: 600px;
-    border: 1px solid #ccc;
-    background: #fff;
-    z-index: 3000;
+    z-index: 1001;
 }
-
-
 .data-define ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -826,7 +828,7 @@ body .el-select-dropdown__item.selected {
     height: 600px;
     border: 1px solid #ccc;
     background: #fff;
-    z-index: 3001;
+    z-index: 1002;
 }
 .filter-config-wrapper .config-title{
     position: relative;

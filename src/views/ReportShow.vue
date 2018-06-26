@@ -59,13 +59,14 @@ export default {
   computed:{
     phoneClass(){
       //var screenWidth = document.body.clientWidth * 1//窗口的大小
-      if(this.$route.params.pc  ==='isPC'){
-         //console.log(this.$route.params.pc)
-        return 'pc-style-class'
-      }else{
+      if(this.$route.params.pc == 'isPhone'){
         this.phoneFlag = true
         return 'phone-style-class'  
-          //this.tableHeight = 1*100%
+        //this.tableHeight = 1*100%
+      
+      }else{
+        //console.log(this.$route.params.pc)
+        return 'pc-style-class'
       }
     },
     initApiUrl:function(){
