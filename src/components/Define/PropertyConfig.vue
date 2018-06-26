@@ -1,6 +1,6 @@
 <template>
     <div class="config-content">
-        <el-tabs v-model="activeNameTag"  @tab-click="tabClick" >
+        <el-tabs v-model="activeNameTag" >
             <el-tab-pane label="对象属性" name="dataSource">
                 <div class="obj-config-wrapper">
                     <div class="left-obj-config">
