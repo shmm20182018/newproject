@@ -122,7 +122,9 @@
                                         :conTreeIndex="conTreeIndex"
                                         :objId="objConId"
                                         :activeNameCon="activeNameCon"
-                                        :dataDefineArray="reportInfo.steps">
+                                        :dataDefineArray="reportInfo.steps"
+                                        :rightMatchArray="rightMatchArray"
+                                        :paramMatchArray="paramMatchArray">
                                     </property-config>
                                 </div>
                             </div>  
@@ -248,7 +250,10 @@
                 <span>{{'参数设置'}}</span>
                 <i class="el-icon-close close-config" @click="closeFilterConfig"></i>
             </p>
-            <filter-config ref="paramsConfig" @on-filter-Close-Valid="filterCloseValid" :filterConfig="this.reportInfo.params"></filter-config>
+            <filter-config ref="paramsConfig" 
+            @on-filter-Close-Valid="filterCloseValid"
+             :filterConfig="reportInfo.params">
+             </filter-config>
         </div>
     </div>
 </template>
@@ -296,6 +301,15 @@ export default {
             params :[]
 
         },
+        rightMatchArray:[{
+            dataSource:'',
+            field:'',
+            type:'',
+            sourceIndex:'0',
+        }],
+        paramMatchArray:[{
+
+        }],
         reportRules:{
             code:[{required:true,trigger: 'blur'}],
             name:[{required:true,trigger: 'blur'}]
@@ -381,7 +395,7 @@ export default {
                 this.showIndex = index
                 this.configShowFlag = true;
             }else{
-                this.openMessage('数据集不能为空');
+                this.openMessage('数据源不能为空');
             }
         },
         closeConfig(){

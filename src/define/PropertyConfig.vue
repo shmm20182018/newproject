@@ -206,29 +206,36 @@
             <div class="quanxian-config-content">
                 <div class="quanxian-list-table">
                     <div class="quanxian-list-title">
-                    <div class="quanxian-source">操作对象</div>
-                    <div class="quanxian-field">操作字段</div>
-                    <div class="quanxian-type">权限类型</div>
+                        <div class="quanxian-select"></div>
+                        <div class="quanxian-source">操作对象</div>
+                        <div class="quanxian-field">操作字段</div>
+                        <div class="quanxian-type">权限类型</div>
                     </div>
                     <el-form>
-                    <div v-for="(rightMatch,index) in rightMatchArray" :key="index" @click="changeSourceIndex(index)" class="quanxian-list-item">
+                    <div class="quanxian-list-item"
+                        v-for="(rightMatch,index) in rightMatchArray" 
+                        :key="index"
+                        >
+                        <div class="quanxian-select" @click="changerightMatchIndex(index)">
+                            <i v-show="rightMatchIndex==index" class="el-icon-check"></i>
+                        </div>  
                         <div class="quanxian-source">
-                            <el-form-item label="">
-                                <el-select v-model="rightMatch.dataSource" placeholder="">
+                            <el-form-item>
+                                <el-select v-model="rightMatch.dataSource" @change="changeSourceIndex(rightMatch.dataSource,index)" placeholder="">
                                     <el-option v-for="(obj,index) in data.dataSource" :key="index" :label="obj.name" :value="obj.id"></el-option>
                                 </el-select>
                             </el-form-item>
                         </div>
                         <div class="quanxian-field">
-                            <el-form-item label="">
-                                <el-select v-model="rightMatch.field" placeholder="">
-                                    <el-option v-for="(obj,index) in data.dataSource[sourceIndex].fields" :key="index" :label="obj.label" :value="obj.id"></el-option>
+                            <el-form-item>
+                                <el-select v-model="rightMatch.field" placeholder="" @change="changerightMatchIndex(index)">
+                                    <el-option v-for="(obj,index) in data.dataSource[rightMatch.sourceIndex].fields" :key="index" :label="obj.label" :value="obj.id"></el-option>
                                 </el-select>
                             </el-form-item>
                         </div>
                         <div class="quanxian-type">
-                            <el-form-item label="">
-                                <el-select v-model="rightMatch.type" placeholder="">
+                            <el-form-item>
+                                <el-select v-model="rightMatch.type" placeholder="" @change="changerightMatchIndex(index)">
                                     <el-option v-for="(authItem,index) in  authList" :key="index" :label="authItem.name" :value="authItem.value"></el-option>
                                 </el-select>
                             </el-form-item>
@@ -243,13 +250,14 @@
 
 <script>
 export default {
-  props:['data','index','conTreeIndex','objId','activeNameCon','dataDefineArray'],
+  props:['data','index','conTreeIndex','objId','activeNameCon','dataDefineArray',
+  'rightMatchArray','paramMatchArray'],
   data () {
-    return {
+    return { 
         checkedNodes:[],
         treeChangeFlag:true,
         treeIndex:this.conTreeIndex,//语义对象下标
-        sourceIndex:0,
+        rightMatchIndex:0,
         compSelIndex:0,
         objConId:this.objId,
         objCompareId:this.data.dataSource[0]['id'],//比较操作
@@ -268,14 +276,6 @@ export default {
             {name:'大区权限',value:'4'},
             {name:'人员权限',value:'5'}
         ],
-        rightMatchArray:[{
-            dataSource:'',
-            field:'',
-            type:''
-        }],
-        paramMatchArray:[{
-
-        }],
         canStyle:{
             position:'fixed',
             left: 'calc(50% - 350px)',
@@ -378,23 +378,49 @@ export default {
 
     },
     addAuth(){
-        this.sourceIndex++;
+        if(this.rightMatchArray.length){
+            this.rightMatchIndex++;
+        }
         this.rightMatchArray.push({
             dataSource:'',
             field:'',
-            type:''
+            type:'',
+            sourceIndex:'0'
         });
+        console.log(this.rightMatchIndex)
     },
     delAuth(){
         if(this.rightMatchArray.length){
-            this.filterConfig.splice(this.filterIndex,1);
+            this.rightMatchArray.splice(this.rightMatchIndex,1);
         }
-        if(this.sourceIndex){
-            this.sourceIndex--;
+        if(this.rightMatchIndex){
+            this.rightMatchIndex--;
         }  
+        console.log(this.rightMatchIndex)
     },
-    changeSourceIndex(index){
-        this.sourceIndex = index;
+    changerightMatchIndex(index){
+        if(this.rightMatchIndex == index){
+            return false;
+        }else{
+            this.rightMatchIndex = index;
+        }
+       
+        console.log(this.rightMatchIndex)
+    },
+    changeSourceIndex(id,index){
+        this.$set(this.rightMatchArray[index],'field','')
+        var source = this.data['dataSource']
+        for(var i in source){
+            if(id == source[i]['id']){
+                this.rightMatchArray[index]['sourceIndex'] = i;
+                break;
+            }
+        }
+        if(this.rightMatchIndex == index){
+            return false;
+        }else{
+            this.rightMatchIndex = index;
+        }
     },
     authCompelete(){
 
@@ -556,7 +582,7 @@ export default {
     border-top: 1px solid #E6E7EB;
     height: 100%;
 }
-.canshu-config-wrapper .quanxian-config-wrapper{
+.canshu-config-wrapper,.quanxian-config-wrapper{
     position:fixed;
     left:calc(50% - 350px);
     top: 50px;
@@ -613,7 +639,7 @@ export default {
 }
 .quanxian-config-content{
   width: 100%;
-  padding:10px;
+  padding:10px 5px;
   box-sizing: border-box;
   overflow-y: auto;
 }
@@ -633,7 +659,7 @@ export default {
 .quanxian-list-title .quanxian-type{
   font-size: 12px;
   padding-left: 5px;
- box-sizing: border-box;
+  box-sizing: border-box;
 }
 .quanxian-list-item{
   font-size: 12px;
@@ -643,26 +669,38 @@ export default {
 .quanxian-list-title:hover,.quanxian-list-item:hover{
   background-color: #f5f7fa;
 }
+.quanxian-select{
+    flex: 0 0 32px;
+    width: 32px;
+    text-align: center;
+    font-size: 14px;
+    color: #109EFF
+}
+.quanxian-source,.quanxian-field,.quanxian-type{
+    border-left: 1px solid #E6E7EB;
+}
 .quanxian-source{
   flex:0.5;
 }
 .quanxian-field{
   flex:0.5;
-  border-left: 1px solid #E6E7EB;
 }
 .quanxian-type{
-   flex: 0 0 200px;
-  border-left: 1px solid #E6E7EB;
+   flex: 0 0 150px;
+   width: 150px;
   box-sizing: border-box;
 }
 .quanxian-list-item .el-form-item {
   margin-bottom: 0;
 }
 .quanxian-list-item .el-form-item__content{
-    line-height: 32px;
+    line-height: 30px;
 }
 .quanxian-list-item .el-select{
     width: 100%;
+}
+.quanxian-list-item .el-input{
+    font-size: 12px;
 }
 .quanxian-list-item .el-input__inner{
     height: 32px;
