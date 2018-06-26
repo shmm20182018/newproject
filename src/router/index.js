@@ -10,7 +10,7 @@ export default new Router({
     },
     {
       path: '/define/:id?',
-      component: resolve => require(['../define/DataDefine.vue'], resolve)
+      component: resolve => require(['../views/DataDefine.vue'], resolve)
     }
   ]
 })
