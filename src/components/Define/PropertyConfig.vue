@@ -52,7 +52,7 @@
                                     <i class="el-icon-setting" @click="openQuan"></i>
                                 </el-form-item> 
                             </el-collapse-item>
-                            <el-collapse-item title="列属性" name="4" v-if="step.operate.type==3 && currentDataSourceTreeNode.field" >
+                            <el-collapse-item title="列属性" name="4" v-if="step.operation.type==3 && currentDataSourceTreeNode.field" >
                                     <el-form-item label="是否分组主列">
                                     <el-switch v-model="currentDataSourceTreeNode.isKeyCol"></el-switch>
                                     </el-form-item>
@@ -76,20 +76,20 @@
             </el-tab-pane>
             <el-tab-pane label="操作属性" name="operation">
                 <div class="ope-config-wrapper">
-                    <div v-if="step.operate.type == 1" class="hebing-operate-wrapper">
+                    <div v-if="step.operation.type == 1" class="hebing-operation-wrapper">
                         合并操作
                     </div>
-                    <div v-if="step.operate.type == 2" class="guanlian-operate-wrapper">
+                    <div v-if="step.operation.type == 2" class="guanlian-operation-wrapper">
                         关联操作
                     </div>
-                    <div v-if="step.operate.type == 3" class="duibi-operate-wrapper">
-                        <el-form class="duibi-operate-form" :model="form" label-width="100px" size="small" label-position="left" >
+                    <div v-if="step.operation.type == 3" class="duibi-operation-wrapper">
+                        <el-form class="duibi-operation-form" :model="form" label-width="100px" size="small" label-position="left" >
                             <div class="duibi-form-left">
                                 <el-form-item label="操作编号">
-                                    <el-input v-model="step.operate.id" :disabled="true"></el-input>
+                                    <el-input v-model="step.operation.id" :disabled="true"></el-input>
                                 </el-form-item>
                                 <el-form-item label="操作名称">
-                                    <el-input v-model="step.operate.name" :disabled="true"></el-input>
+                                    <el-input v-model="step.operation.name" :disabled="true"></el-input>
                                 </el-form-item>
                                 <el-form-item label="操作对象列表">
                                     <el-select v-model="objCompareId"  @change='opeSelChange(index,objCompareId)' placeholder="">
@@ -502,15 +502,15 @@ export default {
 .obj-config-quan .el-icon-setting:hover,.obj-config-can .el-icon-setting:hover{
     color: #109EFF;
 }
-.duibi-operate-wrapper{
+.duibi-operation-wrapper{
     width: 100%;
     height: 100%;
 }
-.duibi-operate-wrapper .duibi-operate-form{
+.duibi-operation-wrapper .duibi-operation-form{
     display: flex;
     height: 100%;
 }
-.duibi-operate-wrapper .duibi-form-left{
+.duibi-operation-wrapper .duibi-form-left{
     flex: 1;
     padding: 10px 20px;
     border-top: 1px solid #E6E7EB;
@@ -523,7 +523,7 @@ export default {
 .duibi-form-left .el-input{
     width: 75%;
 }
-.duibi-operate-wrapper .duibi-form-right{
+.duibi-operation-wrapper .duibi-form-right{
     flex: 0 0 300px;
     width: 300px;
     padding: 10px 20px;
