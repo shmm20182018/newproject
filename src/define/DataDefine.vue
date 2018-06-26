@@ -53,7 +53,7 @@
                     </li>
                     <li>
                         <i></i>
-                        <span class="el-icon-tickets">保存</span>
+                        <span class="el-icon-tickets" @click="save">保存</span>
                     </li>                  
                 </ul>       
             </div>
@@ -66,23 +66,23 @@
                         <p class="operate-title"><i class="el-icon-menu"></i>操作</p>
                     </div>
                     <div class="right-middle-data">
-                        <div class="right-middle-data-item" v-for="(data,index) in dataDefineArray" :index="index" :key="data.index">
+                        <div class="right-middle-data-item" v-for="(data,index) in reportInfo.steps" :index="index" :key="data.index">
                             <div class="right-object-property"  @drop='dropObject($event,index)'  @dragover.prevent>
-                                <draggable v-model="data.object" :options="{group:'people'}" @start="drag=true" @end="drag=false">
+                                <draggable v-model="data.dataSource" :options="{group:'people'}" @start="drag=true" @end="drag=false">
                                 <el-tag type="info" class="objectTag"
-                                    v-for="(tag,index2) in data.object"
+                                    v-for="(tag,index2) in data.dataSource"
                                     :key="index2"
                                     closable
                                     :id="tag.id"
                                     @close="tagClose(index2,index)">
                                    <span class="tag-content"> 
                                        <i class="tag-text">{{tag.name}}</i>
-                                       <i class="el-icon-setting"  @click.prevent.stop="openConfig(index,index2,'object')"></i>
+                                       <i class="el-icon-setting"  @click.prevent.stop="openConfig(index,index2,'dataSource')"></i>
                                     </span>
                                 </el-tag>
                                 </draggable>
                                 <div class="object-content">
-                                    <span class="default-text" v-if="!data.object || !data.object.length">请拖入左边数据源</span>
+                                    <span class="default-text" v-if="!data.dataSource || !data.dataSource.length">请拖入左边数据源</span>
                                 </div>
                             </div>
                             <div class="right-operate-property">
@@ -117,12 +117,10 @@
                                         <i class="el-icon-close close-config" @click="closeConfig"></i>
                                     </p>
                                     <property-config 
-                                        :data="data" 
-                                        :index="index" 
-                                        :conTreeIndex="conTreeIndex"
-                                        :objId="objConId"
-                                        :activeNameCon="activeNameCon"
-                                        :dataDefineArray="dataDefineArray">
+                                        :step="data" 
+                                        :stepIndex="index" 
+                                        :dataSourceIndex="openDataSourceIndex"
+                                        :activeNameCon="activeNameCon">
                                     </property-config>
                                 </div>
                             </div>  
@@ -132,19 +130,19 @@
             </div>
             <div class="right-bottom-wrapper">
                 <el-tabs v-model="activeName2" type="card" @tab-click="cogTabClick">
-                    <el-tab-pane label="报表配置" name="first0" class="collapse0">
+                    <el-tab-pane label="报表" name="first0" class="collapse0">
                         <el-form ref="defineRuleForm" :show-message="false" :rules="reportRules" :model="reportInfo" label-width="80px" size="mini" :inline="true">
                             <el-row>
                                 <el-col :span="8">
                                     <div class="grid-content">      
-                                        <el-form-item label="报表编号" prop="code">
+                                        <el-form-item label="编号" prop="code">
                                             <el-input v-model="reportInfo.code"></el-input>
                                         </el-form-item>
                                     </div>
                                 </el-col>
                                 <el-col :span="8">
                                     <div class="grid-content">
-                                        <el-form-item label="报表名称" prop="name">
+                                        <el-form-item label="名称" prop="name">
                                             <el-input v-model="reportInfo.name"></el-input>
                                         </el-form-item> 
                                     </div> 
@@ -161,7 +159,17 @@
                                 </el-col>
                                 <el-col :span="8">
                                     <div class="grid-content">
-                                        <el-form-item label="报表备注">
+                                        <el-form-item label="直接查询">
+                                            <el-select v-model="reportInfo.queryImmediately" >
+                                                <el-option label="否" value="0"></el-option>
+                                                <el-option label="是" value="1"></el-option>
+                                            </el-select>
+                                        </el-form-item> 
+                                    </div>
+                                </el-col>
+                                <el-col :span="16">
+                                    <div class="grid-content">
+                                        <el-form-item label="备注">
                                             <el-input v-model="reportInfo.describe"></el-input>
                                         </el-form-item> 
                                     </div>
@@ -257,14 +265,37 @@
 import draggable from 'vuedraggable'
 import PropertyConfig from './PropertyConfig.vue'
 import FilterConfig from './FilterConfig.vue'
+
 export default {
     data() {
       return {  
-        objConId:'',//语义对象     
+        openDataSourceIndex:0,  //待打开数据源的索引
+        reportInfo:{
+            id:'',
+            code:'',
+            name:'',
+            describe:'',
+            type:'U',
+            queryImmediately:'0',
+            saveFlag:'0',
+            saveTableName:'',
+            saveTableAliasName:'',
+            delFlag:'0',
+            delCondition:'',
+            outputFlag:'0',
+            outputLocation:'',
+            steps:[],
+        },
+        operate:[
+            {type:1,name:'合并操作'},
+            {type:2,name:'关联操作'},
+            {type:3,name:'对比操作'}
+        ],
+    
+
         configData:{},//每一步对象
         filterText:'',
         filterSelect:'',
-        conTreeIndex:-1,
         treeData:{},
         showIndex:-1,//属性配置显示第几步
         filterConfig:[{ //参数配置
@@ -282,35 +313,7 @@ export default {
         }],
         filterConfigShow:false,//参数配置显示
         configShowFlag:false,//属性配置显示
-        operate:[
-            {type:1,name:'合并操作'},
-            {type:2,name:'关联操作'},
-            {type:3,name:'对比操作'}
-        ],
-        dataDefineArray:[//steps
-            {
-                object:[],
-                operate:{id:'099876',type:1,name:'合并操作'},
-                result:{}
-            }
-        ],
-        reportInfo:{
-            id:455,
-            code:'34590090',
-            name:'报表123',
-            describe:'销售额',
-            type:'U',
-            queryImmediately:'1',
-            saveFlag:'1',
-            saveTableName:'',
-            saveTableAliasName:'',
-            delFlag:'0',
-            delCondition:'这是删除条件',
-            outputFlag:'1',
-            outputLocation:'chunchuweizhi',
-            steps:[],
 
-        },
         reportRules:{
             code:[{required:true,trigger: 'blur'}],
             name:[{required:true,trigger: 'blur'}]
@@ -328,7 +331,7 @@ export default {
         },
         activeNames:1,
         activeName2: 'first0',
-        activeNameCon:'object',
+        activeNameCon:'dataSource',
         form:{
             name: 123
         }
@@ -343,6 +346,48 @@ export default {
       }
     },
     methods: {
+        createDataSourceDefaultObj(senma){
+            return {
+                id:this.guid(),
+                name:senma[1],
+                senmaId:senma[0],
+                senmaName:senma[1],
+                senmaTableName:senma[2],
+                filter:'',
+                type:0,
+                fields:{}
+            }          
+        },
+        save(){
+            this.$refs['defineRuleForm'].validate((valid) => {
+                if (valid) {       
+                    console.log(this.reportInfo);
+                    this.$Http('post','api/reportDefine/save',this.reportInfo)
+                    .then(()=>{
+                        this.$message({
+                        showClose: true,
+                        type: 'sucess',
+                        message: '保存成功!'
+                        });
+                    });
+                } else {
+                    return false;
+                }   
+            });   
+        },
+        getReportInfo(){
+            var code = this.$route.params.id;
+
+            if(code){
+                this.$Http('get','api/reportDefine/load?code='+code).then((res)=>{
+                    this.reportInfo = {...this.reportInfo,...res.data };
+                });
+            }
+            else{
+                this.reportInfo.id =this.guid();
+                this.insertStep();
+            }
+        },
         openMessage(msg){
             this.$message({
                 showClose: true,
@@ -365,17 +410,15 @@ export default {
         closeFilterConfig(){
             this.filterConfigShow = false;
         },
-        openConfig(index,index2,type){
-            var obj= this.dataDefineArray[index]['object'][index2];
-            if(this.dataDefineArray[index]['object'].length){
-                this.objConId=obj.id
-                this.conTreeIndex = index2;
-                this.activeNameCon = type;
-                this.showIndex = index
-                this.configShowFlag = true;
-            }else{
-                this.openMessage('数据集不能为空');
-            }
+        openConfig(rowIndex,dataSourceIndex,type){
+            if(type!='dataSoruce' && this.reportInfo.steps[rowIndex].dataSource.length ==0)
+                return;
+
+            this.openDataSourceIndex = dataSourceIndex;
+            this.activeNameCon = type;
+            this.showIndex = rowIndex
+            this.configShowFlag = true;
+
         },
         closeConfig(){
             this.configShowFlag = false;
@@ -386,7 +429,7 @@ export default {
             return data.label.indexOf(value) !== -1;
         },
         tagClose(index2,index) {//删除tag标签
-            this.dataDefineArray[index]['object'].splice(index2, 1);
+            this.reportInfo.steps[index].dataSource.splice(index2, 1);
         },
         cogTabClick(tab, event){
            // console.log(tab, event);
@@ -399,41 +442,16 @@ export default {
             var data = event.dataTransfer.getData("Text").split(',');
             if(data[3] !=='objType'){
                 if(data[1] =='resType'){
-                    this.dataDefineArray[index]['object'].push(this.dataDefineArray[data[0]]['result']);
+                    this.reportInfo.steps[index].dataSource.push(this.reportInfo.steps[data[0]]['result']);
                 }
                 return false;
             } 
-            var object={
-                id:this.guid(),
-                name:data[1],
-                senmaId:data[0],
-                senmaName:data[1],
-                senmaTableName:data[2],
-                checkedKeys:[],
-                checkedKeyCols:[],
-                checkedUnoCols:[],
-                treeConData:[
-                    {
-                        id:data[0],
-                        label:data[1],
-                        name:data[1],
-                        tableName:data[2],
-                        children:[] 
-                    }
-                ],
-                filter:'',
-                type:0,
-                fields:{}
-            }
-           
-            const treeDataUrl = 'api/reportDefine/getDataSourceDataFromSenma?id='+object.senmaId
-            this.$Http('get',treeDataUrl).then((res)=>{
-                object.fields = res.data     
-                object['treeConData'][0]['children'] = res.data
 
-                this.dataDefineArray[index]['object'].push(object);
-                console.log(object)
-                //console.log(this.dataDefineArray[index]['object'][0]['treeConData'])
+            var dataSource= this.createDataSourceDefaultObj(data);       
+            const treeDataUrl = 'api/reportDefine/getDataSourceDataFromSenma?id='+dataSource.senmaId
+            this.$Http('get',treeDataUrl).then((res)=>{
+                dataSource.fields = res.data     
+                this.reportInfo.steps[index].dataSource.push(dataSource);
              })
         },
         handleDragStart(node, ev) {
@@ -448,14 +466,14 @@ export default {
             return false;
         },
         insertStep(){
-            this.dataDefineArray.push({
-                object:[],
+            this.reportInfo.steps.push({
+                dataSource:[],
                 operate:{id:this.guid(),type:1,name:"合并操作"},
-                result:{}
-            })
+                result:{}   
+            });
         },
         deleteStep(index){
-            this.dataDefineArray.splice(index,1)
+            this.reportInfo.steps.splice(index,1)
         },
         dragConfig(){
 
@@ -467,6 +485,7 @@ export default {
     },
     created(){
         this.getTreeData();
+        this.getReportInfo();
     },
     components:{
         draggable,

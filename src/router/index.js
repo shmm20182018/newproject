@@ -9,7 +9,7 @@ export default new Router({
       component: resolve => require(['../views/ReportShow.vue'], resolve)
     },
     {
-      path: '/define',
+      path: '/define/:id?',
       component: resolve => require(['../define/DataDefine.vue'], resolve)
     }
   ]
