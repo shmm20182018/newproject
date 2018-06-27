@@ -406,8 +406,6 @@ export default {
             const treeDataUrl = 'api/reportDefine/getSenmaList'
             this.$Http('get',treeDataUrl).then((res)=>{
                 this.treeData = {...this.treeData,...res.data };
-                console.log(res.data)
-                console.log(this.treeData)
             })
         },
         openFilterConfig(){
@@ -877,4 +875,3 @@ body .el-select-dropdown__item.selected {
     color: #808080;
     z-index: 10;
 }
-</style>
