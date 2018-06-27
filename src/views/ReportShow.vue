@@ -1,5 +1,5 @@
 <template>
-  <div :class="phoneClass" class="report-show-wrapper">
+  <div :class="phoneClass" class="report-show-wrapper" v-wechat-title="reportInfo.title">
     <div class="filter-tools">
       <i :class="iconArrowFilter" class="icon-toggle" @click="showToggle('filter')"></i>
       <transition name="slide-fade">
@@ -104,7 +104,7 @@ export default {
     getReportInfo(){
       this.$Http('get',this.initApiUrl).then((res)=>{
           this.reportInfo = {...this.reportInfo,...res.data };
-          console.log(this.reportInfo)
+          //console.log(this.reportInfo)
           if(this.reportInfo.paramsInfo.length>0){
             this.showFilterFlag =true;        
           }

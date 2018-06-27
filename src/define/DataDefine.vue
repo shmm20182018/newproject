@@ -1,5 +1,5 @@
 <template>
-  <div class="data-define">
+  <div class="data-define" v-wechat-title="reportTitle">
         <div class="left-wrapper">  
             <el-form  class="left-search-form" ref="form" :model="form" size="mini">
                 <el-form-item label="">
@@ -274,6 +274,7 @@ import FilterConfig from './FilterConfig.vue'
 export default {
     data() {
       return {  
+          reportTitle:'报表定义',
         openDataSourceIndex:0,  //待打开数据源的索引
         reportInfo:{
             id:'',

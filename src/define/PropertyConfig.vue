@@ -218,7 +218,7 @@
                         <div class="canshu-param canshu-data-item">
                             <el-form-item>
                                 <el-select v-model="paramMatch.param" placeholder="" @change="changeParamIndex(index)">
-                                    <el-option  :label="filterParams.id" :value="filterParams.id"></el-option>
+                                    <el-option  :label="filterParams.code" :value="filterParams.id"></el-option>
                                 </el-select>
                             </el-form-item>
                         </div>
@@ -310,7 +310,7 @@
                     <div class="formula-string-wrapper">
                         <el-form>
                             <el-form-item>
-                                <el-input  v-model="formulaString" :disabled="true"></el-input>  
+                                <el-input type="textarea" v-model="formulaString"></el-input>  
                             </el-form-item>
                         </el-form>    
                     </div>
@@ -414,6 +414,14 @@ export default {
             name:'123'
         }
     };
+  },
+  watch:{
+      filterParams:{
+           handler: function (newVal) { 
+               console.log(newVal)
+            },
+          deep:true      
+      }
   },
   computed:{
     selectDataSource(){
@@ -874,6 +882,9 @@ export default {
     padding-left: 5px;
     padding-right: 14px;
 }
+.canshu-formula .el-input__inner{
+    padding-right: 5px;
+}
 .canshu-data-item .el-input__suffix{
     right: 2px;
 }
@@ -1015,6 +1026,9 @@ export default {
     border-bottom: 1px solid #E6E7EB;
     padding: 5px;
     box-sizing: border-box;
+}
+.formula-string-wrapper .el-textarea__inner{
+    min-height: 138px !important;
 }
 .formula-string-list{
     display: flex;

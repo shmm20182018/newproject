@@ -19,6 +19,7 @@
     "vue": "^2.5.2",
     "vue-echarts": "^3.0.9",
     "vue-router": "^3.0.1",
+    "vue-wechat-title": "^2.0.4",
     "vuedraggable": "^2.16.0",
     "xlsx": "^0.12.13"
   },

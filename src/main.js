@@ -8,10 +8,12 @@ import 'element-ui/lib/theme-chalk/index.css'
 import deepCloneArray from './utils/deepClone.js'
 import http from './utils/http.js'
 import guid from './utils/guid.js'
+import VueWechatTitle from 'vue-wechat-title';    
+
 // import $ from 'jquery'
 import App from './App'
 
-
+Vue.use(VueWechatTitle)  
 Vue.use(ElementUI);
 Vue.config.productionTip = false
 Vue.prototype.$Http= http
