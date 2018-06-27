@@ -12,23 +12,23 @@
           <div class="filter-code">参数编号</div>
           <div class="filter-name">参数名称</div>
         </div>
-        <div v-for="(filter,index) in filterConfig" :key="index" @click="changeIndex(index)" class="filter-list-item">
+        <div v-for="(filter,index) in filterParams" :key="index" @click="changeIndex(index)" class="filter-list-item">
           <div class="filter-code">{{filter.code}}</div>
           <div class="filter-name">{{filter.name}}</div>
         </div>
       </div>
       <div class="filter-config-right">
-        <el-collapse  v-if="filterConfig.length" v-model="activeNameFilter">
-          <el-form ref="filterConForm" :show-message="false"  :rules="filterRules" :model="filterConfig[filterIndex]" label-width="100px" size="small" label-position="left">
+        <el-collapse  v-if="filterParams.length" v-model="activeNameFilter">
+          <el-form ref="filterConForm" :show-message="false"  :rules="filterRules" :model="filterParams[filterIndex]" label-width="100px" size="small" label-position="left">
           <el-collapse-item title="参数" name="filter">
             <el-form-item label="参数编号" prop="code">
-              <el-input v-model="filterConfig[filterIndex].code"></el-input>
+              <el-input v-model="filterParams[filterIndex].code"></el-input>
             </el-form-item> 
             <el-form-item label="参数名称" prop="name">
-              <el-input v-model="filterConfig[filterIndex].name"></el-input>
+              <el-input v-model="filterParams[filterIndex].name"></el-input>
             </el-form-item > 
             <el-form-item label="参数类型"  prop="paramType">
-              <el-select v-model="filterConfig[filterIndex].paramType" placeholder="">
+              <el-select v-model="filterParams[filterIndex].paramType" placeholder="">
                 <el-option label="字符串" value="1"></el-option>
                 <el-option label="数值" value="2"></el-option>
                 <el-option label="日期" value="3"></el-option>
@@ -37,33 +37,33 @@
               </el-select> 
             </el-form-item >
             <el-form-item label="排序" prop="sort">
-              <el-input v-model="filterConfig[filterIndex].sort"></el-input>
+              <el-input v-model="filterParams[filterIndex].sort"></el-input>
             </el-form-item>       
           </el-collapse-item>
           <el-collapse-item title="帮助" name="help">
             <el-form-item label="帮助信息">
-              <el-input v-model="filterConfig[filterIndex].helpId"></el-input>
+              <el-input v-model="filterParams[filterIndex].helpId"></el-input>
             </el-form-item> 
             <el-form-item label="帮助编码">
-              <el-input v-model="filterConfig[filterIndex].helpBH"></el-input>
+              <el-input v-model="filterParams[filterIndex].helpBH"></el-input>
             </el-form-item> 
             <el-form-item label="帮助条件">
-              <el-input v-model="filterConfig[filterIndex].helpTJ"></el-input>
+              <el-input v-model="filterParams[filterIndex].helpTJ"></el-input>
             </el-form-item> 
             <el-form-item label="默认值">
-              <el-input v-model="filterConfig[filterIndex].defaultValue"></el-input>
+              <el-input v-model="filterParams[filterIndex].defaultValue"></el-input>
             </el-form-item>
             <el-form-item label="下拉框信息">
-              <el-input v-model="filterConfig[filterIndex].list"></el-input>
+              <el-input v-model="filterParams[filterIndex].list"></el-input>
             </el-form-item> 
             <el-form-item label="是否只读" prop="readonly">
-              <el-select v-model="filterConfig[filterIndex].readonly" placeholder="">
+              <el-select v-model="filterParams[filterIndex].readonly" placeholder="">
                 <el-option label="否" value="0"></el-option>
                 <el-option label="是" value="1"></el-option>
               </el-select> 
             </el-form-item> 
             <el-form-item label="非必填" prop="canEmpty">
-              <el-select v-model="filterConfig[filterIndex].canEmpty" placeholder="">
+              <el-select v-model="filterParams[filterIndex].canEmpty" placeholder="">
                 <el-option label="否" value="0"></el-option>
                 <el-option label="是" value="1"></el-option>
               </el-select> 
@@ -71,7 +71,7 @@
           </el-collapse-item>
           </el-form>
         </el-collapse>
-        <div class="right-message" v-if="!filterConfig.length">
+        <div class="right-message" v-if="!filterParams.length">
           请单击左上方‘新增’按钮
         </div>
       </div>
@@ -81,7 +81,7 @@
 
 <script>
 export default {
-  props:['filterConfig'],
+  props:['filterParams'],
   data () {
     return {
       filterIndex:0,
@@ -107,7 +107,7 @@ export default {
     },
     addFilter(){
       var that = this;
-      var filterConfig ={
+      var filterParams ={
             id:this.guid(),
             code:'',
             name:'',
@@ -120,12 +120,12 @@ export default {
             readonly:'0',
             canEmpty:'1'
           }
-      if(this.filterConfig.length){
-        this.filterIndex = this.filterConfig.length - 1; 
+      if(this.filterParams.length){
+        this.filterIndex = this.filterParams.length - 1; 
         this.$refs.filterConForm.validate((valid)=>{
           if (valid) {  
             this.filterIndex++;
-            this.filterConfig.push(filterConfig)
+            this.filterParams.push(filterParams)
             this.$refs.filterConForm.clearValidate()      
           } else {
             that.openMessage('*必填项不能为空!，若放弃保存请点击删除!');
@@ -133,13 +133,13 @@ export default {
           }
         })
       }else{
-        this.filterConfig.push(filterConfig)
+        this.filterParams.push(filterParams)
         if(this.filterIndex){this.filterIndex++};
       }
     },
     delFilter(){
-      if(this.filterConfig.length){
-        this.filterConfig.splice(this.filterIndex,1);
+      if(this.filterParams.length){
+        this.filterParams.splice(this.filterIndex,1);
       }
       if(this.filterIndex){
         this.filterIndex--;
@@ -148,7 +148,7 @@ export default {
     },
     validateFilter(){
       var that = this;
-      if(this.filterConfig.length){
+      if(this.filterParams.length){
         this.$refs.filterConForm.validate((valid)=>{
           if (valid) {  
             that.$emit('on-filter-Close-Valid',true)         

@@ -1,6 +1,6 @@
 <template>
     <div class="config-content">
-        <el-tabs v-model="activeNameTag"  @tab-click="tabClick" >
+        <el-tabs v-model="activeNameTag" >
             <el-tab-pane label="对象属性" name="dataSource">
                 <div class="obj-config-wrapper">
                     <div class="left-obj-config">
@@ -52,7 +52,7 @@
                                     <i class="el-icon-setting" @click="openQuan"></i>
                                 </el-form-item> 
                             </el-collapse-item>
-                            <el-collapse-item title="列属性" name="4" v-if="step.operate.type==3 && currentDataSourceTreeNode.field" >
+                            <el-collapse-item title="列属性" name="4" v-if="step.operation.type==3 && currentDataSourceTreeNode.field" >
                                     <el-form-item label="是否分组主列">
                                     <el-switch v-model="currentDataSourceTreeNode.isKeyCol"></el-switch>
                                     </el-form-item>
@@ -76,23 +76,23 @@
             </el-tab-pane>
             <el-tab-pane label="操作属性" name="operation">
                 <div class="ope-config-wrapper">
-                    <div v-if="step.operate.type == 1" class="hebing-operate-wrapper">
+                    <div v-if="step.operation.type == 1" class="hebing-operate-wrapper">
                         合并操作
                     </div>
-                    <div v-if="step.operate.type == 2" class="guanlian-operate-wrapper">
+                    <div v-if="step.operation.type == 2" class="guanlian-operate-wrapper">
                         关联操作
                     </div>
-                    <div v-if="step.operate.type == 3" class="duibi-operate-wrapper">
+                    <div v-if="step.operation.type == 3" class="duibi-operate-wrapper">
                         <el-form class="duibi-operate-form" :model="form" label-width="100px" size="small" label-position="left" >
                             <div class="duibi-form-left">
                                 <el-form-item label="操作编号">
-                                    <el-input v-model="step.operate.id" :disabled="true"></el-input>
+                                    <el-input v-model="step.operation.id" :disabled="true"></el-input>
                                 </el-form-item>
                                 <el-form-item label="操作名称">
-                                    <el-input v-model="step.operate.name" :disabled="true"></el-input>
+                                    <el-input v-model="step.operation.name" :disabled="true"></el-input>
                                 </el-form-item>
                                 <el-form-item label="操作对象列表">
-                                    <el-select v-model="objCompareId"  @change='opeSelChange(index,objCompareId)' placeholder="">
+                                    <el-select v-model="objCompareId"  @change='opeSelChange(objCompareId)' placeholder="">
                                         <el-option v-for="(obj,selIndex) in step.dataSource" 
                                             :selIndex="selIndex" 
                                             :key="obj.selIndex"
@@ -160,28 +160,85 @@
                 <ul>
                     <li @click="addParam">新增</li>
                     <li @click="delParam">删除</li>
-                    <li @click="delParam">保存</li>
-                    <li @click="delParam">公式处理</li>
+                    <li @click="saveParam">保存</li>
+                    <li @click="openFormula">公式处理</li>
                 </ul>
             </div>
-            <div class="canshu-config-content">
-                <div class="canshu-list-title">
-                    <div class="canshu-source">括号</div>
-                    <div class="canshu-source">操作对象</div>
-                    <div class="filter-name">对象字段</div>
-                    <div class="filter-name">公式处理结果</div>
-                    <div class="filter-name">权限类型</div>
-                </div>
-                <div v-for="(filter,index) in paramMatchArray" :key="index" @click="changeIndex(index)" class="filter-list-item">
-                    <div class="filter-source">
-                        <el-form-item label="">
-                            <el-select v-model="paramMatch" placeholder="">
-                                <el-option v-for="(obj,index) in data.dataSource" :key="index" :label="obj.name" value="obj.id"></el-option>
-                            </el-select>
-                        </el-form-item>
+            <div class="canshu-config-content"> 
+                <div class="canshu-config-table">
+                    <div class="canshu-list-title">
+                        <div class="canshu-select canshu-title-item"></div>
+                        <div class="canshu-lbracket canshu-title-item">括号</div>
+                        <div class="canshu-source canshu-title-item">操作对象</div>
+                        <div class="canshu-field canshu-title-item">对象字段</div>
+                        <div class="canshu-formula canshu-title-item">公式处理结果</div>
+                        <div class="canshu-paramType canshu-title-item">对应参数方式</div>
+                        <div class="canshu-param canshu-title-item">参数</div>
+                        <div class="canshu-rbracket canshu-title-item">括号</div>
+                        <div class="canshu-relation canshu-title-item">关联关系</div>
                     </div>
-                    <div class="filter-name"></div>
-                    <div class="filter-name"></div>
+                    <el-form>
+                    <div v-for="(paramMatch,index) in paramMatchArray" :key="index" class="canshu-list-item">
+                        <div class="canshu-select canshu-data-item" @click="changeParamIndex(index)">
+                            <i v-show="paramMatchIndex==index" class="el-icon-check"></i>
+                        </div>  
+                        <div class="canshu-lbracket canshu-data-item">
+                            <el-form-item >
+                                <el-select v-model="paramMatch.lbracket" placeholder="">
+                                    <el-option label="(" value="0"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                        <div class="canshu-source canshu-data-item">
+                            <el-form-item >
+                                <el-select v-model="paramMatch.dataSource" @change="changeParamSourceIndex(paramMatch.dataSource,index)" placeholder="">
+                                    <el-option v-for="(obj,index) in step.dataSource" :key="index" :label="obj.name" :value="obj.id"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                        <div class="canshu-field canshu-data-item">
+                            <el-form-item>
+                                <el-select v-model="paramMatch.field" placeholder="" @change="changeParamIndex(index)">
+                                    <el-option :ref="'paramField'+index" v-for="(obj,index) in step.dataSource[paramMatch.sourceIndex].fields" :key="index" :label="obj.label" :value="obj.id+','+obj.label"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                        <div class="canshu-formula canshu-data-item">
+                            <el-form-item>
+                                <el-input  v-model="paramMatch.formula" :disabled="true"></el-input>  
+                            </el-form-item>
+                        </div>
+                        <div class="canshu-paramType canshu-data-item">
+                            <el-form-item>
+                                <el-select v-model="paramMatch.paramType" placeholder="" @change="changeParamIndex(index)">
+                                    <el-option v-for="(obj,index) in paramTypes" :key="index" :label="obj.name" :value="obj.value"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                        <div class="canshu-param canshu-data-item">
+                            <el-form-item>
+                                <el-select v-model="paramMatch.param" placeholder="" @change="changeParamIndex(index)">
+                                    <el-option  :label="filterParams.id" :value="filterParams.id"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                        <div class="canshu-rbracket canshu-data-item">
+                            <el-form-item >
+                                <el-select v-model="paramMatch.lbracket" placeholder="" @change="changeParamIndex(index)">
+                                    <el-option label=")" value="0"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                        <div class="canshu-relation canshu-data-item">
+                            <el-form-item >
+                                <el-select v-model="paramMatch.relation" placeholder="" @change="changeParamIndex(index)">
+                                    <el-option label="并且" value="0"></el-option>
+                                    <el-option label="或者" value="1"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                    </div>
+                    </el-form>
                 </div>
             </div>
         </div>
@@ -207,30 +264,27 @@
                         <div class="quanxian-type">权限类型</div>
                     </div>
                     <el-form>
-                    <div class="quanxian-list-item"
-                        v-for="(rightMatch,index) in rightMatchArray" 
-                        :key="index"
-                        >
-                        <div class="quanxian-select" @click="changerightMatchIndex(index)">
+                    <div class="quanxian-list-item" v-for="(rightMatch,index) in rightMatchArray" :key="index">
+                        <div class="quanxian-select" @click="changeRightIndex(index)">
                             <i v-show="rightMatchIndex==index" class="el-icon-check"></i>
                         </div>  
                         <div class="quanxian-source">
                             <el-form-item>
-                                <el-select v-model="rightMatch.dataSource" @change="changeSourceIndex(rightMatch.dataSource,index)" placeholder="">
-                                    <el-option v-for="(obj,index) in data.dataSource" :key="index" :label="obj.name" :value="obj.id"></el-option>
+                                <el-select v-model="rightMatch.dataSource" @change="changeRightSourceIndex(rightMatch.dataSource,index)" placeholder="">
+                                    <el-option v-for="(obj,index) in step.dataSource" :key="index" :label="obj.name" :value="obj.id"></el-option>
                                 </el-select>
                             </el-form-item>
                         </div>
                         <div class="quanxian-field">
                             <el-form-item>
-                                <el-select v-model="rightMatch.field" placeholder="" @change="changerightMatchIndex(index)">
-                                    <el-option v-for="(obj,index) in data.dataSource[rightMatch.sourceIndex].fields" :key="index" :label="obj.label" :value="obj.id"></el-option>
+                                <el-select v-model="rightMatch.field" placeholder="" @change="changeRightIndex(index)">
+                                    <el-option v-for="(obj,index) in step.dataSource[rightMatch.sourceIndex].fields" :key="index" :label="obj.label" :value="obj.id"></el-option>
                                 </el-select>
                             </el-form-item>
                         </div>
                         <div class="quanxian-type">
                             <el-form-item>
-                                <el-select v-model="rightMatch.type" placeholder="" @change="changerightMatchIndex(index)">
+                                <el-select v-model="rightMatch.type" placeholder="" @change="changeRightIndex(index)">
                                     <el-option v-for="(authItem,index) in  authList" :key="index" :label="authItem.name" :value="authItem.value"></el-option>
                                 </el-select>
                             </el-form-item>
@@ -240,26 +294,125 @@
                 </div>  
             </div>
         </div>
+        <div v-if="formulaShowFlag" class="formula-config-wrapper">
+            <p class="config-title">
+                <i class="el-icon-menu"></i>
+                <span>公式设置</span>
+                <i class="el-icon-close close-config" @click="closeFormula"></i>
+            </p>
+             <div class="quanxian-config-menu">
+                <ul>
+                    <li @click="saveFormula">保存</li>
+                </ul>
+            </div>
+            <div class="formula-config-content">
+                <div class="formula-config-inner">
+                    <div class="formula-string-wrapper">
+                        <el-form>
+                            <el-form-item>
+                                <el-input  v-model="formulaString" :disabled="true"></el-input>  
+                            </el-form-item>
+                        </el-form>    
+                    </div>
+                    <div class="formula-string-list">
+                        <div class="formula-type-list">
+                            <ul>
+                                <li v-for="(formula,index) in formulaArray" :key="index" @click="changeFormulaTypeIndex(index)">
+                                    <i class="formula-list-icon" :class="formulaTypeIndex==index?'formula-list-icon-active':''"></i>{{formula.type}}
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="formula-item-list">
+                            <ul>
+                                <li v-for="(formula,index) in formulaArray[formulaTypeIndex]['typeList']" @click.stop="changeFormulaValueIndex(index)" @dblclick.stop="changeFormulaExpression(index)" :key="index">
+                                    <i class="formula-list-icon" :class="formulaValueIndex==index?'formula-list-icon-active':''"></i>{{formula.value}}
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="formula-item-desc">{{formulaDesc}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>                         
 </template>
 
 <script>
 export default {
-  props:['step','stepIndex','dataSourceIndex','activeNameCon'],
+  props:['step','stepIndex','dataSourceIndex','activeNameCon','filterParams','rightMatchArray','paramMatchArray'],
   data () {
     return {
-        selectDataSourceIndex:this.dataSourceIndex,          //当前选择的数据源索引
-        currentDataSourceTreeNode:{},                        //当前选中的数据源树节点,在created时需要根据计算属性selectDsTreeData初始
-
+        selectDataSourceIndex:this.dataSourceIndex, //当前选择的数据源索引
+        currentDataSourceTreeNode:{},              //当前选中的数据源树节点,在created时需要根据计算属性selectDsTreeData初始
+        rightMatchIndex:0,
+        paramMatchIndex:0,
+        formulaTypeIndex:0,
+        formulaValueIndex:0,
+        paramFieldValue:'',
+        formulaString:'',//公式结果
         compSelIndex:0,
         objCompareId:this.step.dataSource[0].id,//比较操作
         objCompareKey:'',//比较操作
         objCompareUno:'',//比较操作
-
         paramShowFlag:false,//参数配置
         authShowFlag:false,//权限配置
+        formulaShowFlag:false,//公式配置
         activeNames:['1','2','3','4'],
         activeNameTag:this.activeNameCon,
+        authList:[
+            {name:'部门权限',value:'1'},
+            {name:'地区权限',value:'2'},
+            {name:'事业部权限',value:'3'},
+            {name:'大区权限',value:'4'},
+            {name:'人员权限',value:'5'}
+        ],
+        paramTypes:[
+            {name:'等于',value:'1'},
+            {name:'不等于',value:'2'},
+            {name:'大于',value:'3'},
+            {name:'大于等于',value:'4'},
+            {name:'小于',value:'5'},
+            {name:'小于等于',value:'6'},
+            {name:'包含',value:'7'},
+            {name:'被包含',value:'8'}
+        ],
+        formulaArray:[
+            {id:'1',type:'简单操作',typeList:[
+                {id:1,value:'加',expression:'+',desc:'对选择的列进行加法处理'},
+                {id:2,value:'减',expression:'-',desc:'对选择的列进行减法处理'},
+                {id:3,value:'乘',expression:'*',desc:'对选择的列进行乘法处理'},
+                {id:4,value:'除',expression:'/',desc:'对选择的列进行除法处理'}
+            ]},
+            {id:'2',type:'复杂操作',typeList:[
+                {id:5,value:'求和',expression:'SUM()',desc:'对选择的列进行求和处理'},
+                {id:6,value:'最大',expression:'MAX()',desc:'对选择的列进行最大值处理'},
+                {id:7,value:'最小',expression:'MIN()',desc:'对选择的列进行最小值处理'},
+                {id:8,value:'平均',expression:'AVG()',desc:'对选择的列进行平均值处理'},
+                {id:9,value:'取年月',expression:'left(,6)',desc:'取字段的前六位'},
+                {id:10,value:'取年度',expression:'left(,4)',desc:'取字段的前四位'}
+            ]}
+        ],
+        canStyle:{
+            position:'fixed',
+            left: 'calc(50% - 450px)',
+            top: '50px',
+            width:'900px',
+            height: '500px',
+            border: '1px solid #ccc',
+            background: '#fff',
+        },
+        quanStyle:{
+            position:'fixed',
+            left: 'calc(50% - 350px)',
+            top: '50px',
+            width:'700px',
+            height: '500px',
+            border: '1px solid #ccc',
+            background: '#fff',
+        },
+        form:{
+            name:'123'
+        }
     };
   },
   computed:{
@@ -293,6 +446,13 @@ export default {
         }
         findCheckdKeys(fields);
         return checkedKeys;
+    },
+    formulaDesc(){
+        console.log(this.formulaValueIndex)
+        return this.formulaArray[this.formulaTypeIndex]['typeList'][this.formulaValueIndex]['desc']
+    },
+    formulaIconActiveStyle(){
+
     }
   },
   methods: {
@@ -310,8 +470,14 @@ export default {
     openQuan(){
         this.authShowFlag = true;
     },
-    opeSelChange(index,objCompareId){
-        var object = this.step[index].dataSource;
+    closeCan(){
+        this.paramShowFlag = false;
+    },
+    closeQuan(){
+        this.authShowFlag = false;
+    },
+    opeSelChange(objCompareId){
+        var object = this.step[this.stepIndex].dataSource;
         for(let i in object){
             var o = object[i]
             if(o.id == objCompareId){
@@ -321,10 +487,86 @@ export default {
         }
     },
     addParam(){
-
+        if(this.paramMatchArray.length){
+            this.paramMatchIndex++;
+        }
+        this.paramMatchArray.push({
+            lbracket:'', 
+            dataSource:'',
+            field:'',
+            formula:'',
+            paramType:'',
+            param:'',
+            rbracket:'',
+            relation:'',
+            sourceIndex:0
+        });
     },
     delParam(){
+        if(this.paramMatchArray.length){
+            this.paramMatchArray.splice(this.paramMatchIndex,1);
+        }
+        if(this.paramMatchIndex){
+            this.paramMatchIndex--;
+        }  
+    },
+    saveParam(){
 
+    },
+    saveFormula(){
+
+    },
+    changeParamIndex(index){
+        if(this.paramMatchIndex == index){
+            return false;
+        }else{
+            this.paramMatchIndex = index;
+        }
+    },
+    changeParamSourceIndex(id,index){
+        this.$set(this.paramMatchArray[index],'field','')
+        var source = this.step['dataSource']
+        for(var i in source){
+            if(id == source[i]['id']){
+                this.paramMatchArray[index]['sourceIndex'] = i;
+                break;
+            }
+        }
+        if(this.paramMatchIndex == index){
+            return false;
+        }else{
+            this.paramMatchIndex = index;
+        }
+    },
+    openFormula(){
+        this.formulaShowFlag = true;
+        console.log(this.paramMatchIndex)
+        //console.log()
+        var fieldValue = this.paramMatchArray[this.paramMatchIndex]['field'].split(',')
+        this.paramMatchArray[this.paramMatchIndex]['formula'] = fieldValue[1],
+        this.formulaString = fieldValue[1]
+    },
+    closeFormula(){
+        this.formulaShowFlag = false;
+    },
+    changeFormulaTypeIndex(index){
+        this.formulaTypeIndex = index;
+        this.formulaValueIndex = 0;
+    },
+    changeFormulaValueIndex(index){
+        this.formulaValueIndex = index; 
+    },
+    changeFormulaExpression(index){
+        this.formulaValueIndex = index; 
+        var expression = this.formulaArray[this.formulaTypeIndex]['typeList'][index]['expression']
+        if(index){
+            var leftExpression = expression.substring(0,expression.length-1)
+        }else{
+            var leftExpression = ''
+        }
+        var rightExpression = expression.substring(expression.length-1)
+        this.formulaString = leftExpression + this.formulaString + rightExpression;
+        this.paramMatchArray[this.paramMatchIndex]['formula'] = this.formulaString;
     },
     addAuth(){
         if(this.rightMatchArray.length){
@@ -336,7 +578,6 @@ export default {
             type:'',
             sourceIndex:'0'
         });
-        console.log(this.rightMatchIndex)
     },
     delAuth(){
         if(this.rightMatchArray.length){
@@ -345,20 +586,17 @@ export default {
         if(this.rightMatchIndex){
             this.rightMatchIndex--;
         }  
-        console.log(this.rightMatchIndex)
     },
-    changerightMatchIndex(index){
+    changeRightIndex(index){
         if(this.rightMatchIndex == index){
             return false;
         }else{
             this.rightMatchIndex = index;
         }
-       
-        console.log(this.rightMatchIndex)
     },
-    changeSourceIndex(id,index){
+    changeRightSourceIndex(id,index){
         this.$set(this.rightMatchArray[index],'field','')
-        var source = this.data['dataSource']
+        var source = this.step['dataSource']
         for(var i in source){
             if(id == source[i]['id']){
                 this.rightMatchArray[index]['sourceIndex'] = i;
@@ -532,9 +770,9 @@ export default {
 }
 .canshu-config-wrapper,.quanxian-config-wrapper{
     position:fixed;
-    left:calc(50% - 350px);
+    left:calc(50% - 450px);
     top: 50px;
-    width:700px;
+    width:900px;
     height: 500px;
     border: 1px solid #ccc;
     background: #fff;
@@ -563,6 +801,89 @@ export default {
 }
 .canshu-config-content{
   width: 100%;
+  padding: 10px 5px; 
+  box-sizing: border-box;
+}
+.canshu-config-table{
+    width: 100%;
+    border:1px solid #E6E7EB;
+    font-size: 12px;
+}
+.canshu-list-title,.canshu-list-item{
+    display: flex;
+    height: 32px;
+    line-height: 32px;
+
+}
+.canshu-list-title:hover,.canshu-data-item:hover{
+  background-color: #f5f7fa;
+}
+.canshu-list-title{
+    background-color:  #f5f7fa;
+}
+.canshu-title-item{
+  font-size: 12px;
+  padding-left: 5px;
+  box-sizing: border-box;
+}
+.canshu-list-item{
+    font-size: 12px;
+    font-weight: normal;
+    border-top: 1px solid #E6E7EB; 
+}
+.canshu-title-item,.canshu-data-item{
+    border-left: 1px solid #E6E7EB;
+}
+.canshu-select{
+    border-left:none;
+    flex: 0 0 32px;
+    width: 32px;
+    text-align: center;
+    font-size: 14px;
+    color: #109EFF
+}
+.canshu-lbracket,.canshu-rbracket{
+    flex: 0 0 60px;
+    width: 60px;
+    box-sizing: border-box;
+}
+.canshu-paramType,.canshu-relation{
+    flex: 0 0 100px;
+    width: 100px;
+    box-sizing: border-box;
+}
+.canshu-source,.canshu-field,.canshu-param,.canshu-formula{
+  flex:0.25;
+}
+.canshu-data-item .el-form-item {
+  margin-bottom: 0;
+}
+.canshu-data-item .el-form-item__content{
+    line-height: 30px;
+}
+.canshu-data-item .el-select{
+    width: 100%;
+}
+.canshu-data-item .el-input{
+    font-size: 12px;
+}
+.canshu-data-item .el-input__inner{
+    height: 32px;
+    line-height: 32px;
+    border: none;
+    padding-left: 5px;
+    padding-right: 14px;
+}
+.canshu-data-item .el-input__suffix{
+    right: 2px;
+}
+.canshu-data-item .el-select .el-input .el-select__caret{
+    font-size: 12px;
+    width: 14px;
+    opacity: 0;
+}
+.canshu-data-item .el-select .el-input .el-select__caret.is-reverse {
+    opacity: 1;
 }
 .quanxian-config-menu{
   height: 40px;
@@ -598,9 +919,11 @@ export default {
 }
 .quanxian-list-title,.quanxian-list-item{
     display: flex;
-  height: 32px;
-  line-height: 32px;
-
+    height: 32px;
+    line-height: 32px;
+}
+.quanxian-list-title{
+    background-color: #f5f7fa
 }
 .quanxian-list-title .quanxian-source,
 .quanxian-list-title .quanxian-field,
@@ -655,5 +978,88 @@ export default {
     line-height: 32px;
     border: none;
     padding-left: 5px;
+    padding-right: 14px;
+}
+.quanxian-list-item .el-input__suffix{
+    right: 2px;
+}
+.quanxian-list-item .el-select .el-input .el-select__caret{
+    font-size: 12px;
+    width: 14px;
+    opacity: 0;
+}
+.quanxian-list-item .el-select .el-input .el-select__caret.is-reverse {
+    opacity: 1;
+}
+.formula-config-wrapper{
+    position:fixed;
+    left:calc(50% - 350px);
+    top: 50px;
+    width:700px;
+    height: 500px;
+    border: 1px solid #ccc;
+    background: #fff;
+    z-index: 3020;
+}
+.formula-config-content{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 5px;
+}
+.formula-config-inner{
+    border: 1px solid #E6E7EB;
+    height: 415px;
+}
+.formula-string-wrapper{
+    height: 150px;
+    border-bottom: 1px solid #E6E7EB;
+    padding: 5px;
+    box-sizing: border-box;
+}
+.formula-string-list{
+    display: flex;
+    height: 265px;
+}
+.formula-type-list,.formula-item-list,.formula-item-desc{
+    font-size: 12px;
+    padding: 10px;
+}
+.formula-string-list li{
+    height: 30px;
+    line-height: 30px;
+    padding-left: 5px;
+    box-sizing: border-box;
+    margin-bottom: 5px;
+    width: 100%;
+    background-color: #E1F3F7;
+    color: #666;
+}
+.formula-list-icon{
+    display: inline-block;
+    vertical-align:top;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid #C7C7C1;
+    background-color: #fff;
+    box-sizing: border-box;
+    margin-top: 10px;
+    margin-right: 8px;
+}
+.formula-list-icon-active{
+    border: 4px solid #00A0E3;
+}
+.formula-type-list{
+    flex: 0 0 200px;
+    width: 200px;
+}
+.formula-item-list{
+    flex: 0 0 200px;
+    width: 200px;
+    border-left: 1px solid #E6E7EB;
+}
+.formula-item-desc{
+    flex: 1;
+    border-left: 1px solid #E6E7EB;
 }
 </style>

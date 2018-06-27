@@ -120,7 +120,10 @@
                                         :step="data" 
                                         :stepIndex="index" 
                                         :dataSourceIndex="openDataSourceIndex"
-                                        :activeNameCon="activeNameCon">
+                                        :activeNameCon="activeNameCon"
+                                        :filterParams="reportInfo.params"
+                                        :rightMatchArray="rightMatchArray"
+                                        :paramMatchArray="paramMatchArray">
                                     </property-config>
                                 </div>
                             </div>  
@@ -257,8 +260,7 @@
                 <i class="el-icon-close close-config" @click="closeFilterConfig"></i>
             </p>
             <filter-config ref="paramsConfig" 
-            @on-filter-Close-Valid="filterCloseValid"
-             :filterConfig="reportInfo.params">
+             @on-filter-Close-Valid="filterCloseValid" :filterParams="reportInfo.params">
              </filter-config>
         </div>
     </div>
@@ -288,27 +290,41 @@ export default {
             outputFlag:'0',
             outputLocation:'',
             steps:[],
+            params:[]
         },
-        operate:[
+        operation:[
             {type:1,name:'合并操作'},
             {type:2,name:'关联操作'},
             {type:3,name:'对比操作'}
         ],
-    
-
         configData:{},//每一步对象
         filterText:'',
         filterSelect:'',
         treeData:{},
         showIndex:-1,//属性配置显示第几步
-        filterConfigShow:false,//参数配置显示
+        filterConfigShow:false,//报表参数配置显示
         configShowFlag:false,//属性配置显示
+        rightMatchArray:[{//数据源权限配置
+            dataSource:'',
+            field:'',
+            type:'',
+            sourceIndex:'0',
+        }],
+        paramMatchArray:[{//数据源参数配置
+            lbracket:'', 
+            dataSource:'',
+            field:'',
+            formula:'',
+            paramType:'',
+            param:'',
+            rbracket:'',
+            relation:'',
+            sourceIndex:0
+        }],
         reportRules:{
             code:[{required:true,trigger: 'blur'}],
             name:[{required:true,trigger: 'blur'}]
         },
-        transferRelaion:{},
-        transferObject:{}, 
         configStyle: {
             position:'fixed',
             left: 'calc(50% - 450px)',
@@ -479,7 +495,7 @@ export default {
         insertStep(){
             this.reportInfo.steps.push({
                 dataSource:[],
-                operate:{id:this.guid(),type:1,name:"合并操作"},
+                operation:{id:this.guid(),type:1,name:"合并操作"},
                 result:{}   
             });
         },
