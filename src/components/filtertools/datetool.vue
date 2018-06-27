@@ -39,7 +39,24 @@ export default {
       else 
         return "yyyyMM";
     }
+  },
+  created(){
+    //设置日期默认值
+    if(!this.internalValue){
+        var type = this.getType();
+        var date = new Date();
+        
+        if(type =="year")
+          this.internalValue=String(date.getFullYear());
+        else if(type=="date")
+          this.internalValue=String(date.getFullYear())+String(date.getMonth()+1).padStart(2,'0')+String(date.getDate());
+        else  
+           this.internalValue=String(date.getFullYear())+String(date.getMonth()+1).padStart(2,'0');
+           
+        this.$emit('rule-form-change',this.param.id,this.internalValue)
+    }
   }
+
 }
 </script>
 <style>
