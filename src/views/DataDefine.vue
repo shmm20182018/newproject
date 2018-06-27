@@ -268,8 +268,8 @@
 
 <script>
 import draggable from 'vuedraggable'
-import PropertyConfig from './PropertyConfig.vue'
-import FilterConfig from './FilterConfig.vue'
+import PropertyConfig from '../components/Define/PropertyConfig.vue'
+import FilterConfig from '../components/Define/FilterConfig.vue'
 
 export default {
     data() {
@@ -875,3 +875,4 @@ body .el-select-dropdown__item.selected {
     color: #808080;
     z-index: 10;
 }
+</style>
