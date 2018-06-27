@@ -9,7 +9,7 @@ export default new Router({
       component: resolve => require(['../views/DataDefine.vue'], resolve)
     },
     {
-      path: '/:engine/:id',
+      path: '/:pc/:engine/:id',
       component: resolve => require(['../views/ReportShow.vue'], resolve)
     }
   ]

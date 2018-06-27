@@ -1,5 +1,5 @@
 <template>
-  <div :class="phoneClass" class="report-show-wrapper" v-wechat-title="reportInfo.title">
+  <div :class="phoneClass" class="report-show-wrapper" v-wechat-title="reportTitle">
     <div class="filter-tools">
       <i :class="iconArrowFilter" class="icon-toggle" @click="showToggle('filter')"></i>
       <transition name="slide-fade">
@@ -10,7 +10,6 @@
                      :phoneFlag="phoneFlag"></filter-form>
       </transition>
     </div>
-    <p class="report-title" v-if="phoneFlag">{{reportInfo.title}}</p>
     <div class="report-table-wrapper" v-if="reportInfo.tableInfo.columns" v-show="reportInfo.tableInfo.columns.length>0">
       <i :class="iconArrowTable" class="icon-toggle" @click="showToggle('table')"></i>
       <transition name="fade" >
@@ -58,14 +57,22 @@ export default {
   },
   computed:{
     phoneClass(){
-      //var screenWidth = document.body.clientWidth * 1//窗口的大小
-      if(this.$route.params.pc == 'isPhone'){
+      if(this.$route.params.pc == 'Mobile'){
         this.phoneFlag = true
         return 'phone-style-class'  
         //this.tableHeight = 1*100%
       
-      }else{
+      }else if(this.$route.params.pc == 'PC'){
         return 'pc-style-class'
+      }
+    },
+    reportTitle(){
+      if(this.reportInfo.title){
+        return this.reportInfo.title
+      }else if(this.reportInfo.tableInfo.title){
+        return this.reportInfo.tableInfo.title
+      }else{
+        return "报表"
       }
     },
     initApiUrl:function(){
