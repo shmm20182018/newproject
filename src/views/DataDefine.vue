@@ -291,9 +291,9 @@ export default {
             steps:[],
         },
         operate:[
-            {type:1,name:'合并操作'},
-            {type:2,name:'关联操作'},
-            {type:3,name:'对比操作'}
+            {type:"1",name:'合并操作'},
+            {type:"2",name:'关联操作'},
+            {type:"3",name:'对比操作'}
         ],
         treeData:{},  //语义对象列表data
     
@@ -370,6 +370,7 @@ export default {
             if(code){
                 this.$Http('get','api/reportDefine/load?code='+code).then((res)=>{
                     this.reportInfo = {...this.reportInfo,...res.data };
+                    console.log(this.reportInfo);
                 });
             }
             else{
