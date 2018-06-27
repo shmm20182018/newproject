@@ -1,5 +1,5 @@
 <template>
-  <div :class="phoneClass" class="report-show-wrapper">
+  <div :class="phoneClass" class="report-show-wrapper" v-wechat-title="reportTitle">
     <div class="filter-tools">
       <i :class="iconArrowFilter" class="icon-toggle" @click="showToggle('filter')"></i>
       <transition name="slide-fade">
@@ -10,7 +10,6 @@
                      :phoneFlag="phoneFlag"></filter-form>
       </transition>
     </div>
-    <p class="report-title" v-if="phoneFlag">{{reportInfo.title}}</p>
     <div class="report-table-wrapper" v-if="reportInfo.tableInfo.columns" v-show="reportInfo.tableInfo.columns.length>0">
       <i :class="iconArrowTable" class="icon-toggle" @click="showToggle('table')"></i>
       <transition name="fade" >
@@ -58,15 +57,22 @@ export default {
   },
   computed:{
     phoneClass(){
-      //var screenWidth = document.body.clientWidth * 1//窗口的大小
-      if(this.$route.params.pc == 'isPhone'){
+      if(this.$route.params.pc == 'Mobile'){
         this.phoneFlag = true
         return 'phone-style-class'  
         //this.tableHeight = 1*100%
       
-      }else{
-        //console.log(this.$route.params.pc)
+      }else if(this.$route.params.pc == 'PC'){
         return 'pc-style-class'
+      }
+    },
+    reportTitle(){
+      if(this.reportInfo.title){
+        return this.reportInfo.title
+      }else if(this.reportInfo.tableInfo.title){
+        return this.reportInfo.tableInfo.title
+      }else{
+        return "报表"
       }
     },
     initApiUrl:function(){
@@ -104,7 +110,6 @@ export default {
     getReportInfo(){
       this.$Http('get',this.initApiUrl).then((res)=>{
           this.reportInfo = {...this.reportInfo,...res.data };
-          console.log(this.reportInfo)
           if(this.reportInfo.paramsInfo.length>0){
             this.showFilterFlag =true;        
           }
@@ -136,7 +141,6 @@ export default {
         });
       }
       this.$Http('post',"api/report/search",this.searchParams).then((res)=>{
-        // console.log(this.reportInfo)
         if(res.data.tableInfo){
           this.reportInfo.tableInfo = Object.assign({},this.reportInfo.tableInfo,res.data.tableInfo); 
           if(this.phoneFlag){

@@ -1,5 +1,5 @@
 <template>
-  <div class="data-define">
+  <div class="data-define" v-wechat-title="reportTitle">
         <div class="left-wrapper">  
             <el-form  class="left-search-form" ref="form" :model="form" size="mini">
                 <el-form-item label="">
@@ -120,7 +120,10 @@
                                         :step="data" 
                                         :stepIndex="index" 
                                         :dataSourceIndex="openDataSourceIndex"
-                                        :activeNameCon="activeNameCon">
+                                        :activeNameCon="activeNameCon"
+                                        :filterParams="reportInfo.params"
+                                        :rightMatchArray="rightMatchArray"
+                                        :paramMatchArray="paramMatchArray">
                                     </property-config>
                                 </div>
                             </div>  
@@ -257,8 +260,7 @@
                 <i class="el-icon-close close-config" @click="closeFilterConfig"></i>
             </p>
             <filter-config ref="paramsConfig" 
-            @on-filter-Close-Valid="filterCloseValid"
-             :filterConfig="reportInfo.params">
+             @on-filter-Close-Valid="filterCloseValid" :filterParams="reportInfo.params">
              </filter-config>
         </div>
     </div>
@@ -266,12 +268,13 @@
 
 <script>
 import draggable from 'vuedraggable'
-import PropertyConfig from './PropertyConfig.vue'
-import FilterConfig from './FilterConfig.vue'
+import PropertyConfig from '../components/Define/PropertyConfig.vue'
+import FilterConfig from '../components/Define/FilterConfig.vue'
 
 export default {
     data() {
       return {  
+          reportTitle:'报表定义',
         openDataSourceIndex:0,  //待打开数据源的索引
         reportInfo:{
             id:'',
@@ -288,27 +291,41 @@ export default {
             outputFlag:'0',
             outputLocation:'',
             steps:[],
+            params:[]
         },
-        operate:[
-            {type:1,name:'合并操作'},
-            {type:2,name:'关联操作'},
-            {type:3,name:'对比操作'}
+        operation:[
+            {type:"1",name:'合并操作'},
+            {type:"2",name:'关联操作'},
+            {type:"3",name:'对比操作'}
         ],
-    
-
         configData:{},//每一步对象
         filterText:'',
         filterSelect:'',
         treeData:{},
         showIndex:-1,//属性配置显示第几步
-        filterConfigShow:false,//参数配置显示
+        filterConfigShow:false,//报表参数配置显示
         configShowFlag:false,//属性配置显示
+        rightMatchArray:[{//数据源权限配置
+            dataSource:'',
+            field:'',
+            type:'',
+            sourceIndex:'0',
+        }],
+        paramMatchArray:[{//数据源参数配置
+            lbracket:'', 
+            dataSource:'',
+            field:'',
+            formula:'',
+            paramType:'',
+            param:'',
+            rbracket:'',
+            relation:'',
+            sourceIndex:0
+        }],
         reportRules:{
             code:[{required:true,trigger: 'blur'}],
             name:[{required:true,trigger: 'blur'}]
         },
-        transferRelaion:{},
-        transferObject:{}, 
         configStyle: {
             position:'fixed',
             left: 'calc(50% - 450px)',
@@ -389,8 +406,6 @@ export default {
             const treeDataUrl = 'api/reportDefine/getSenmaList'
             this.$Http('get',treeDataUrl).then((res)=>{
                 this.treeData = {...this.treeData,...res.data };
-                console.log(res.data)
-                console.log(this.treeData)
             })
         },
         openFilterConfig(){
@@ -479,7 +494,7 @@ export default {
         insertStep(){
             this.reportInfo.steps.push({
                 dataSource:[],
-                operate:{id:this.guid(),type:1,name:"合并操作"},
+                operation:{id:this.guid(),type:1,name:"合并操作"},
                 result:{}   
             });
         },

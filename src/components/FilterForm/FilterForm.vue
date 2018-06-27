@@ -37,9 +37,9 @@ export default {
   computed:{
     //过滤组件占得格数
     toolColSize:function(){
-      if(this.$route.params.pc == 'isPhone'){
+      if(this.$route.params.pc == 'Mobile'){
           return 24
-      }else{
+      }else if(this.$route.params.pc == 'PC'){
           return 6
       }
     },
