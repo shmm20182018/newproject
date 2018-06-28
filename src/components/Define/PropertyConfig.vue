@@ -1,6 +1,6 @@
 <template>
     <div class="config-content">
-        <el-tabs v-model="activeNameTag" >
+        <el-tabs v-model="activeNameTag" @tab-lick="tabClick">
             <el-tab-pane label="对象属性" name="dataSource">
                 <div class="obj-config-wrapper">
                     <div class="left-obj-config">
@@ -80,7 +80,35 @@
                         合并操作
                     </div>
                     <div v-if="step.operation.type == 2" class="guanlian-operate-wrapper">
-                        关联操作
+                        <el-form class="duibi-operate-form" :model="form" label-width="100px" size="small" label-position="left" >
+                        <div class="duibi-form-left">
+                            <el-form-item label="操作编号">
+                                <el-input v-model="step.operation.id" :disabled="true"></el-input>
+                            </el-form-item>
+                            <el-form-item label="操作名称">
+                                <el-input v-model="step.operation.name" :disabled="true"></el-input>
+                            </el-form-item>
+                            <el-form-item label="选择操作主表">
+                                <el-select v-model="objCompareId"  @change='opeSelChange(objCompareId)' placeholder="">
+                                    <el-option v-for="(obj,selIndex) in step.dataSource" 
+                                        :selIndex="selIndex" 
+                                        :key="obj.selIndex"
+                                        :label="obj.senmaName" 
+                                        :value="obj.id">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="对象关联关系">
+                                <el-input type="textarea" v-model="step.operation.id"></el-input>
+                            </el-form-item>
+                             <el-form-item label="链接方式">
+                                <el-select placeholder="">
+                                    <el-option  label="左连接" value="0"></el-option>
+                                    <el-option  label="全连接" value="0"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                        </el-form>
                     </div>
                     <div v-if="step.operation.type == 3" class="duibi-operate-wrapper">
                         <el-form class="duibi-operate-form" :model="form" label-width="100px" size="small" label-position="left" >
@@ -104,7 +132,7 @@
                                 <el-form-item label="已选主列列表">
                                     <el-select v-model="objCompareKey" placeholder="请选择主列">
                                         <el-option
-                                            v-for="(obj,selIndex) in step.dataSource[compSelIndex].checkedKeyCols" 
+                                            v-for="(obj,selIndex) in step.operation.mainColList" 
                                             :selIndex="selIndex" 
                                             :key="obj.selIndex"
                                             :label="obj.label" 
@@ -115,7 +143,7 @@
                                 <el-form-item label="已选数据列列表">
                                     <el-select v-model="objCompareUno" placeholder="请选择数据列">
                                         <el-option 
-                                            v-for="(obj,selIndex) in step.dataSource[compSelIndex].checkedUnoCols" 
+                                            v-for="(obj,selIndex) in step.operation.dataColList" 
                                             :selIndex="selIndex" 
                                             :key="obj.selIndex"
                                             :label="obj.label" 
@@ -347,6 +375,7 @@ export default {
         dragFormulaDOM:'',
         selectDataSourceIndex:this.dataSourceIndex, //当前选择的数据源索引
         currentDataSourceTreeNode:{},              //当前选中的数据源树节点,在created时需要根据计算属性selectDsTreeData初始
+        selectDsTreeCheckedNodes:[],
         rightMatchIndex:0,
         paramMatchIndex:0,
         formulaTypeIndex:0,
@@ -428,6 +457,7 @@ export default {
   },
   computed:{
     selectDataSource(){
+
         return  this.step.dataSource[this.selectDataSourceIndex];
     },
     selectDsTreeData(){
@@ -462,8 +492,13 @@ export default {
         //console.log(this.formulaValueIndex)
         return this.formulaArray[this.formulaTypeIndex]['typeList'][this.formulaValueIndex]['desc']
     },
-    formulaIconActiveStyle(){
-
+    dataSourceIdList(){
+        var dataSourceIdList = []
+        for(let dataSoruce of this.step['dataSource']){
+            dataSourceIdList.push(dataSoruce.id)
+        }
+        this.$set(this.step.operation,'dataSourceIdList',dataSourceIdList)
+        return dataSourceIdList
     }
   },
   methods: {
@@ -474,6 +509,22 @@ export default {
         this.currentDataSourceTreeNode=currentNode
         this.$refs.conTree.setCurrentKey(currentNode.id);
         currentNode.useFlag = isChecked == true ? '1':'0';
+        if(isChecked) this.selectDsTreeCheckedNodes = this.$refs.conTree.getCheckedNodes()
+    },
+    tabClick(tab,event){
+       if(tab.index !=1){
+            return false;
+        }else{
+            this.$set(this.step.operation,'dataSourceIdList',this.dataSourceIdList)
+            for(let node of this.selectDsTreeCheckedNodes){
+                if(node.isKeyCol){
+                    this.step.operation.mainColList.push(node)
+                }
+                if(node.isUnoCol){
+                    this.step.operation.dataColList.push(node)
+                }
+            }
+        }
     },
     openCan(){
         this.dragParamDOM = document.getElementById('dragParam')
@@ -820,12 +871,14 @@ export default {
     width: 100%;
     border:1px solid #E6E7EB;
     font-size: 12px;
+    height: 380px;
+    overflow: auto;
 }
 .canshu-list-title,.canshu-list-item{
     display: flex;
     height: 32px;
     line-height: 32px;
-
+    border-bottom: 1px solid #E6E7EB; 
 }
 .canshu-list-title:hover,.canshu-data-item:hover{
   background-color: #f5f7fa;
@@ -841,7 +894,6 @@ export default {
 .canshu-list-item{
     font-size: 12px;
     font-weight: normal;
-    border-top: 1px solid #E6E7EB; 
 }
 .canshu-title-item,.canshu-data-item{
     border-left: 1px solid #E6E7EB;
@@ -931,11 +983,14 @@ export default {
     width: 100%;
     box-sizing: border-box;
     border: 1px solid #E6E7EB;
+    height: 380px;
+    overflow: auto;
 }
 .quanxian-list-title,.quanxian-list-item{
     display: flex;
     height: 32px;
     line-height: 32px;
+    border-bottom: 1px solid #E6E7EB; 
 }
 .quanxian-list-title{
     background-color: #f5f7fa
@@ -950,7 +1005,6 @@ export default {
 .quanxian-list-item{
   font-size: 12px;
   font-weight: normal;
-    border-top: 1px solid #E6E7EB; 
 }
 .quanxian-list-title:hover,.quanxian-list-item:hover{
   background-color: #f5f7fa;
@@ -1033,6 +1087,7 @@ export default {
 }
 .formula-string-wrapper .el-textarea__inner{
     min-height: 138px !important;
+    max-height: 138px;
 }
 .formula-string-list{
     display: flex;

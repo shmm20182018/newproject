@@ -1,7 +1,12 @@
 <template>
   <div :class="phoneClass" class="report-show-wrapper" v-wechat-title="reportTitle">
     <div class="filter-tools">
-      <i :class="iconArrowFilter" class="icon-toggle" @click="showToggle('filter')"></i>
+      <el-tooltip content="过滤条件区" placement="bottom" effect="light">
+        <div class="filter-toggle-wrapper" @click="showToggle('filter')">
+          <img class="img-toggle" src="../assets/image/filter.png" alt="">
+          <i :class="iconArrowFilter" class="icon-toggle"></i>
+        </div>
+      </el-tooltip>
       <transition name="slide-fade">
         <filter-form v-show="showFilterFlag" 
                      :paramsInfo="reportInfo.paramsInfo"
@@ -10,11 +15,29 @@
                      :phoneFlag="phoneFlag"></filter-form>
       </transition>
     </div>
+    <p class="report-title" v-if="!phoneFlag">{{reportTitle}}</p>
+    <div class="chart-wrapper" v-if="reportInfo.chartInfo.series" >
+      <el-tooltip content="图表展示区" placement="bottom" effect="light">
+        <div class="filter-toggle-wrapper" @click="showToggle('chart')">
+          <img class="img-toggle" src="../assets/image/chart.png" alt="">
+          <i :class="iconArrowChart" class="icon-toggle"></i>
+        </div>
+      </el-tooltip>
+      <transition name="fade">
+        <server-chart v-show="showChartFlag" :chartInfo="reportInfo.chartInfo" :queryParams = "queryParams"></server-chart> 
+      </transition> 
+    </div>
     <div class="report-table-wrapper" v-if="reportInfo.tableInfo.columns" v-show="reportInfo.tableInfo.columns.length>0">
-      <i :class="iconArrowTable" class="icon-toggle" @click="showToggle('table')"></i>
+      <el-tooltip content="表格展示区" placement="bottom" effect="light">
+        <div class="filter-toggle-wrapper" @click="showToggle('table')">
+          <img class="img-toggle" src="../assets/image/table.png" alt="">
+          <i :class="iconArrowTable" class="icon-toggle"></i>
+        </div>
+      </el-tooltip>
       <transition name="fade" >
         <server-table  v-show="showTableFlag"
                       :tableInfo="reportInfo.tableInfo" 
+                      :hasChart="reportInfo.chartInfo.series"
                       :queryParams = "queryParams"
                       :id ="reportInfo.id"
                       :engine ="$route.params.engine"
@@ -23,12 +46,6 @@
                       ref="stable">
         </server-table>
       </transition>              
-    </div>
-    <div class="chart-wrapper" v-if="reportInfo.chartInfo.series" >
-      <i :class="iconArrowChart" class="icon-toggle" @click="showToggle('chart')"></i>
-      <transition name="fade">
-        <server-chart v-show="showChartFlag" :chartInfo="reportInfo.chartInfo" :queryParams = "queryParams"></server-chart> 
-      </transition> 
     </div>
   </div>
 </template>
@@ -147,6 +164,7 @@ export default {
             for(let i in this.reportInfo.tableInfo.columns){
               this.$set(this.reportInfo.tableInfo.columns[i],'isFrozen',false)
             }
+            this.showFilterFlag = false;
           }
           this.showTableFlag =true; 
         }
@@ -182,10 +200,16 @@ export default {
   position: relative;
   padding-top: 18px;
 }
-.icon-toggle{
+.filter-toggle-wrapper{
   position: absolute;
   top: 0px;
   right: 5px;
+  font-size: 18px;
+}
+.img-toggle{
+  height: 18px;
+}
+.icon-toggle{
   font-size: 18px;
 }
 .slide-fade-enter-active {
@@ -222,6 +246,23 @@ export default {
   color: #666;
 }
 .phone-style-class .filter-tools{
-  margin-bottom: 20px;
+  margin-bottom: 5px;
+}
+.phone-style-class .filter-toggle-wrapper{
+  height: 28px;
+  line-height: 28px;
+}
+.phone-style-class .img-toggle{
+  height: 28px;
+}
+.phone-style-class .icon-toggle{
+  display: inline-block;
+  font-size: 18px;
+  height: 28px;
+  line-height: 28px;
+  vertical-align: top;
+}
+.phone-style-class .filter-tools, .phone-style-class .table-wrapper, .phone-style-class .chart-wrapper{
+  padding-top: 28px;
 }
 </style>
