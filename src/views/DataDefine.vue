@@ -274,7 +274,7 @@ import FilterConfig from '../components/Define/FilterConfig.vue'
 export default {
     data() {
       return {  
-          reportTitle:'报表定义',
+        reportTitle:'报表定义',
         openDataSourceIndex:0,  //待打开数据源的索引
         reportInfo:{
             id:'',
@@ -294,9 +294,9 @@ export default {
             params:[]
         },
         operation:[
-            {type:"1",name:'合并操作'},
-            {type:"2",name:'关联操作'},
-            {type:"3",name:'对比操作'}
+            {type:1,name:'合并操作'},
+            {type:2,name:'关联操作'},
+            {type:3,name:'对比操作'}
         ],
         configData:{},//每一步对象
         filterText:'',

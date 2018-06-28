@@ -72,7 +72,7 @@ export default {
       }else if(this.reportInfo.tableInfo.title){
         return this.reportInfo.tableInfo.title
       }else{
-        return "报表"
+        return "报表展示"
       }
     },
     initApiUrl:function(){
@@ -222,6 +222,6 @@ export default {
   color: #666;
 }
 .phone-style-class .filter-tools{
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 </style>
