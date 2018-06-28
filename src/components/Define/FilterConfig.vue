@@ -153,7 +153,16 @@ export default {
           if (valid) {  
             that.$emit('on-filter-Close-Valid',true)         
           } else {
-            that.$emit('on-filter-Close-Valid',false)  
+              this.$confirm('是否放弃保存最后一项?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+              }).then(() => {
+                  this.filterParams.splice(-1,1)
+                  that.$emit('on-filter-Close-Valid',true) 
+              }).catch(() => {
+                that.$emit('on-filter-Close-Valid',false)     
+              });
           }
         })
       }else{
@@ -173,9 +182,7 @@ export default {
       })
     }
   }
-
 }
-
 </script>
 <style>
 .filter-config-menu{
