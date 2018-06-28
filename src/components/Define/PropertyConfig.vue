@@ -150,8 +150,8 @@
                 </div>
             </el-tab-pane>
         </el-tabs>
-        <div v-if="paramShowFlag" v-drag="canDrag" :style="canStyle" class="canshu-config-wrapper">
-             <p class="config-title">
+        <div v-show="paramShowFlag" v-drag="dragParamDOM" :style="canStyle" class="canshu-config-wrapper">
+             <p class="config-title" id="dragParam">
                 <i class="el-icon-menu"></i>
                 <span>{{'参数设置'}}</span>
                 <i class="el-icon-close close-config" @click="closeCan"></i>
@@ -164,7 +164,7 @@
                     <li @click="openFormula">公式处理</li>
                 </ul>
             </div>
-            <div class="canshu-config-content"> 
+            <div class="canshu-config-content" v-if="paramShowFlag"> 
                 <div class="canshu-config-table">
                     <div class="canshu-list-title">
                         <div class="canshu-select canshu-title-item"></div>
@@ -242,8 +242,8 @@
                 </div>
             </div>
         </div>
-        <div v-if="authShowFlag" v-drag="quanDrag" :style="quanStyle" class="quanxian-config-wrapper">
-            <p class="config-title">
+        <div v-show="authShowFlag" v-drag="dragAuthDOM" :style="quanStyle" class="quanxian-config-wrapper">
+            <p class="config-title" id="dragAuth">
                 <i class="el-icon-menu"></i>
                 <span>{{'权限设置'}}</span>
                 <i class="el-icon-close close-config" @click="closeQuan"></i>
@@ -255,7 +255,7 @@
                     <li @click="authCompelete">设置完毕</li>
                 </ul>
             </div>
-            <div class="quanxian-config-content">
+            <div class="quanxian-config-content" v-if="authShowFlag">
                 <div class="quanxian-list-table">
                     <div class="quanxian-list-title">
                         <div class="quanxian-select"></div>
@@ -294,8 +294,8 @@
                 </div>  
             </div>
         </div>
-        <div v-if="formulaShowFlag" class="formula-config-wrapper">
-            <p class="config-title">
+        <div v-show="formulaShowFlag" v-drag="dragFormulaDOM" class="formula-config-wrapper">
+            <p class="config-title" id="dragFormula">
                 <i class="el-icon-menu"></i>
                 <span>公式设置</span>
                 <i class="el-icon-close close-config" @click="closeFormula"></i>
@@ -305,7 +305,7 @@
                     <li @click="saveFormula">保存</li>
                 </ul>
             </div>
-            <div class="formula-config-content">
+            <div class="formula-config-content" v-if="formulaShowFlag">
                 <div class="formula-config-inner">
                     <div class="formula-string-wrapper">
                         <el-form>
@@ -342,6 +342,9 @@ export default {
   props:['step','stepIndex','dataSourceIndex','activeNameCon','filterParams','rightMatchArray','paramMatchArray'],
   data () {
     return {
+        dragParamDOM:'',
+        dragAuthDOM:'',
+        dragFormulaDOM:'',
         selectDataSourceIndex:this.dataSourceIndex, //当前选择的数据源索引
         currentDataSourceTreeNode:{},              //当前选中的数据源树节点,在created时需要根据计算属性selectDsTreeData初始
         rightMatchIndex:0,
@@ -456,7 +459,7 @@ export default {
         return checkedKeys;
     },
     formulaDesc(){
-        console.log(this.formulaValueIndex)
+        //console.log(this.formulaValueIndex)
         return this.formulaArray[this.formulaTypeIndex]['typeList'][this.formulaValueIndex]['desc']
     },
     formulaIconActiveStyle(){
@@ -473,9 +476,11 @@ export default {
         currentNode.useFlag = isChecked == true ? '1':'0';
     },
     openCan(){
+        this.dragParamDOM = document.getElementById('dragParam')
         this.paramShowFlag = true;
     },
     openQuan(){
+        this.dragAuthDOM = document.getElementById('dragAuth')
         this.authShowFlag = true;
     },
     closeCan(){
@@ -547,9 +552,9 @@ export default {
         }
     },
     openFormula(){
+        this.dragFormulaDOM = document.getElementById('dragFormula')
         this.formulaShowFlag = true;
-        console.log(this.paramMatchIndex)
-        //console.log()
+        //console.log(this.paramMatchIndex)
         var fieldValue = this.paramMatchArray[this.paramMatchIndex]['field'].split(',')
         this.paramMatchArray[this.paramMatchIndex]['formula'] = fieldValue[1],
         this.formulaString = fieldValue[1]
@@ -619,9 +624,7 @@ export default {
     },
     authCompelete(){
 
-    },
-    canDrag(){},
-    quanDrag(){}
+    }
   },
   created(){    
      this.currentDataSourceTreeNode = this.selectDsTreeData[0];
@@ -639,6 +642,7 @@ export default {
     font-size: 12px;
     font-weight: normal;
     color:#808080;
+    cursor: pointer;
 }
 .right-propterty-config .config-title .el-icon-menu{
     font-size: 16px;
