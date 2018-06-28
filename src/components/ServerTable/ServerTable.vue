@@ -1,7 +1,6 @@
 <template>
     <div class="table-wrapper">
         <div class="title-wrapper" >     
-            <p v-if="!phoneFlag">{{interTableInfo.title}}</p>
             <el-dropdown v-if="!phoneFlag"  class="exportbtn">
                 <i class="btn el-icon-document"></i>
                 <el-dropdown-menu slot="dropdown">
@@ -13,7 +12,7 @@
        <v-table v-if="isShow"
               id="serverTable"
               class="wathet-style"
-              is-vertical-resize
+              :is-vertical-resize="hasChart?false:true"
               :vertical-resize-offset='60'
               is-horizontal-resize
               column-width-drag
@@ -56,7 +55,7 @@ import XLSX from '../../utils/xlsx.js'
 
 
 export default {
-    props:['tableInfo','queryParams','id','engine','phoneFlag','showChartFlag'],
+    props:['tableInfo','queryParams','id','engine','phoneFlag','showChartFlag','hasChart'],
     data(){
         return { 
             isShow:true,//分组表表格数据更新后重新渲染(合并单元格)
