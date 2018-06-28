@@ -15,13 +15,13 @@
         </el-tooltip> 
         <i class="el-icon-search" @click="openHelp"></i>
         <transition name="help-slide">
-        <div v-if="helpShowFlag" v-drag="greet" class="help-wrapper" id="drag" :style="helpStyle">
+        <div v-show="helpShowFlag" v-drag="dragDOM" class="help-wrapper"  :style="helpStyle">
             <el-card class="box-card">
-                <div slot="header" class="clearfix">
+                <div slot="header" id="drag" class="clearfix">
                     <span class="card-title">{{tableInfo.title}}</span>
                     <i class="icon-close el-icon-close"  @click="closeHelp"></i>
                 </div>
-                <div  class="content-wapper">
+                <div v-if="helpShowFlag" class="content-wapper">
                     <v-table  ref='table'
                         id=""
                         :error-content-height = '320'
@@ -79,6 +79,7 @@ export default {
     props:['param','toolSize','ruleFormValue','phoneFlag'],
     data () {
         return {
+            dragDOM:'',
             internalValue : this.param.defaultValue,
             helpBhValue: '',
             helpMcValue: '',
@@ -172,6 +173,7 @@ export default {
             this.$Http('post','api/help/init',this.initRequestData).then((res)=>{
                 this.tableInfo = {...this.tableInfo,...res.data };
                 this.interTableData[1]=this.tableInfo.tableData;
+                this.dragDOM = document.getElementById('drag')
                 this.helpShowFlag = true;
             });
         },
@@ -210,9 +212,6 @@ export default {
         onSubmit(){
             this.interTableData.length = 0;
             this.pageChange(1);
-        },
-        greet(){
-
         }
     },
     created(){

@@ -109,14 +109,14 @@
                             <div class="right-operate">
                                 <el-button type="primary" size="mini" @click="deleteStep(index*1)">删除</el-button>
                             </div>
-                            <div class="right-propterty-config"  v-drag="dragConfig" :style="configStyle" v-if="showIndex==index && configShowFlag" >
+                            <div class="right-propterty-config"  v-drag="dragPropertyDOM" :style="configStyle" v-show="showIndex==index && configShowFlag" >
                                 <div class="config-container">
-                                    <p class="config-title">
+                                    <p class="config-title" id="dragProperty">
                                         <i class="el-icon-menu"></i>
                                         <span>{{'属性设置'}}</span>
                                         <i class="el-icon-close close-config" @click="closeConfig"></i>
                                     </p>
-                                    <property-config 
+                                    <property-config  v-if="showIndex==index && configShowFlag"
                                         :step="data" 
                                         :stepIndex="index" 
                                         :dataSourceIndex="openDataSourceIndex"
@@ -253,13 +253,13 @@
                 </el-tabs>
             </div>
         </div>
-        <div class="filter-config-wrapper" v-if="filterConfigShow" v-drag="dragFilter">
-            <p class="config-title">
+        <div class="filter-config-wrapper" v-show="filterConfigShow" v-drag="dragFilterDOM">
+            <p class="config-title" id="dragFilter">
                 <i class="el-icon-menu"></i>
                 <span>{{'参数设置'}}</span>
                 <i class="el-icon-close close-config" @click="closeFilterConfig"></i>
             </p>
-            <filter-config ref="paramsConfig" 
+            <filter-config ref="paramsConfig"  v-if="filterConfigShow"
              @on-filter-Close-Valid="filterCloseValid" :filterParams="reportInfo.params">
              </filter-config>
         </div>
@@ -274,7 +274,9 @@ import FilterConfig from '../components/Define/FilterConfig.vue'
 export default {
     data() {
       return {  
-          reportTitle:'报表定义',
+        reportTitle:'报表定义',
+        dragPropertyDOM:'',
+        dragFilterDOM:'',
         openDataSourceIndex:0,  //待打开数据源的索引
         reportInfo:{
             id:'',
@@ -294,9 +296,9 @@ export default {
             params:[]
         },
         operation:[
-            {type:"1",name:'合并操作'},
-            {type:"2",name:'关联操作'},
-            {type:"3",name:'对比操作'}
+            {type:1,name:'合并操作'},
+            {type:2,name:'关联操作'},
+            {type:3,name:'对比操作'}
         ],
         configData:{},//每一步对象
         filterText:'',
@@ -425,6 +427,7 @@ export default {
                 })
             }
             this.filterConfigShow = true;
+             this.dragFilterDOM = document.getElementById('dragFilter')
         },
         closeFilterConfig(){
             this.$refs.paramsConfig.validateFilter();  
@@ -443,8 +446,9 @@ export default {
             this.openDataSourceIndex = dataSourceIndex;
             this.activeNameCon = type;
             this.showIndex = rowIndex
+            this.dragPropertyDOM = document.getElementById('dragProperty')
             this.configShowFlag = true;
-
+            //console.log(this.dragPropertyDOM)
         },
         closeConfig(){
             this.configShowFlag = false;
@@ -500,12 +504,6 @@ export default {
         },
         deleteStep(index){
             this.reportInfo.steps.splice(index,1)
-        },
-        dragConfig(){
-
-        },
-        dragFilter(){
-            
         }
        
     },
@@ -853,6 +851,7 @@ body .el-select-dropdown__item.selected {
     font-size: 12px;
     font-weight: normal;
     color:#808080;
+    cursor: pointer;
 }
 .filter-config-wrapper .config-title .el-icon-menu{
     font-size: 16px;
