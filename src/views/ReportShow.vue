@@ -43,6 +43,7 @@
                       :engine ="$route.params.engine"
                       :phoneFlag="phoneFlag"
                       :showChartFlag="showChartFlag"
+                      :showTableFlag="showTableFlag"
                       ref="stable">
         </server-table>
       </transition>              
