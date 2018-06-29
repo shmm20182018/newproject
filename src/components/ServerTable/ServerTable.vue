@@ -10,6 +10,7 @@
             </el-dropdown>
         </div>
        <v-table v-if="isShow"
+              ref="easyTable"
               id="serverTable"
               class="wathet-style"
               :is-vertical-resize="hasChart?false:true"
@@ -55,7 +56,7 @@ import XLSX from '../../utils/xlsx.js'
 
 
 export default {
-    props:['tableInfo','queryParams','id','engine','phoneFlag','showChartFlag','hasChart'],
+    props:['tableInfo','queryParams','id','engine','phoneFlag','showChartFlag','showTableFlag','hasChart'],
     data(){
         return { 
             isShow:true,//分组表表格数据更新后重新渲染(合并单元格)
@@ -115,6 +116,17 @@ export default {
                 this.interTableData.length = 0;
             },
             deep: true
+        },
+        'showChartFlag'(val){
+           if(!this.phoneFlag){
+                setTimeout(()=>{this.$refs.easyTable.resize()},310) 
+           }
+                
+        },
+        'showTableFlag'(val){
+            if(!this.phoneFlag){
+                if(val) {this.$refs.easyTable.resize()}
+            }
         }
     },
     methods:{
