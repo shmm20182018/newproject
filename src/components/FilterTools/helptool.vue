@@ -161,7 +161,7 @@ export default {
             });
         },
         blurHandler(event){
-            if(this.helpBhValue=='' || event.target._value!=this.internalValue)
+            if((this.helpBhValue=='' || event.target._value!=this.internalValue)&& this.internalValue)
                 this.onBlurRequest();
             else
                 this.showTextState = 'blur';

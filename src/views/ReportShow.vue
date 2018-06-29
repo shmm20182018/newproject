@@ -3,7 +3,11 @@
     <div class="filter-tools">
       <el-tooltip content="过滤条件区" placement="bottom" effect="light">
         <div class="filter-toggle-wrapper" @click="showToggle('filter')">
+<<<<<<< HEAD
           <img v-if="phoneFlag" class="img-toggle" src="../assets/image/filter.png" alt="">
+=======
+          <!-- <img class="img-toggle" src="../assets/image/filter.png" alt=""> -->
+>>>>>>> 42c03d43f82fe8da72998694c371d0148be31b07
           <i :class="iconArrowFilter" class="icon-toggle"></i>
         </div>
       </el-tooltip>
@@ -19,7 +23,11 @@
     <div class="chart-wrapper" v-if="reportInfo.chartInfo.series" >
       <el-tooltip content="图表展示区" placement="bottom" effect="light">
         <div class="filter-toggle-wrapper" @click="showToggle('chart')">
+<<<<<<< HEAD
           <img v-if="phoneFlag" class="img-toggle" src="../assets/image/chart.png" alt="">
+=======
+          <!-- <img class="img-toggle" src="../assets/image/chart.png" alt=""> -->
+>>>>>>> 42c03d43f82fe8da72998694c371d0148be31b07
           <i :class="iconArrowChart" class="icon-toggle"></i>
         </div>
       </el-tooltip>
@@ -30,7 +38,11 @@
     <div class="report-table-wrapper" v-if="reportInfo.tableInfo.columns" v-show="reportInfo.tableInfo.columns.length>0">
       <el-tooltip content="表格展示区" placement="bottom" effect="light">
         <div class="filter-toggle-wrapper" @click="showToggle('table')">
+<<<<<<< HEAD
           <img v-if="phoneFlag" class="img-toggle img-toggle-table" src="../assets/image/table.png" alt="">
+=======
+          <!-- <img class="img-toggle" src="../assets/image/table.png" alt=""> -->
+>>>>>>> 42c03d43f82fe8da72998694c371d0148be31b07
           <i :class="iconArrowTable" class="icon-toggle"></i>
         </div>
       </el-tooltip>
@@ -90,7 +102,7 @@ export default {
       }else if(this.reportInfo.tableInfo.title){
         return this.reportInfo.tableInfo.title
       }else{
-        return "报表展示"
+        return ""
       }
     },
     initApiUrl:function(){
@@ -169,7 +181,7 @@ export default {
           }
           this.showTableFlag =true; 
         }
-        if(res.data.chartInfo.dataset){
+        if(res.data.chartInfo.dataset){          
           this.$set(this.reportInfo.chartInfo,'dataset',res.data.chartInfo.dataset);
           this.showChartFlag =true; 
         }   

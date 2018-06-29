@@ -506,8 +506,6 @@ export default {
         this.currentDataSourceTreeNode=currentNode
     },
     checkChange(currentNode,isChecked,isHasChecked){
-        this.currentDataSourceTreeNode=currentNode
-        this.$refs.conTree.setCurrentKey(currentNode.id);
         currentNode.useFlag = isChecked == true ? '1':'0';
         if(isChecked) this.selectDsTreeCheckedNodes = this.$refs.conTree.getCheckedNodes()
     },
