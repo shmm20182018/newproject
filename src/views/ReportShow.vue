@@ -72,7 +72,7 @@ export default {
       }else if(this.reportInfo.tableInfo.title){
         return this.reportInfo.tableInfo.title
       }else{
-        return "报表展示"
+        return ""
       }
     },
     initApiUrl:function(){
