@@ -1,5 +1,5 @@
 <template>
-  <div class="data-define" v-wechat-title="reportTitle">
+    <div class="data-define" v-wechat-title="reportTitle">
         <div class="left-wrapper">  
             <el-form  class="left-search-form" ref="form" :model="form" size="mini">
                 <el-form-item label="">
@@ -88,7 +88,7 @@
                             <div class="right-operate-property">
                                 <el-form class="operate-select" size="small" >     
                                     <el-form-item>
-                                        <el-select v-model="data.operation.type">
+                                        <el-select v-model="data.operation">
                                             <el-option v-for="(ope,index) in operation" :key="ope.id" :index="index" :label="ope.name" :value="ope.type"></el-option>
                                         </el-select>
                                         <i class="el-icon-setting" @click.prevent.stop="openConfig(index,0,'operation')"></i>
@@ -296,9 +296,9 @@ export default {
             params:[]
         },
         operation:[
-            {type:1,name:'合并操作'},
-            {type:2,name:'关联操作'},
-            {type:3,name:'对比操作'}
+            {type:'1',name:'合并操作'},
+            {type:'2',name:'关联操作',mapColText:'',mapColFormula:''},
+            {type:'3',name:'对比操作',mainColList:[],dataColList:[],compText:''}
         ],
         configData:{},//每一步对象
         filterText:'',
@@ -498,7 +498,7 @@ export default {
         insertStep(){
             this.reportInfo.steps.push({
                 dataSource:[],
-                operation:{id:this.guid(),type:1,name:"合并操作"},
+                operation:{id:this.guid(),type:'1',name:"合并操作",dataSourceIdList:[]},
                 result:{}   
             });
         },

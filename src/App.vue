@@ -42,4 +42,31 @@ ul{
 li{
   list-style: none;
 }
+body .el-tooltip__popper[x-placement^=bottom] {
+    margin-top: 5px;
+}
+body .el-tooltip__popper {
+    position: absolute;
+    border-radius: 4px;
+    padding: 4px;
+    background: #F5F7F9;
+}
+body .el-tooltip__popper[x-placement^=bottom] .popper__arrow {
+    top: -5px;
+    border-bottom-color: #F5F7F9;
+}
+body .el-tooltip__popper .popper__arrow::after {
+    border-width: 4px;
+    display: none;
+}
+body .el-tooltip__popper[x-placement^=bottom] .popper__arrow::after {
+    top: 1px;
+    margin-left: -5px;
+    border-top-width: 0;
+    border-bottom-color: #F5F7F9;
+    display: none;
+}
+.el-tooltip__popper.is-light[x-placement^=bottom] .popper__arrow {
+    display: none;
+}
 </style>
