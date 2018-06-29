@@ -510,7 +510,7 @@ export default {
     }
     .table-wrapper .exportbtn {
         position: absolute;
-        right: 5px;
+        right: 15px;
         bottom: 0px;
     }
     .v-table-class{
@@ -610,9 +610,6 @@ export default {
         background-color: #13B5BC;
         border-bottom: 1px solid rgb(221,221,221)
     }
-    .wathet-style .v-table-header-inner tbody td:last-child>div{ 
-        border-right: #13B5BC;
-    }
     .wathet-style .v-table-header-inner tbody tr:last-child td>div{
         border-bottom:none;
     }
@@ -675,36 +672,35 @@ export default {
     .table-wrapper .v-page--small .v-page-goto .v-page-goto-input {
         outline: none;
     }
-    @media screen and (max-width: 1119px) {
-        .table-wrapper{
-            padding-top: 0;
-        }
-        .title-wrapper{
-            margin: 0;
-        }
-        .table-wrapper .table-pagination .page-count{
-            position: absolute;
-            top: 0;
-            right: 0;
-            font-size: 12px;
-            vertical-align: top;
-            height: 24px;
-            line-height: 24px;
-            width: 5%
-        }
-        .table-wrapper .table-pagination{
-            position: relative;
-        }
-        .table-wrapper .table-pagination .v-page-ul{
-            display: flex;
-            position: relative;
-            width: 95%
-        }
-        .table-wrapper .table-pagination .v-page-goto{
-            position: absolute;
-            right: 0;
-            top: 0; 
-        }
+   
+    .phone-style-class  .table-wrapper{
+        padding-top: 0;
+    }
+    .phone-style-class .title-wrapper{
+        margin: 0;
+    }
+    .phone-style-class .table-wrapper .table-pagination .page-count{
+        position: absolute;
+        top: 0;
+        right: 0;
+        font-size: 12px;
+        vertical-align: top;
+        height: 24px;
+        line-height: 24px;
+        width: 5%
+    }
+    .phone-style-class .table-wrapper .table-pagination{
+        position: relative;
+    }
+    .phone-style-class .table-wrapper .table-pagination .v-page-ul{
+        display: flex;
+        position: relative;
+        width: 95%
+    }
+    .phone-style-class .table-wrapper .table-pagination .v-page-goto{
+        position: absolute;
+        right: 0;
+        top: 0; 
     }
     @media screen and (max-width:320px){
         .v-page--small .v-page-goto .v-page-goto-input {

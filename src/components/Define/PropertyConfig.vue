@@ -298,21 +298,21 @@
                         </div>  
                         <div class="quanxian-source">
                             <el-form-item>
-                                <el-select v-model="rightMatch.dataSource" @change="changeRightSourceIndex(rightMatch.dataSource,index)" placeholder="">
+                                <el-select v-model="rightMatch.dataSource" @change="changeRightSourceIndex(rightMatch.dataSource,index)" placeholder="请选择">
                                     <el-option v-for="(obj,index) in step.dataSource" :key="index" :label="obj.name" :value="obj.id"></el-option>
                                 </el-select>
                             </el-form-item>
                         </div>
                         <div class="quanxian-field">
                             <el-form-item>
-                                <el-select v-model="rightMatch.field" placeholder="" @change="changeRightIndex(index)">
+                                <el-select v-model="rightMatch.field" placeholder="请选择" @change="changeRightIndex(index)">
                                     <el-option v-for="(obj,index) in step.dataSource[rightMatch.sourceIndex].fields" :key="index" :label="obj.label" :value="obj.id"></el-option>
                                 </el-select>
                             </el-form-item>
                         </div>
                         <div class="quanxian-type">
                             <el-form-item>
-                                <el-select v-model="rightMatch.type" placeholder="" @change="changeRightIndex(index)">
+                                <el-select v-model="rightMatch.type" placeholder="请选择" @change="changeRightIndex(index)">
                                     <el-option v-for="(authItem,index) in  authList" :key="index" :label="authItem.name" :value="authItem.value"></el-option>
                                 </el-select>
                             </el-form-item>

@@ -88,7 +88,7 @@
                             <div class="right-operate-property">
                                 <el-form class="operate-select" size="small" >     
                                     <el-form-item>
-                                        <el-select v-model="data.operation">
+                                        <el-select v-model="data.operation.type">
                                             <el-option v-for="(ope,index) in operation" :key="ope.id" :index="index" :label="ope.name" :value="ope.type"></el-option>
                                         </el-select>
                                         <i class="el-icon-setting" @click.prevent.stop="openConfig(index,0,'operation')"></i>

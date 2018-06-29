@@ -98,6 +98,7 @@ export default {
   }
   .filterForm .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item{
     display: flex;
+    align-items: center;
     width: 100%;
   }
  .filterForm .el-form-item__content{
@@ -122,6 +123,7 @@ export default {
   }
   .filterForm  .el-form--inline .el-form-item__label {
     flex: 0 0 80px;
+    line-height: 14px;
   }
  .filterForm   .el-select{
     width: 100%;
