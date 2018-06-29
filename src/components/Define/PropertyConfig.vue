@@ -104,7 +104,7 @@
                              <el-form-item label="链接方式">
                                 <el-select placeholder="">
                                     <el-option  label="左连接" value="0"></el-option>
-                                    <el-option  label="全连接" value="0"></el-option>
+                                    <el-option  label="全连接" value="1"></el-option>
                                 </el-select>
                             </el-form-item>
                         </div>
@@ -246,7 +246,7 @@
                         <div class="canshu-param canshu-data-item">
                             <el-form-item>
                                 <el-select v-model="paramMatch.param" placeholder="" @change="changeParamIndex(index)">
-                                    <el-option  :label="filterParams.code" :value="filterParams.id"></el-option>
+                                    <el-option  v-for="(filterParam,index) in filterParams" :key="index" :label="filterParam.code" :value="filterParam.id"></el-option>
                                 </el-select>
                             </el-form-item>
                         </div>
