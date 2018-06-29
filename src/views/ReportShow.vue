@@ -3,7 +3,7 @@
     <div class="filter-tools">
       <el-tooltip content="过滤条件区" placement="bottom" effect="light">
         <div class="filter-toggle-wrapper" @click="showToggle('filter')">
-          <img class="img-toggle" src="../assets/image/filter.png" alt="">
+          <!-- <img class="img-toggle" src="../assets/image/filter.png" alt=""> -->
           <i :class="iconArrowFilter" class="icon-toggle"></i>
         </div>
       </el-tooltip>
@@ -19,7 +19,7 @@
     <div class="chart-wrapper" v-if="reportInfo.chartInfo.series" >
       <el-tooltip content="图表展示区" placement="bottom" effect="light">
         <div class="filter-toggle-wrapper" @click="showToggle('chart')">
-          <img class="img-toggle" src="../assets/image/chart.png" alt="">
+          <!-- <img class="img-toggle" src="../assets/image/chart.png" alt=""> -->
           <i :class="iconArrowChart" class="icon-toggle"></i>
         </div>
       </el-tooltip>
@@ -30,7 +30,7 @@
     <div class="report-table-wrapper" v-if="reportInfo.tableInfo.columns" v-show="reportInfo.tableInfo.columns.length>0">
       <el-tooltip content="表格展示区" placement="bottom" effect="light">
         <div class="filter-toggle-wrapper" @click="showToggle('table')">
-          <img class="img-toggle" src="../assets/image/table.png" alt="">
+          <!-- <img class="img-toggle" src="../assets/image/table.png" alt=""> -->
           <i :class="iconArrowTable" class="icon-toggle"></i>
         </div>
       </el-tooltip>
@@ -169,7 +169,7 @@ export default {
           }
           this.showTableFlag =true; 
         }
-        if(res.data.chartInfo.dataset){
+        if(res.data.chartInfo.dataset){          
           this.$set(this.reportInfo.chartInfo,'dataset',res.data.chartInfo.dataset);
           this.showChartFlag =true; 
         }   
