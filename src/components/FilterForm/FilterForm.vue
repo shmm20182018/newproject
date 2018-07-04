@@ -1,10 +1,6 @@
 <template>
   <div class="filterForm">
-<<<<<<< HEAD
-    <el-form class="demo-ruleForm wathet-filter-style" :show-message="false" label-position="left" label-width="80px" :model="ruleForm" :inline="true" :rules="rules"  ref="ruleForm" size="mini">
-=======
     <el-form class="wathet-filter-style demo-ruleForm" :show-message="false" label-position="left" label-width="80px" :model="ruleForm" :inline="true" :rules="rules"  ref="ruleForm" size="mini">
->>>>>>> 6d826df389b8203f429e552fd1d57c47115ed180
       <el-row :gutter="20">
         <component :toolSize="toolColSize" 
                    v-for="(param) in paramsInfo" 
@@ -161,4 +157,3 @@ export default {
     top: 8px;
   } 
 </style>
-}

@@ -15,17 +15,16 @@
         </el-tooltip> 
         <i class="el-icon-search" @click="openHelp"></i>
         <transition name="help-slide">
-        <div v-if="helpShowFlag" v-drag="dragDOM" class="help-wrapper"  :style="helpStyle">
+        <div v-show="helpShowFlag" v-drag="dragDOM" class="help-wrapper"  :style="helpStyle">
             <el-card class="box-card">
                 <div slot="header" id="drag" class="clearfix">
                     <span class="card-title">{{tableInfo.title}}</span>
                     <i class="icon-close el-icon-close"  @click="closeHelp"></i>
                 </div>
-                <div class="content-wapper">
+                <div v-if="helpShowFlag" class="content-wapper">
                     <v-table  ref='table'
                         id=""
                         :error-content-height = '320'
-                        class="wathet-style"
                         is-vertical-resize
                         :vertical-resize-offset='60'
                         is-horizontal-resize
@@ -34,18 +33,14 @@
                         :multiple-sort="false"
                         :min-height="300"
                         :height="350"
-                        row-hover-color="#eee"
-                        row-click-color="#edf7ff"
-                        :row-dblclick="rowDoubleClick"
+                        row-click-color="#edf7ff"                    
                         :row-click="rowClick"
+                        :row-dblclick="rowDoubleClick"
                         :columns="tableInfo.columns"
                         :table-data="tableInfo.tableData"
                         :paging-index="(pageIndex-1)*tableInfo.pageSize"
                         :title-row-height="32"
                         :row-height="34"
-                        :select-all="selectALL"
-                        :select-change="selectChange"
-                        :select-group-change="selectGroupChange"
                         >
                     </v-table>
                     <div class="footer-wapper clear">
@@ -59,6 +54,7 @@
                             <el-form-item label="">
                                 <el-input v-model="searchText" class="search-input" placeholder="请输入关键词" width="150px"></el-input>
                                 <el-button type="primary" @click="onSubmit">查询</el-button>
+                                <el-button type="primary" @click="onDetermine">确定</el-button>
                             </el-form-item>  
                         </el-form>
                     </div>
@@ -75,14 +71,16 @@
 import 'vue-easytable/libs/themes-base/index.css'
 import {VTable,VPagination} from 'vue-easytable'
 export default {
-    props:['param','toolSize','ruleFormValue','phoneFlag'],
+    props:['param','toolSize','ruleFormValue','phoneFlag','ruleForm','paramsInfo'],
     data () {
-        return {
+        return {                       
+            dependParamsId: this.param.helpConditions.match(/@(\S*)@/g),        //依赖条件参数编号数组
+            curRowData:{}, //当前选中行的数据，主要为确定按钮使用
             dragDOM:'',
             internalValue : this.param.defaultValue,
             helpBhValue: '',
             helpMcValue: '',
-            inputShowText:'',
+            inputShowText:this.param.defaultValue,
             showTextState:'default',
             helpShowFlag: false,
             tableInfo:{},
@@ -109,18 +107,18 @@ export default {
             return  parseInt((this.tableInfo.total  +  this.tableInfo.pageSize  - 1) / this.tableInfo.pageSize);  
         },
         initRequestData(){
-            var data = { queryText: this.searchText};
-            ({ helpID: data.helpID, helpXH: data.helpBH,helpConditions: data.helpTJ} = this.param);
+            var data = { queryText: this.searchText,helpTJ:this.getHelpConditions()};
+            ({ helpID: data.helpID, helpXH: data.helpBH} = this.param);
             return data;
         },
         onBlurRequestData(){
-            var data = { queryText:this.inputShowText };
-            ({ helpID: data.helpID, helpXH: data.helpBH,helpConditions: data.helpTJ} = this.param);
+            var data = { queryText:this.inputShowText,helpTJ:this.getHelpConditions() };
+            ({ helpID: data.helpID, helpXH: data.helpBH} = this.param);
             return data;
         },
         searchRequestData(){
-            var data = { queryText:this.searchText,pageIndex:this.pageIndex };
-            ({ helpID: data.helpID, helpXH: data.helpBH,helpConditions: data.helpTJ} = this.param);
+            var data = { queryText:this.searchText,pageIndex:this.pageIndex,helpTJ:this.getHelpConditions() };
+            ({ helpID: data.helpID, helpXH: data.helpBH} = this.param);
             return data;
         }
     },
@@ -133,6 +131,34 @@ export default {
         }
     },
     methods:{
+        getHelpConditions(){  //替换过依赖条件的值后的帮助条件
+            if(this.dependParamsId==null){
+                return this.param.helpConditions;
+            }
+            else{
+                var self = this;
+                var condStr =  self.param.helpConditions;
+                self.dependParamsId.forEach(id => {
+                    var _id = id.replace(/@/g,'');
+                    if(!self.ruleForm[_id]){
+                        var p = self.paramsInfo.find((n) => n.id  == _id);
+                        var dependParamName = p.title;
+                        self.$message({
+                            showClose: true,
+                            type: 'warning',
+                            message: '必须先选择['+dependParamName+']'
+                        });
+                        throw new Error( '必须先选择['+dependParamName+']'); //这里是为了阻止程序继续往下走
+                    }
+                    else{
+                        condStr = condStr.replace(new RegExp('%'+id,'g'),"'%"+self.ruleForm[_id]+"'");
+                        condStr = condStr.replace(new RegExp(id+'%','g'),"'"+self.ruleForm[_id]+"%'");
+                        condStr = condStr.replace(new RegExp(id,'g'),"'"+self.ruleForm[_id]+"'");
+                    }
+                });
+                return condStr;
+            }
+        },
         setHelpValue(nm,bh,mc){
             this.internalValue = nm;
             this.helpBhValue =  bh;
@@ -159,14 +185,15 @@ export default {
                 }
             });
         },
-        blurHandler(event){ 
-            if(this.inputShowText && event.target._value!=this.internalValue)
-                this.onBlurRequest();
-            else if(this.inputShowText){
+        blurHandler(event){
+            if(!this.inputShowText && this.internalValue){
                 this.setHelpValue('','','');
-            }else{
-                this.showTextState = 'blur';
+                return;
             }
+            if((this.helpBhValue=='' || event.target._value!=this.internalValue)&& this.internalValue)
+                this.onBlurRequest();
+            else
+                this.showTextState = 'blur';
         },
         focusHandler(){
             this.showTextState = 'focus';
@@ -174,22 +201,28 @@ export default {
         openHelp(){
             this.$Http('post','api/help/init',this.initRequestData).then((res)=>{
                 this.tableInfo = {...this.tableInfo,...res.data };
+                //帮助多选
+                if(this.param.helpMultiSelect)
+                     this.tableInfo.columns.unshift({width: 60, titleAlign: 'center',columnAlign:'center',type: 'selection'});
                 this.interTableData[1]=this.tableInfo.tableData;
+                this.dragDOM = document.getElementById('drag')
                 this.helpShowFlag = true;
-                this.$nextTick(()=>{
-                    this.dragDOM = document.getElementById('drag')
-                })                   
             });
         },
         closeHelp(){
             this.helpShowFlag = false;
         },        
+        onDetermine(){
+            if(!this.param.helpMultiSelect)
+                this.rowDoubleClick(null, this.curRowData,null);
+        },
         rowDoubleClick(rowIndex, rowData, column){
             this.setHelpValue(rowData['F_NM'],rowData['F_BH'],rowData['F_MC']);
             this.helpShowFlag = false;
             this.inputShowText =  this.helpMcValue;
         },
         rowClick(rowIndex, rowData, column){
+            this.curRowData = rowData;
             if(!this.phoneFlag){
                 return ;
             }
@@ -199,46 +232,26 @@ export default {
         },
         pageChange(pageIndex){ 
             this.pageIndex = pageIndex;
-
             if(this.interTableData[pageIndex]){
                 this.tableInfo.tableData =  this.interTableData[pageIndex];
                 return;
             }
-
             this.$Http('post',"api/help/search",this.searchRequestData).then((res)=>{
                 this.tableInfo.tableData = res.data.rowData;
                 this.tableInfo.total = res.data.total;
                 if( this.tableInfo.tableData.length>0)
                     this.interTableData[pageIndex] = this.tableInfo.tableData ;
-
              });
         },
         onSubmit(){
             this.interTableData.length = 0;
             this.pageChange(1);
-        },
-        selectALL(selection){
-            console.log('select-aLL',selection);
-        },
-
-        selectChange(selection,rowData){
-            console.log('select-change',selection,rowData);
-        },
-
-        selectGroupChange(selection){
-            console.log('select-group-change',selection);
         }
     },
     created(){
         if(this.phoneFlag){
             this.helpStyle = {}
         }
-        /*console.log(this.param.defaultValue)
-        this.$Http('post','api/help/onblur',this.param.defaultValue).then((res)=>{
-            this.setHelpValue(res.data.F_NM,res.data.F_BH,res.data.F_MC);
-            this.inputShowText = res.data.F_MC;
-            
-        })*/
     },
     components: {
      VTable,
@@ -262,6 +275,7 @@ export default {
     margin: 0 auto;
     border: 1px solid #DFE0E4;
     z-index: 1000;
+    background:#aaa;
     border-radius: 4px;
     box-shadow:gray 0 0 30px
 }
@@ -305,7 +319,7 @@ body .card-title{
 }
 .help-tool .page-wrapper{
     float: left;
-    width: 300px;
+    width: 280px;
 }
 .help-tool .page-wrapper .v-page-ul {
     margin: 4px 0;
@@ -321,11 +335,11 @@ body .card-title{
 }
 .help-tool .search-form{
     float: right;
-    width: 200px;
+    width: 310px;
     margin-top: 3px;
 }
 .help-tool .search-input{
-    width: 67%
+    width: 50%
 }
 .help-tool .el-card__body {
     padding: 0px;
