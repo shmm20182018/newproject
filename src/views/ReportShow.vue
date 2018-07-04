@@ -135,8 +135,8 @@ export default {
           if(this.reportInfo.chartInfo.series){
             this.showChartFlag =true;        
           }
-          if(this.queryImmediately)
-            searchData(true);
+          if(this.reportInfo.queryImmediately)
+            this.searchData(true);
       });
     },
     showToggle(type){
@@ -152,8 +152,8 @@ export default {
     },
     searchData(immediately){
       if(immediately){
-        paramsInfo.forEach(param => {
-          queryParams[param.id] = param.defaultValue;
+        this.reportInfo.paramsInfo.forEach(param => {
+          this.queryParams[param.id] = param.defaultValue;
         });
       }
       this.$Http('post',"api/report/search",this.searchParams).then((res)=>{

@@ -41,6 +41,8 @@
                         :paging-index="(pageIndex-1)*tableInfo.pageSize"
                         :title-row-height="32"
                         :row-height="34"
+                        :select-group-change="selectGroupChange"
+                        :select-all="selectGroupChange"
                         >
                     </v-table>
                     <div class="footer-wapper clear">
@@ -75,7 +77,8 @@ export default {
     data () {
         return {                       
             dependParamsId: this.param.helpConditions.match(/@(\S*)@/g),        //依赖条件参数编号数组
-            curRowData:{}, //当前选中行的数据，主要为确定按钮使用
+            curRowData:{}, //当前选中行的数据，主要为单选时确定按钮使用
+            selection:[],  //当前选中数据数组，多选时使用
             dragDOM:'',
             internalValue : this.param.defaultValue,
             helpBhValue: '',
@@ -131,6 +134,9 @@ export default {
         }
     },
     methods:{
+        selectGroupChange(selection){
+            this.selection = selection;
+        },
         getHelpConditions(){  //替换过依赖条件的值后的帮助条件
             if(this.dependParamsId==null){
                 return this.param.helpConditions;
@@ -187,10 +193,10 @@ export default {
         },
         blurHandler(event){
             if(!this.inputShowText && this.internalValue){
-                this.setHelpValue('','','');
+                this.setHelpValue(this.param.helpMultiSelect == true ? "('')" :'' ,'','');
                 return;
             }
-            if((this.helpBhValue=='' || event.target._value!=this.internalValue)&& this.internalValue)
+            if((this.helpBhValue=='' || event.target._value!=this.internalValue)&& this.internalValue && !this.param.helpMultiSelect)
                 this.onBlurRequest();
             else
                 this.showTextState = 'blur';
@@ -213,11 +219,36 @@ export default {
             this.helpShowFlag = false;
         },        
         onDetermine(){
-            if(!this.param.helpMultiSelect)
-                this.rowDoubleClick(null, this.curRowData,null);
+            this.rowDoubleClick(null, this.curRowData,null);
         },
         rowDoubleClick(rowIndex, rowData, column){
-            this.setHelpValue(rowData['F_NM'],rowData['F_BH'],rowData['F_MC']);
+            var _nm,_bh,_mc;
+            
+            if(!this.param.helpMultiSelect){
+                _nm = rowData['F_NM'];
+                _bh = rowData['F_BH'];
+                _mc = rowData['F_MC'];
+            }
+            else{
+                _nm = '(';
+                _bh = '(';
+                _mc = '';
+
+                if(this.selection.length>0){
+                    this.selection.forEach((i)=>{
+                        _nm +="'"+i['F_NM']+"',"
+                        _bh +=i['F_BH']+","
+                        _mc +=i['F_MC']+","
+                    });
+                    _nm=_nm.substr(0,_nm.length-1);
+                    _bh=_bh.substr(0,_bh.length-1);
+                    _mc=_mc.substr(0,_mc.length-1);
+                }
+                
+                _nm+= ')';
+                _bh+= ')';
+            }
+            this.setHelpValue(_nm,_bh,_mc);
             this.helpShowFlag = false;
             this.inputShowText =  this.helpMcValue;
         },
