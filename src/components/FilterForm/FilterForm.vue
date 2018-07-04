@@ -60,7 +60,10 @@ export default {
          handler: function (newVal) {
             if(this.paramsInfo){
               this.paramsInfo.forEach(item => {
-                 this.$set(this.ruleForm,item.id,item.defaultValue);
+                 if(item.helpMultiSelect)
+                    this.$set(this.ruleForm,item.id,"('')");
+                 else
+                    this.$set(this.ruleForm,item.id,item.defaultValue);
                  this.$set(this.rules,item.id,[{required: item.mandatory, trigger: '' }]);
               });
             }
