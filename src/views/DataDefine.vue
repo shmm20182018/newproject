@@ -73,7 +73,6 @@
                                     v-for="(tag,index2) in data.dataSource"
                                     :key="index2"
                                     closable
-                                    :id="tag.id"
                                     @close="tagClose(index2,index)">
                                    <span class="tag-content"> 
                                        <i class="tag-text">{{tag.name}}</i>
@@ -109,21 +108,22 @@
                             <div class="right-operate">
                                 <el-button type="primary" size="mini" @click="deleteStep(index*1)">删除</el-button>
                             </div>
-                            <div class="right-propterty-config"  v-drag="dragPropertyDOM" :style="configStyle" v-show="showIndex==index && configShowFlag" >
+                            <div class="right-propterty-config"  v-drag="dragPropertyDOM" :style="configStyle"  v-if="showIndex==index && configShowFlag" >
                                 <div class="config-container">
-                                    <p class="config-title" id="dragProperty">
+                                    <p class="config-title" :id="'dragProperty'+index">
                                         <i class="el-icon-menu"></i>
-                                        <span>{{'属性设置'}}</span>
+                                        <span>{{'属性设置 step-'+(index+1)}}</span>
                                         <i class="el-icon-close close-config" @click="closeConfig"></i>
                                     </p>
-                                    <property-config  v-if="showIndex==index && configShowFlag"
+                                    <property-config
                                         :step="data" 
                                         :stepIndex="index" 
                                         :dataSourceIndex="openDataSourceIndex"
                                         :activeNameCon="activeNameCon"
                                         :filterParams="reportInfo.params"
-                                        :rightMatchArray="rightMatchArray"
-                                        :paramMatchArray="paramMatchArray">
+                                        :rightMatchArray="rightMatchArray[index]"
+                                        :paramMatchArray="paramMatchArray[index]"
+                                        :assocFormulaArray="assocFormulaArray[index]">
                                     </property-config>
                                 </div>
                             </div>  
@@ -307,23 +307,9 @@ export default {
         showIndex:-1,//属性配置显示第几步
         filterConfigShow:false,//报表参数配置显示
         configShowFlag:false,//属性配置显示
-        rightMatchArray:[{//数据源权限配置
-            dataSource:'',
-            field:'',
-            type:'',
-            sourceIndex:'0',
-        }],
-        paramMatchArray:[{//数据源参数配置
-            lbracket:'', 
-            dataSource:'',
-            field:'',
-            formula:'',
-            paramType:'',
-            param:'',
-            rbracket:'',
-            relation:'',
-            sourceIndex:0
-        }],
+        rightMatchArray:[],
+        paramMatchArray:[],
+        assocFormulaArray:[],
         reportRules:{
             code:[{required:true,trigger: 'blur'}],
             name:[{required:true,trigger: 'blur'}]
@@ -446,9 +432,10 @@ export default {
             this.openDataSourceIndex = dataSourceIndex;
             this.activeNameCon = type;
             this.showIndex = rowIndex
-            this.dragPropertyDOM = document.getElementById('dragProperty')
             this.configShowFlag = true;
-            //console.log(this.dragPropertyDOM)
+            this.$nextTick(()=>{
+                this.dragPropertyDOM = document.getElementById('dragProperty'+rowIndex)
+            })
         },
         closeConfig(){
             this.configShowFlag = false;
@@ -498,9 +485,48 @@ export default {
         insertStep(){
             this.reportInfo.steps.push({
                 dataSource:[],
-                operation:{id:this.guid(),type:'1',name:"合并操作",dataSourceIdList:[]},
+                operation:{
+                    id:this.guid(),
+                    type:'1',
+                    name:"合并操作",
+                    mapColText:'0',
+                    mapColFormula:'',
+                    dataSourceIdList:[],
+                    mainColList:[],
+                    dataColList:[],
+                    tqFlag:'0',
+                    sqFlag:'0',
+                    bnljFlag:'0',
+                    tqljFlag:'0',
+                    qjhbFlag:'0'
+                },
                 result:{}   
             });
+            this.paramMatchArray.push([{
+                lbracket:'', 
+                dataSource:'',
+                field:'',
+                formula:'',
+                paramType:'',
+                param:'',
+                rbracket:'',
+                relation:'',
+                sourceIndex:0
+            }])
+            this.rightMatchArray.push([{
+                dataSource:'',
+                field:'',
+                type:'',
+                sourceIndex:'0',
+            }])
+            this.assocFormulaArray.push([{
+                dsFirst:'',
+                fieldFirst:'',
+                dsSecond:'',
+                fieldSecond:'',
+                sourceIndex1:0,
+                sourceIndex2:0
+            }])
         },
         deleteStep(index){
             this.reportInfo.steps.splice(index,1)
@@ -811,6 +837,7 @@ body .el-select-dropdown__item.selected {
 }
 .right-propterty-config{
     z-index: 1001;
+    box-shadow:gray 0 0 30px;
 }
 .data-define ::-webkit-scrollbar {
     width: 8px;
@@ -842,6 +869,7 @@ body .el-select-dropdown__item.selected {
     border: 1px solid #ccc;
     background: #fff;
     z-index: 1002;
+    box-shadow:gray 0 0 30px
 }
 .filter-config-wrapper .config-title{
     position: relative;

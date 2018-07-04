@@ -1,7 +1,7 @@
 <template>
     <div class="config-content">
-        <el-tabs v-model="activeNameTag" @tab-lick="tabClick">
-            <el-tab-pane label="对象属性" name="dataSource">
+        <el-tabs v-model="activeNameTag" @tab-click="tabClick">
+            <el-tab-pane label="数据源属性" name="dataSource">
                 <div class="obj-config-wrapper">
                     <div class="left-obj-config">
                         <p class='tree-title'><i class="el-icon-check"></i>请勾选要使用的字段</p> 
@@ -54,13 +54,13 @@
                             </el-collapse-item>
                             <el-collapse-item title="列属性" name="4" v-if="step.operation.type==3 && currentDataSourceTreeNode.field" >
                                     <el-form-item label="是否分组主列">
-                                    <el-switch v-model="currentDataSourceTreeNode.isKeyCol"></el-switch>
+                                        <el-switch v-model="currentDataSourceTreeNode.isKeyCol" active-value="1" inactive-value="0"></el-switch>
                                     </el-form-item>
                                     <el-form-item label="是否数据列">
-                                        <el-switch v-model="currentDataSourceTreeNode.isUnoCol"></el-switch>
+                                        <el-switch v-model="currentDataSourceTreeNode.isUnoCol"  active-value="1" inactive-value="0"></el-switch>
                                     </el-form-item>
                                     <el-form-item label="是否日期列">
-                                        <el-switch v-model="currentDataSourceTreeNode.isDateCol"></el-switch>
+                                        <el-switch v-model="currentDataSourceTreeNode.isDateCol" active-value="1" inactive-value="0"></el-switch>
                                     </el-form-item>
                                     <el-form-item label="日期类型列">
                                         <el-radio-group v-model="currentDataSourceTreeNode.dateColType">
@@ -80,29 +80,24 @@
                         合并操作
                     </div>
                     <div v-if="step.operation.type == 2" class="guanlian-operate-wrapper">
-                        <el-form class="duibi-operate-form" :model="form" label-width="100px" size="small" label-position="left" >
-                        <div class="duibi-form-left">
-                            <el-form-item label="操作编号">
-                                <el-input v-model="step.operation.id" :disabled="true"></el-input>
-                            </el-form-item>
-                            <el-form-item label="操作名称">
-                                <el-input v-model="step.operation.name" :disabled="true"></el-input>
-                            </el-form-item>
+                        <el-form class="guanlian-operate-form" :model="form" label-width="100px" size="small" label-position="left" >
+                        <div class="guanlian-operate-content">
                             <el-form-item label="选择操作主表">
-                                <el-select v-model="objCompareId"  @change='opeSelChange(objCompareId)' placeholder="">
-                                    <el-option v-for="(obj,selIndex) in step.dataSource" 
+                                <el-select v-model="dsCompareId"  @change='opeSelChange(dsCompareId)' placeholder="">
+                                    <el-option v-for="(ds,selIndex) in dataSourceIdList" 
                                         :selIndex="selIndex" 
-                                        :key="obj.selIndex"
-                                        :label="obj.senmaName" 
-                                        :value="obj.id">
+                                        :key="ds.selIndex"
+                                        :label="ds.senmaName" 
+                                        :value="ds.id">
                                     </el-option>
                                 </el-select>
                             </el-form-item>
-                            <el-form-item label="对象关联关系">
-                                <el-input type="textarea" v-model="step.operation.id"></el-input>
+                            <el-form-item class="guanlian-operate-textarea" label="对象关联关系">
+                                <el-input type="textarea" v-model="step.operation.mapColFormula"></el-input>
+                                <el-button @click="openAssoc" class="guanlian-operate-btn">设置关系</el-button>
                             </el-form-item>
                              <el-form-item label="链接方式">
-                                <el-select placeholder="">
+                                <el-select v-model="step.operation.mapColText" placeholder="">
                                     <el-option  label="左连接" value="0"></el-option>
                                     <el-option  label="全连接" value="1"></el-option>
                                 </el-select>
@@ -113,60 +108,55 @@
                     <div v-if="step.operation.type == 3" class="duibi-operate-wrapper">
                         <el-form class="duibi-operate-form" :model="form" label-width="100px" size="small" label-position="left" >
                             <div class="duibi-form-left">
-                                <el-form-item label="操作编号">
-                                    <el-input v-model="step.operation.id" :disabled="true"></el-input>
-                                </el-form-item>
-                                <el-form-item label="操作名称">
-                                    <el-input v-model="step.operation.name" :disabled="true"></el-input>
-                                </el-form-item>
                                 <el-form-item label="操作对象列表">
-                                    <el-select v-model="objCompareId"  @change='opeSelChange(objCompareId)' placeholder="">
-                                        <el-option v-for="(obj,selIndex) in step.dataSource" 
+                                    <el-select v-model="dsCompareId"  @change='opeSelChange(dsCompareId)' placeholder="">
+                                        <el-option v-for="(ds,selIndex) in dataSourceIdList" 
                                             :selIndex="selIndex" 
-                                            :key="obj.selIndex"
-                                            :label="obj.senmaName" 
-                                            :value="obj.id">
+                                            :key="ds.selIndex"
+                                            :label="ds.senmaName" 
+                                            :value="ds.id">
                                         </el-option>
                                     </el-select>
                                 </el-form-item>
                                 <el-form-item label="已选主列列表">
-                                    <el-select v-model="objCompareKey" placeholder="请选择主列">
+                                    <el-select v-model="dsCompareKey" placeholder="请选择主列">
                                         <el-option
-                                            v-for="(obj,selIndex) in step.operation.mainColList" 
+                                            v-for="(ds,selIndex) in step.operation.mainColList" 
                                             :selIndex="selIndex" 
-                                            :key="obj.selIndex"
-                                            :label="obj.label" 
-                                            :value="obj.id">
+                                            :key="ds.selIndex"
+                                            :label="ds.label" 
+                                            :value="ds.id">
                                         </el-option>
                                     </el-select>
                                 </el-form-item>
                                 <el-form-item label="已选数据列列表">
-                                    <el-select v-model="objCompareUno" placeholder="请选择数据列">
+                                    <el-select v-model="dsCompareUno" placeholder="请选择数据列">
                                         <el-option 
-                                            v-for="(obj,selIndex) in step.operation.dataColList" 
+                                            v-for="(ds,selIndex) in step.operation.dataColList" 
                                             :selIndex="selIndex" 
-                                            :key="obj.selIndex"
-                                            :label="obj.label" 
-                                            :value="obj.id">
+                                            :key="ds.selIndex"
+                                            :label="ds.label" 
+                                            :value="ds.id">
                                         </el-option>
                                     </el-select>
                                 </el-form-item>
+                                <input type="text" v-model="compText">
                             </div>
                             <div class="duibi-form-right">
                                 <el-form-item label="同期">
-                                    <el-switch v-model="form.name"></el-switch>
+                                    <el-switch v-model="step.operation.tqFlag" active-value="1" inactive-value="0"></el-switch>
                                 </el-form-item>
                                 <el-form-item label="上期">
-                                    <el-switch v-model="form.name"></el-switch>
+                                    <el-switch v-model="step.operation.sqFlag" active-value="1" inactive-value="0"></el-switch>
                                 </el-form-item>
                                 <el-form-item label="本年累计">
-                                    <el-switch v-model="form.name"></el-switch>
+                                    <el-switch v-model="step.operation.bnljFlag" active-value="1" inactive-value="0"></el-switch>
                                 </el-form-item>
                                 <el-form-item label="同期累计">
-                                    <el-switch v-model="form.name"></el-switch>
+                                    <el-switch v-model="step.operation.tqljFlag" active-value="1" inactive-value="0"></el-switch>
                                 </el-form-item>
                                 <el-form-item label="区间环比">
-                                    <el-switch v-model="form.name"></el-switch>
+                                    <el-switch v-model="step.operation.qjhbFlag" active-value="1" inactive-value="0"></el-switch>
                                 </el-form-item>
                             </div>       
                         </el-form>
@@ -178,7 +168,7 @@
                 </div>
             </el-tab-pane>
         </el-tabs>
-        <div v-show="paramShowFlag" v-drag="dragParamDOM" :style="canStyle" class="canshu-config-wrapper">
+        <div v-if="paramShowFlag" v-drag="dragParamDOM" :style="canStyle" class="canshu-config-wrapper">
              <p class="config-title" id="dragParam">
                 <i class="el-icon-menu"></i>
                 <span>{{'参数设置'}}</span>
@@ -189,10 +179,10 @@
                     <li @click="addParam">新增</li>
                     <li @click="delParam">删除</li>
                     <li @click="saveParam">保存</li>
-                    <li @click="openFormula">公式处理</li>
+                    <li @click="openParamFormula">公式处理</li>
                 </ul>
             </div>
-            <div class="canshu-config-content" v-if="paramShowFlag"> 
+            <div class="canshu-config-content"> 
                 <div class="canshu-config-table">
                     <div class="canshu-list-title">
                         <div class="canshu-select canshu-title-item"></div>
@@ -227,7 +217,7 @@
                         <div class="canshu-field canshu-data-item">
                             <el-form-item>
                                 <el-select v-model="paramMatch.field" placeholder="" @change="changeParamIndex(index)">
-                                    <el-option :ref="'paramField'+index" v-for="(obj,index) in step.dataSource[paramMatch.sourceIndex].fields" :key="index" :label="obj.label" :value="obj.id+','+obj.label"></el-option>
+                                    <el-option  v-for="(obj,index) in step.dataSource[paramMatch.sourceIndex].fields" :key="index" :label="obj.label" :value="obj.id+','+obj.label"></el-option>
                                 </el-select>
                             </el-form-item>
                         </div>
@@ -270,7 +260,7 @@
                 </div>
             </div>
         </div>
-        <div v-show="authShowFlag" v-drag="dragAuthDOM" :style="quanStyle" class="quanxian-config-wrapper">
+        <div v-if="authShowFlag" v-drag="dragAuthDOM" :style="quanStyle" class="quanxian-config-wrapper">
             <p class="config-title" id="dragAuth">
                 <i class="el-icon-menu"></i>
                 <span>{{'权限设置'}}</span>
@@ -283,7 +273,7 @@
                     <li @click="authCompelete">设置完毕</li>
                 </ul>
             </div>
-            <div class="quanxian-config-content" v-if="authShowFlag">
+            <div class="quanxian-config-content">
                 <div class="quanxian-list-table">
                     <div class="quanxian-list-title">
                         <div class="quanxian-select"></div>
@@ -322,73 +312,103 @@
                 </div>  
             </div>
         </div>
-        <div v-show="formulaShowFlag" v-drag="dragFormulaDOM" class="formula-config-wrapper">
-            <p class="config-title" id="dragFormula">
+        <div v-if="assocShowFlag" v-drag="dragAssocDOM" class="assoc-config-wrapper">
+             <p class="config-title" id="dragAssoc">
                 <i class="el-icon-menu"></i>
-                <span>公式设置</span>
-                <i class="el-icon-close close-config" @click="closeFormula"></i>
+                <span>数据源列名匹配</span>
+                <i class="el-icon-close close-config" @click="closeAssoc"></i>
             </p>
-             <div class="quanxian-config-menu">
+            <div class="assoc-config-menu">
                 <ul>
-                    <li @click="saveFormula">保存</li>
+                    <li @click="addAssoc">新增</li>
+                    <li @click="delAssoc">删除</li>
+                    <li @click="saveAssoc">保存</li>
                 </ul>
             </div>
-            <div class="formula-config-content" v-if="formulaShowFlag">
-                <div class="formula-config-inner">
-                    <div class="formula-string-wrapper">
-                        <el-form>
-                            <el-form-item>
-                                <el-input type="textarea" v-model="formulaString"></el-input>  
+            <div class="assoc-config-content"> 
+                <div class="assoc-config-table">
+                    <div class="assoc-list-title">
+                        <div class="assoc-select assoc-title-item"></div>
+                        <div class="assoc-ds-first assoc-title-item">对象1</div>
+                        <div class="assoc-field-first assoc-title-item">对象字段1</div>
+                        <div class="assoc-symbol assoc-title-item">连接符</div>
+                        <div class="assoc-ds-second assoc-title-item">对象2</div>
+                        <div class="assoc-field-second assoc-title-item">对象字段2</div>
+                    </div>
+                    <el-form>
+                    <div v-for="(assocFormula,index) in assocFormulaArray" :key="index" class="assoc-list-item">
+                        <div class="assoc-select assoc-data-item" @click="changeAssocIndex(index)">
+                            <i v-show="assocFormulaIndex==index" class="el-icon-check"></i>
+                        </div>  
+                        <div class="assoc-ds-first assoc-data-item">
+                            <el-form-item >
+                                <el-select v-model="assocFormula.dsFirst" @change="changeAssocSourceIndex(assocFormula.dsFirst,index,'sourceIndex1','fieldFirst')" placeholder="请选择">
+                                    <el-option v-for="(ds,index) in step.dataSource" :key="index" :label="ds.name" :value="ds.id+','+ds.name"></el-option>
+                                </el-select>
                             </el-form-item>
-                        </el-form>    
-                    </div>
-                    <div class="formula-string-list">
-                        <div class="formula-type-list">
-                            <ul>
-                                <li v-for="(formula,index) in formulaArray" :key="index" @click="changeFormulaTypeIndex(index)">
-                                    <i class="formula-list-icon" :class="formulaTypeIndex==index?'formula-list-icon-active':''"></i>{{formula.type}}
-                                </li>
-                            </ul>
                         </div>
-                        <div class="formula-item-list">
-                            <ul>
-                                <li v-for="(formula,index) in formulaArray[formulaTypeIndex]['typeList']" @click.stop="changeFormulaValueIndex(index)" @dblclick.stop="changeFormulaExpression(index)" :key="index">
-                                    <i class="formula-list-icon" :class="formulaValueIndex==index?'formula-list-icon-active':''"></i>{{formula.value}}
-                                </li>
-                            </ul>
+                        <div class="assoc-field-first assoc-data-item">
+                            <el-form-item >
+                                <el-select v-model="assocFormula.fieldFirst" placeholder="请选择" @change="changeAssocIndex(index)">
+                                    <el-option  v-for="(obj,index) in step.dataSource[assocFormula.sourceIndex1].fields" :key="index" :label="obj.label" :value="obj.id+','+obj.label"></el-option>
+                                </el-select>
+                            </el-form-item>
                         </div>
-                        <div class="formula-item-desc">{{formulaDesc}}</div>
+                        <div class="assoc-symbol assoc-data-item"  @click="changeAssocIndex(index)">
+                           =
+                        </div>
+                        <div class="assoc-ds-second assoc-data-item">
+                            <el-form-item >
+                                <el-select v-model="assocFormula.dsSecond" @change="changeAssocSourceIndex(assocFormula.dsSecond,index,'sourceIndex2','fieldSecond')" placeholder="请选择">
+                                    <el-option v-for="(ds,index) in step.dataSource" :key="index" :label="ds.name" :value="ds.id+','+ds.name"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
+                        <div class="assoc-field-second assoc-data-item">
+                            <el-form-item >
+                                <el-select v-model="assocFormula.fieldSecond" placeholder="请选择" @change="changeAssocIndex(index)">
+                                    <el-option  v-for="(obj,index) in step.dataSource[assocFormula.sourceIndex2].fields" :key="index" :label="obj.label" :value="obj.id+','+obj.label"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </div>
                     </div>
+                    </el-form>
                 </div>
             </div>
         </div>
+        <formula-config v-if="paramFormulaShowFlag"  v-drag="dragFormulaDOM" class="formula-config-wrapper"
+            :formulaFieldValue = paramMatchArray[paramMatchIndex].formula
+            @on-close-formula="closeParamFormula" 
+            @on-save-formula="saveParamFormula">
+        </formula-config>
     </div>                         
 </template>
 
 <script>
+import FormulaConfig from './FormulaConfig.vue'
 export default {
-  props:['step','stepIndex','dataSourceIndex','activeNameCon','filterParams','rightMatchArray','paramMatchArray'],
+  props:['step','stepIndex','dataSourceIndex','activeNameCon','filterParams','rightMatchArray','paramMatchArray','assocFormulaArray'],
   data () {
     return {
         dragParamDOM:'',
         dragAuthDOM:'',
         dragFormulaDOM:'',
+        dragAssocDOM:'',
+        assocFormulaIndex:0,
         selectDataSourceIndex:this.dataSourceIndex, //当前选择的数据源索引
         currentDataSourceTreeNode:{},              //当前选中的数据源树节点,在created时需要根据计算属性selectDsTreeData初始
         selectDsTreeCheckedNodes:[],
         rightMatchIndex:0,
         paramMatchIndex:0,
-        formulaTypeIndex:0,
-        formulaValueIndex:0,
-        paramFieldValue:'',
-        formulaString:'',//公式结果
+        assocFormulaIndex:0,
         compSelIndex:0,
-        objCompareId:this.step.dataSource[0].id,//比较操作
-        objCompareKey:'',//比较操作
-        objCompareUno:'',//比较操作
+        dsCompareId:'',//比较操作
+        dsCompareKey:'',//比较操作
+        dsCompareUno:'',//比较操作
         paramShowFlag:false,//参数配置
         authShowFlag:false,//权限配置
-        formulaShowFlag:false,//公式配置
+        paramFormulaShowFlag:false,//公式配置
+        assocShowFlag:false,//关系操作公式配置
         activeNames:['1','2','3','4'],
         activeNameTag:this.activeNameCon,
         authList:[
@@ -407,22 +427,6 @@ export default {
             {name:'小于等于',value:'6'},
             {name:'包含',value:'7'},
             {name:'被包含',value:'8'}
-        ],
-        formulaArray:[
-            {id:'1',type:'简单操作',typeList:[
-                {id:1,value:'加',expression:'+',desc:'对选择的列进行加法处理'},
-                {id:2,value:'减',expression:'-',desc:'对选择的列进行减法处理'},
-                {id:3,value:'乘',expression:'*',desc:'对选择的列进行乘法处理'},
-                {id:4,value:'除',expression:'/',desc:'对选择的列进行除法处理'}
-            ]},
-            {id:'2',type:'复杂操作',typeList:[
-                {id:5,value:'求和',expression:'SUM()',desc:'对选择的列进行求和处理'},
-                {id:6,value:'最大',expression:'MAX()',desc:'对选择的列进行最大值处理'},
-                {id:7,value:'最小',expression:'MIN()',desc:'对选择的列进行最小值处理'},
-                {id:8,value:'平均',expression:'AVG()',desc:'对选择的列进行平均值处理'},
-                {id:9,value:'取年月',expression:'left(,6)',desc:'取字段的前六位'},
-                {id:10,value:'取年度',expression:'left(,4)',desc:'取字段的前四位'}
-            ]}
         ],
         canStyle:{
             position:'fixed',
@@ -448,12 +452,28 @@ export default {
     };
   },
   watch:{
-      filterParams:{
-           handler: function (newVal) { 
-               console.log(newVal)
-            },
-          deep:true      
-      }
+    filterParams:{
+        handler: function (newVal) { 
+            console.log(newVal)
+        },
+        deep:true      
+    },
+    /*selectDsTreeCheckedNodes:{
+        handler: function (newNode) { 
+            this.step.operation.mainColList.length = 0
+            this.step.operation.dataColList.length = 0
+             for(let node of newNode){
+                if(node.isKeyCol){
+                    this.step.operation.mainColList.push(node)
+                }
+                if(node.isUnoCol){
+                    this.step.operation.dataColList.push(node)
+                }
+            }
+            console.log(this.step.operation.dataColList)
+        },
+        deep:true 
+    }*/
   },
   computed:{
     selectDataSource(){
@@ -488,17 +508,21 @@ export default {
         findCheckdKeys(fields);
         return checkedKeys;
     },
-    formulaDesc(){
-        //console.log(this.formulaValueIndex)
-        return this.formulaArray[this.formulaTypeIndex]['typeList'][this.formulaValueIndex]['desc']
-    },
     dataSourceIdList(){
         var dataSourceIdList = []
         for(let dataSoruce of this.step['dataSource']){
-            dataSourceIdList.push(dataSoruce.id)
+            dataSourceIdList.push(dataSoruce)
         }
         this.$set(this.step.operation,'dataSourceIdList',dataSourceIdList)
+        this.dsCompareId = this.step.operation.dataSourceIdList[0].id
         return dataSourceIdList
+    },
+    compText(){
+        this.step.operation.compText = this.step.operation.tqFlag+';'+this.step.operation.sqFlag+';'+this.step.operation.bnljFlag
+                +';'+this.step.operation.tqljFlag+';'+this.step.operation.qjhbFlag
+                console.log(this.step.operation.compText)
+        return this.step.operation.tqFlag+';'+this.step.operation.sqFlag+';'+this.step.operation.bnljFlag
+                +';'+this.step.operation.tqljFlag+';'+this.step.operation.qjhbFlag
     }
   },
   methods: {
@@ -513,24 +537,32 @@ export default {
        if(tab.index !=1){
             return false;
         }else{
-            this.$set(this.step.operation,'dataSourceIdList',this.dataSourceIdList)
-            for(let node of this.selectDsTreeCheckedNodes){
-                if(node.isKeyCol){
+
+        //console.log(this.selectDsTreeCheckedNodes)
+            this.step.operation.mainColList.length = 0
+            this.step.operation.dataColList.length = 0
+             for(let node of this.selectDsTreeCheckedNodes){
+                if(node.isKeyCol=='1'){
                     this.step.operation.mainColList.push(node)
                 }
-                if(node.isUnoCol){
+                if(node.isUnoCol =='1'){
                     this.step.operation.dataColList.push(node)
                 }
             }
-        }
+        }   
+        
     },
     openCan(){
-        this.dragParamDOM = document.getElementById('dragParam')
         this.paramShowFlag = true;
+        this.$nextTick(()=>{
+            this.dragParamDOM = document.getElementById('dragParam')
+        })
     },
     openQuan(){
-        this.dragAuthDOM = document.getElementById('dragAuth')
         this.authShowFlag = true;
+        this.$nextTick(()=>{
+            this.dragAuthDOM = document.getElementById('dragAuth')
+        })
     },
     closeCan(){
         this.paramShowFlag = false;
@@ -538,11 +570,11 @@ export default {
     closeQuan(){
         this.authShowFlag = false;
     },
-    opeSelChange(objCompareId){
-        var object = this.step[this.stepIndex].dataSource;
+    opeSelChange(dsCompareId){
+        var object = this.step.dataSource;
         for(let i in object){
             var o = object[i]
-            if(o.id == objCompareId){
+            if(o.id == dsCompareId){
                 this.compSelIndex = i;
                 break;
             } 
@@ -575,9 +607,6 @@ export default {
     saveParam(){
 
     },
-    saveFormula(){
-
-    },
     changeParamIndex(index){
         if(this.paramMatchIndex == index){
             return false;
@@ -600,35 +629,19 @@ export default {
             this.paramMatchIndex = index;
         }
     },
-    openFormula(){
-        this.dragFormulaDOM = document.getElementById('dragFormula')
-        this.formulaShowFlag = true;
-        //console.log(this.paramMatchIndex)
+    openParamFormula(){
         var fieldValue = this.paramMatchArray[this.paramMatchIndex]['field'].split(',')
         this.paramMatchArray[this.paramMatchIndex]['formula'] = fieldValue[1],
-        this.formulaString = fieldValue[1]
+        this.paramFormulaShowFlag = true;
+        this.$nextTick(()=>{
+            this.dragFormulaDOM = document.getElementById('dragFormula')
+        })  
     },
-    closeFormula(){
-        this.formulaShowFlag = false;
+    closeParamFormula(){
+        this.paramFormulaShowFlag = false;
     },
-    changeFormulaTypeIndex(index){
-        this.formulaTypeIndex = index;
-        this.formulaValueIndex = 0;
-    },
-    changeFormulaValueIndex(index){
-        this.formulaValueIndex = index; 
-    },
-    changeFormulaExpression(index){
-        this.formulaValueIndex = index; 
-        var expression = this.formulaArray[this.formulaTypeIndex]['typeList'][index]['expression']
-        if(index){
-            var leftExpression = expression.substring(0,expression.length-1)
-        }else{
-            var leftExpression = ''
-        }
-        var rightExpression = expression.substring(expression.length-1)
-        this.formulaString = leftExpression + this.formulaString + rightExpression;
-        this.paramMatchArray[this.paramMatchIndex]['formula'] = this.formulaString;
+    saveParamFormula(formulaString){
+        this.paramMatchArray[this.paramMatchIndex]['formula'] = formulaString
     },
     addAuth(){
         if(this.rightMatchArray.length){
@@ -673,10 +686,79 @@ export default {
     },
     authCompelete(){
 
+    },
+    openAssoc(){
+        this.assocShowFlag = true;
+        this.$nextTick(()=>{
+            this.dragAssocDOM = document.getElementById('dragAssoc')
+        })
+    },
+    closeAssoc(){
+        this.assocShowFlag = false;
+    },
+    addAssoc(){
+         if(this.assocFormulaArray.length){
+            this.assocFormulaIndex++;
+        }
+        this.assocFormulaArray.push({
+            dsFirst:'',
+            fieldFirst:'',
+            dsSecond:'',
+            fieldSecond:'',
+            sourceIndex1:0,
+            sourceIndex2:0
+        });
+    },
+    delAssoc(){
+        if(this.assocFormulaArray.length){
+            this.assocFormulaArray.splice(this.assocFormulaIndex,1);
+        }
+        if(this.assocFormulaIndex){
+            this.assocFormulaIndex--;
+        }  
+    },
+    saveAssoc(){
+        this.step.operation.mapColFormula = ''
+        for(let assoc of  this.assocFormulaArray){
+            var dsFirst = assoc.dsFirst.split(',')
+            var fieldFirst = assoc.fieldFirst.split(',')
+            var fieldSecond = assoc.fieldSecond.split(',')
+            var dsSecond = assoc.dsSecond.split(',')
+            this.step.operation.mapColFormula += dsFirst[1] + '.[' + fieldFirst[1]+ ']=' + dsSecond[1] + '.[' + fieldSecond[1] + '],'
+        }
+        this.step.operation.mapColFormula = this.step.operation.mapColFormula.substring(0,this.step.operation.mapColFormula.length-1)  
+        console.log(this.step.operation.mapColFormula)
+    },
+    changeAssocIndex(index){
+        if(this.assocFormulaIndex == index){
+            return false;
+        }else{
+            this.assocFormulaIndex = index;
+        }
+    },
+    changeAssocSourceIndex(ds,index,sourceIndex,field){
+        var id = ds.split(',')
+        this.$set(this.assocFormulaArray[index],field,'')
+        var source = this.step['dataSource']
+        for(var i in source){
+            if(id[0] == source[i]['id']){
+                this.assocFormulaArray[index][sourceIndex] = i;
+                break;
+            }
+        }
+        if(this.assocFormulaIndex == index){
+            return false;
+        }else{
+            this.assocFormulaIndex = index;
+        }
     }
   },
   created(){    
      this.currentDataSourceTreeNode = this.selectDsTreeData[0];
+     //this.step.operation.compText = this.compText
+  },
+  components:{
+      FormulaConfig:FormulaConfig
   }
   
 }
@@ -801,6 +883,40 @@ export default {
 .obj-config-quan .el-icon-setting:hover,.obj-config-can .el-icon-setting:hover{
     color: #109EFF;
 }
+.guanlian-operate-wrapper{
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+    box-sizing: border-box;
+}
+.guanlian-operate-form{
+    height: 500px;
+    border: 1px solid #E6E7EB;
+    padding: 5px;
+    box-sizing: border-box;
+}
+.guanlian-operate-content{
+    width: 70%;
+}
+.guanlian-operate-content .el-select{
+    width: 100%;
+}
+.guanlian-operate-content .el-textarea__inner{
+    min-height: 100px !important;
+    max-height: 380px;
+}
+.guanlian-operate-content .el-form-item__content{
+    position: static;
+}
+.guanlian-operate-textarea{
+    position: relative;
+}
+.guanlian-operate-btn{
+    position:absolute;
+    left: 0px;
+    top: 40px;
+    padding: 9px 11px;
+}
 .duibi-operate-wrapper{
     width: 100%;
     height: 100%;
@@ -817,10 +933,10 @@ export default {
     height: 100%;
 }
 .duibi-form-left .el-select{
-    width: 100%;
+    width: 75%;
 }
 .duibi-form-left .el-input{
-    width: 75%;
+    width: 100%;
 }
 .duibi-operate-wrapper .duibi-form-right{
     flex: 0 0 300px;
@@ -830,14 +946,8 @@ export default {
     height: 100%;
 }
 .canshu-config-wrapper,.quanxian-config-wrapper{
-    position:fixed;
-    left:calc(50% - 450px);
-    top: 50px;
-    width:900px;
-    height: 500px;
-    border: 1px solid #ccc;
-    background: #fff;
     z-index: 3010;
+    box-shadow:gray 0 0 30px;
 }
 .canshu-config-menu{
   height: 40px;
@@ -892,6 +1002,10 @@ export default {
 .canshu-list-item{
     font-size: 12px;
     font-weight: normal;
+}
+.canshu-list-item:hover .el-input__inner {
+    border-radius: 0;
+    background: #E0F4F7;
 }
 .canshu-title-item,.canshu-data-item{
     border-left: 1px solid #E6E7EB;
@@ -1004,8 +1118,9 @@ export default {
   font-size: 12px;
   font-weight: normal;
 }
-.quanxian-list-title:hover,.quanxian-list-item:hover{
-  background-color: #f5f7fa;
+.quanxian-list-item:hover .el-input__inner {
+    border-radius: 0;
+    background: #E0F4F7;
 }
 .quanxian-select{
     flex: 0 0 32px;
@@ -1058,79 +1173,125 @@ export default {
 .quanxian-list-item .el-select .el-input .el-select__caret.is-reverse {
     opacity: 1;
 }
-.formula-config-wrapper{
-    position:fixed;
-    left:calc(50% - 350px);
-    top: 50px;
-    width:700px;
+.assoc-config-wrapper{
+    position: fixed;
+    width: 900px;
     height: 500px;
-    border: 1px solid #ccc;
-    background: #fff;
+    left:calc(50% - 450px);
+    top: 50px;
     z-index: 3020;
+    box-shadow:gray 0 0 30px;
+    background: #fff;
 }
-.formula-config-content{
+.assoc-config-menu{
+  height: 40px;
+  line-height: 40px;
+  border: 1px solid #E6E7EB;
+  font-size: 12px;
+  font-weight: normal;
+}
+.assoc-config-menu li{
+  display: inline-block;
+  width: 60px;
+  height: 28px;
+  line-height: 28px;
+  border: 1px solid #E6E7EB;
+  text-align: center;
+  margin-left: 5px;
+}
+.assoc-config-menu li:hover{
+  background: #109EFF;
+  color: #fff;
+  cursor: pointer;
+}
+.assoc-config-content{
+  width: 100%;
+  padding: 10px 5px; 
+  box-sizing: border-box;
+}
+.assoc-config-table{
     width: 100%;
-    box-sizing: border-box;
-    padding: 10px 5px;
-}
-.formula-config-inner{
-    border: 1px solid #E6E7EB;
-    height: 415px;
-}
-.formula-string-wrapper{
-    height: 150px;
-    border-bottom: 1px solid #E6E7EB;
-    padding: 5px;
-    box-sizing: border-box;
-}
-.formula-string-wrapper .el-textarea__inner{
-    min-height: 138px !important;
-    max-height: 138px;
-}
-.formula-string-list{
-    display: flex;
-    height: 265px;
-}
-.formula-type-list,.formula-item-list,.formula-item-desc{
+    border:1px solid #E6E7EB;
     font-size: 12px;
-    padding: 10px;
+    height: 380px;
+    overflow: auto;
 }
-.formula-string-list li{
-    height: 30px;
-    line-height: 30px;
+.assoc-list-title,.assoc-list-item{
+    display: flex;
+    height: 32px;
+    line-height: 32px;
+    border-bottom: 1px solid #E6E7EB; 
+}
+.assoc-list-title:hover,.assoc-data-item:hover{
+    background-color: #f5f7fa;
+}
+.assoc-list-title{
+    background-color:  #f5f7fa;
+}
+.assoc-title-item{
+    font-size: 12px;
     padding-left: 5px;
     box-sizing: border-box;
-    margin-bottom: 5px;
+}
+.assoc-list-item{
+    font-size: 12px;
+    font-weight: normal;
+}
+.assoc-list-item:hover .el-input__inner,.assoc-list-item:hover .assoc-symbol{
+    border-radius: 0;
+    background: #E0F4F7;
+}
+.assoc-title-item,.assoc-data-item{
+    border-left: 1px solid #E6E7EB;
+}
+.assoc-select{
+    border-left:none;
+    flex: 0 0 32px;
+    width: 32px;
+    text-align: center;
+    font-size: 14px;
+    color: #109EFF
+}
+.assoc-symbol{
+    flex: 0 0 80px;
+    width: 80px;
+    text-align: center;
+    font-size: 14px;
+}
+.assoc-ds-first,.assoc-field-first,.assoc-ds-second,.assoc-field-second{
+    flex: 0.25;
+}
+.assoc-data-item .el-form-item {
+  margin-bottom: 0;
+}
+.assoc-data-item .el-form-item__content{
+    line-height: 30px;
+}
+.assoc-data-item .el-select{
     width: 100%;
-    background-color: #E1F3F7;
-    color: #666;
 }
-.formula-list-icon{
-    display: inline-block;
-    vertical-align:top;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 1px solid #C7C7C1;
-    background-color: #fff;
-    box-sizing: border-box;
-    margin-top: 10px;
-    margin-right: 8px;
+.assoc-data-item .el-input{
+    font-size: 12px;
 }
-.formula-list-icon-active{
-    border: 4px solid #00A0E3;
+.assoc-data-item .el-input__inner{
+    height: 32px;
+    line-height: 32px;
+    border: none;
+    padding-left: 5px;
+    padding-right: 14px;
 }
-.formula-type-list{
-    flex: 0 0 200px;
-    width: 200px;
+.assoc-formula .el-input__inner{
+    padding-right: 5px;
 }
-.formula-item-list{
-    flex: 0 0 200px;
-    width: 200px;
-    border-left: 1px solid #E6E7EB;
+.assoc-data-item .el-input__suffix{
+    right: 2px;
 }
-.formula-item-desc{
-    flex: 1;
-    border-left: 1px solid #E6E7EB;
+.assoc-data-item .el-select .el-input .el-select__caret{
+    font-size: 12px;
+    width: 14px;
+    opacity: 0;
+}
+.assoc-data-item .el-select .el-input .el-select__caret.is-reverse {
+    opacity: 1;
 }
 </style>

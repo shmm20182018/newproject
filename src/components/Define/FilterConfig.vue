@@ -226,7 +226,7 @@ export default {
 }
 .filter-list-title{
   font-size: 12px;
- 
+  background-color: #f5f7fa;
 }
 .filter-list-item{
   font-size: 12px;

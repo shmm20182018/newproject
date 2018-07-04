@@ -13,22 +13,18 @@
               ref="easyTable"
               id="serverTable"
               class="wathet-style"
-              :is-vertical-resize="hasChart?false:true"
               :vertical-resize-offset='60'
               is-horizontal-resize
               column-width-drag
               :style="resizeWidth"
               :error-content-height = '200'
               :multiple-sort = "false"
-              even-bg-color="#f2f2f2"
               :title-rows="interTableInfo.titleRows"
               :columns="interTableInfo.columns"
               :table-data="interTableInfo.tableData"
               :footer-cell-class-name="setFooterCellClass"
               :footer="footer"
               :footer-row-height="40"
-              row-hover-color="#eee"
-              row-click-color="#edf7ff"
               @sort-change="sortChange"
               :paging-index="(pageIndex-1)*interTableInfo.pageSize"
               :title-row-height="phoneFlag?26:22"
@@ -56,7 +52,7 @@ import XLSX from '../../utils/xlsx.js'
 
 
 export default {
-    props:['tableInfo','queryParams','id','engine','phoneFlag','showChartFlag','showTableFlag','hasChart'],
+    props:['tableInfo','queryParams','id','engine','phoneFlag','showChartFlag','showTableFlag'],
     data(){
         return { 
             isShow:true,//分组表表格数据更新后重新渲染(合并单元格)
@@ -119,7 +115,7 @@ export default {
         },
         'showChartFlag'(val){
            if(!this.phoneFlag){
-                setTimeout(()=>{this.$refs.easyTable.resize()},310) 
+                setTimeout(()=>{this.$refs.easyTable.resize()},340) 
            }
                 
         },

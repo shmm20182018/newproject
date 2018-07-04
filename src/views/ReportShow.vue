@@ -37,7 +37,6 @@
       <transition name="fade" >
         <server-table  v-show="showTableFlag"
                       :tableInfo="reportInfo.tableInfo" 
-                      :hasChart="reportInfo.chartInfo.series"
                       :queryParams = "queryParams"
                       :id ="reportInfo.id"
                       :engine ="$route.params.engine"
@@ -72,6 +71,10 @@ export default {
       queryParams:{},
       phoneFlag:false,
     };
+  },
+  beforeRouteUpdate(to,form,next){
+    this.$parent.reload()
+    next()
   },
   computed:{
     phoneClass(){
@@ -129,7 +132,8 @@ export default {
       this.$Http('get',this.initApiUrl).then((res)=>{
           this.reportInfo = {...this.reportInfo,...res.data };
           if(this.reportInfo.paramsInfo.length>0){
-            this.showFilterFlag =true;        
+            this.showFilterFlag =true;  
+            console.log(this.reportInfo)      
           }
           if(this.reportInfo.tableInfo.columns.length>0){
             this.showTableFlag =true;        
@@ -160,6 +164,7 @@ export default {
       }
       this.$Http('post',"api/report/search",this.searchParams).then((res)=>{
         if(res.data.tableInfo){
+          console.log(res.data.tableInfo)
           this.reportInfo.tableInfo = Object.assign({},this.reportInfo.tableInfo,res.data.tableInfo); 
           if(this.phoneFlag){
             for(let i in this.reportInfo.tableInfo.columns){

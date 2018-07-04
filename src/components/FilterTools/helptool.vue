@@ -15,13 +15,13 @@
         </el-tooltip> 
         <i class="el-icon-search" @click="openHelp"></i>
         <transition name="help-slide">
-        <div v-show="helpShowFlag" v-drag="dragDOM" class="help-wrapper"  :style="helpStyle">
+        <div v-if="helpShowFlag" v-drag="dragDOM" class="help-wrapper"  :style="helpStyle">
             <el-card class="box-card">
                 <div slot="header" id="drag" class="clearfix">
                     <span class="card-title">{{tableInfo.title}}</span>
                     <i class="icon-close el-icon-close"  @click="closeHelp"></i>
                 </div>
-                <div v-if="helpShowFlag" class="content-wapper">
+                <div class="content-wapper">
                     <v-table  ref='table'
                         id=""
                         :error-content-height = '320'
@@ -38,15 +38,14 @@
                         row-click-color="#edf7ff"
                         :row-dblclick="rowDoubleClick"
                         :row-click="rowClick"
-                        table-bg-color="phoneFlag?'transparent':''"	
-                        title-bg-color="phoneFlag?'transparent':''"	
-                        odd-bg-color="phoneFlag?'transparent':''"	
-                        even-bg-color="phoneFlag?'transparent':''"
                         :columns="tableInfo.columns"
                         :table-data="tableInfo.tableData"
                         :paging-index="(pageIndex-1)*tableInfo.pageSize"
                         :title-row-height="32"
                         :row-height="34"
+                        :select-all="selectALL"
+                        :select-change="selectChange"
+                        :select-group-change="selectGroupChange"
                         >
                     </v-table>
                     <div class="footer-wapper clear">
@@ -83,7 +82,7 @@ export default {
             internalValue : this.param.defaultValue,
             helpBhValue: '',
             helpMcValue: '',
-            inputShowText:this.param.defaultValue,
+            inputShowText:'',
             showTextState:'default',
             helpShowFlag: false,
             tableInfo:{},
@@ -160,11 +159,14 @@ export default {
                 }
             });
         },
-        blurHandler(event){
-            if((this.helpBhValue=='' || event.target._value!=this.internalValue)&& this.internalValue)
+        blurHandler(event){ 
+            if(this.inputShowText && event.target._value!=this.internalValue)
                 this.onBlurRequest();
-            else
+            else if(this.inputShowText){
+                this.setHelpValue('','','');
+            }else{
                 this.showTextState = 'blur';
+            }
         },
         focusHandler(){
             this.showTextState = 'focus';
@@ -173,8 +175,10 @@ export default {
             this.$Http('post','api/help/init',this.initRequestData).then((res)=>{
                 this.tableInfo = {...this.tableInfo,...res.data };
                 this.interTableData[1]=this.tableInfo.tableData;
-                this.dragDOM = document.getElementById('drag')
                 this.helpShowFlag = true;
+                this.$nextTick(()=>{
+                    this.dragDOM = document.getElementById('drag')
+                })                   
             });
         },
         closeHelp(){
@@ -212,12 +216,29 @@ export default {
         onSubmit(){
             this.interTableData.length = 0;
             this.pageChange(1);
+        },
+        selectALL(selection){
+            console.log('select-aLL',selection);
+        },
+
+        selectChange(selection,rowData){
+            console.log('select-change',selection,rowData);
+        },
+
+        selectGroupChange(selection){
+            console.log('select-group-change',selection);
         }
     },
     created(){
         if(this.phoneFlag){
             this.helpStyle = {}
         }
+        /*console.log(this.param.defaultValue)
+        this.$Http('post','api/help/onblur',this.param.defaultValue).then((res)=>{
+            this.setHelpValue(res.data.F_NM,res.data.F_BH,res.data.F_MC);
+            this.inputShowText = res.data.F_MC;
+            
+        })*/
     },
     components: {
      VTable,
@@ -241,7 +262,6 @@ export default {
     margin: 0 auto;
     border: 1px solid #DFE0E4;
     z-index: 1000;
-    background:#aaa;
     border-radius: 4px;
     box-shadow:gray 0 0 30px
 }
