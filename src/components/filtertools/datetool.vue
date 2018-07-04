@@ -49,7 +49,7 @@ export default {
         if(type =="year")
           this.internalValue=String(date.getFullYear());
         else if(type=="date")
-          this.internalValue=String(date.getFullYear())+String(date.getMonth()+1).padStart(2,'0')+String(date.getDate());
+          this.internalValue=String(date.getFullYear())+String(date.getMonth()+1).padStart(2,'0')+String(date.getDate()).padStart(2,'0');
         else  
            this.internalValue=String(date.getFullYear())+String(date.getMonth()+1).padStart(2,'0');
            

@@ -1,11 +1,13 @@
 <template>
   <div class="filterForm">
-    <el-form class="wathet-style demo-ruleForm" :show-message="false" label-position="left" label-width="80px" :model="ruleForm" :inline="true" :rules="rules"  ref="ruleForm" size="mini">
+    <el-form class="wathet-filter-style demo-ruleForm" :show-message="false" label-position="left" label-width="80px" :model="ruleForm" :inline="true" :rules="rules"  ref="ruleForm" size="mini">
       <el-row :gutter="20">
         <component :toolSize="toolColSize" 
                    v-for="(param) in paramsInfo" 
                    :is="param.componentName" 
                    :param="param" 
+                   :ruleForm="ruleForm"
+                   :paramsInfo ="paramsInfo"
                    @rule-form-change="ruleFormChange"  
                    :key="param.id"
                    :phoneFlag="phoneFlag"></component>
@@ -134,7 +136,7 @@ export default {
  .filterForm   .green-style .el-form-item.is-success .el-input__inner,  .green-style .el-form-item.is-success .el-input__inner:focus, .green-style .el-form-item.is-success .el-textarea__inner,  .green-style .el-form-item.is-success .el-textarea__inner:focus {
     border-color: #03A656;
   }
- .filterForm   .wathet-style .el-form-item.is-success .el-input__inner, .wathet-style .el-form-item.is-success .el-input__inner:focus, .wathet-style .el-form-item.is-success .el-textarea__inner, .wathet-style  .el-form-item.is-success .el-textarea__inner:focus {
+ .filterForm   .wathet-filter-style .el-form-item.is-success .el-input__inner, .wathet-filter-style .el-form-item.is-success .el-input__inner:focus, .wathet-filter-style .el-form-item.is-success .el-textarea__inner, .wathet-filter-style  .el-form-item.is-success .el-textarea__inner:focus {
     border-color: #13B5BC;
   }
   .phone-style-class .filterForm .el-form-item__content{

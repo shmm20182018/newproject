@@ -1,12 +1,30 @@
 <template>
   <div id="app">
-    <router-view/>
+    <router-view v-if="isRouteAlive"></router-view>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'App'
+  name: 'App',
+  provide(){  //作用：允许一个祖先组件向其所有子孙后代注入一个依赖，不论组件层次有多深，并在起上下游关系成立的时间里始终生效。
+      return {
+        reload:this.reload
+      }
+  },
+  data(){
+    return {
+      isRouteAlive:true
+    }
+  },
+  methods:{
+    reload(){
+      this.isRouteAlive = false;
+      this.$nextTick(function(){
+          this.isRouteAlive = true;
+      });
+    }
+  }
 }
 </script>
 
