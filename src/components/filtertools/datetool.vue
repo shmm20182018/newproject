@@ -56,6 +56,7 @@ export default {
         this.$emit('rule-form-change',this.param.id,this.internalValue)
     }
   }
+
 }
 </script>
 <style>
