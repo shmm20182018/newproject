@@ -115,7 +115,6 @@ export default {
         return 0;
     },
     searchParams:function(){
-
       return {
         id:this.$route.params.id,
         engine:this.$route.params.engine,
@@ -184,6 +183,11 @@ export default {
   created(){
     this.getReportInfo();
   },
+  beforeRouteUpdate (to, from, next) {
+      this.reload();
+      next();
+  },
+  inject:['reload'],
   components: {
     ServerChart,
     ServerTable,

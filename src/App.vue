@@ -1,23 +1,45 @@
 <template>
   <div id="app">
+<<<<<<< HEAD
     <router-view v-if="isRouteAlive"/>
+=======
+    <router-view v-if="isRouteAlive"></router-view>
+>>>>>>> 6d826df389b8203f429e552fd1d57c47115ed180
   </div>
 </template>
 
 <script>
 export default {
   name: 'App',
+<<<<<<< HEAD
   data(){
     return {
        isRouteAlive:true
+=======
+  provide(){  //作用：允许一个祖先组件向其所有子孙后代注入一个依赖，不论组件层次有多深，并在起上下游关系成立的时间里始终生效。
+      return {
+        reload:this.reload
+      }
+  },
+  data(){
+    return {
+      isRouteAlive:true
+>>>>>>> 6d826df389b8203f429e552fd1d57c47115ed180
     }
   },
   methods:{
     reload(){
+<<<<<<< HEAD
       this.isRouteAlive = false
       this.$nextTick(()=>{
         this.isRouteAlive = true
       })
+=======
+      this.isRouteAlive = false;
+      this.$nextTick(function(){
+          this.isRouteAlive = true;
+      });
+>>>>>>> 6d826df389b8203f429e552fd1d57c47115ed180
     }
   }
 }

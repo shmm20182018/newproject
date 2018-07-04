@@ -14,6 +14,7 @@ module.exports = {
 	   // proxy all requests starting with /api to jsonplaceholder
        '/api': {
         target: 'http://10.24.18.86/WebReport/api',
+        //target: 'http://localhost:59713/api',
         changeOrigin: true,
         pathRewrite: {
           '^/api': ''
@@ -22,7 +23,7 @@ module.exports = {
 	},
 
     // Various Dev Server settings
-    host: '0.0.0.0', // can be overwritten by process.env.HOST
+    host: '127.0.0.1', // can be overwritten by process.env.HOST
     port: 8080, // can be overwritten by process.env.PORT, if port is in use, a free one will be determined
     autoOpenBrowser: false,
     errorOverlay: true,
